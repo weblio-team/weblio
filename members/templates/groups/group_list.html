@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block content %}
+<main class="container">
+    <h1>Lista de Grupos</h1>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th scope="col">Grupo</th>
+                <th scope="col">Permisos</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for group in groups %}
+            <tr>
+                <td>{{ group.name }}</td>
+                <td>
+                    {% if group.permissions.exists %}
+                        <ul>
+                            {% for permission in group.permissions.all %}
+                                <li>{{ permission.name }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        Sin permisos
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</main>
+{% endblock %}

@@ -1,0 +1,50 @@
+<!-- templates/member_list.html -->
+{% extends "base.html" %}
+
+{% block content %}
+<main class="container">
+    <h1>Lista de Usuarios</h1>
+    <form method="post">
+        {% csrf_token %}
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th scope="col">Seleccionar</th>
+                    <th scope="col">Email</th>
+                    <th scope="col">Grupo</th>
+                    <th scope="col">Permisos</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for member in members %}
+                <tr>
+                    <td>
+                        <input type="radio" name="selected_member" value="{{ member.id }}">
+                    </td>
+                    <td>{{ member.email }}</td>
+                    <td>
+                        {% if member.groups.exists %}
+                            {{ member.groups.first.name }}
+                        {% else %}
+                            Sin grupo
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if member.user_permissions.exists %}
+                            <ul>
+                                {% for perm in member.user_permissions.all %}
+                                    <li>{{ perm.name }}</li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            Sin permisos
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <button type="submit" class="btn btn-primary">Editar Seleccionado</button>
+    </form>
+</main>
+{% endblock %}

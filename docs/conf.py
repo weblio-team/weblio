@@ -12,6 +12,7 @@ project = "Weblio"
 copyright = f"{date.today().year}, Weblio Team"
 author = "Weblio Team"
 release = "1.0"
+language = 'es'
 
 extensions = [
     'sphinx.ext.autodoc',
