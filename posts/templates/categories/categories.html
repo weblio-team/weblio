@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block content %}
+<main role="main" class="container py-4">
+    <h1>Categories</h1>
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
+        {% for category in object_list %}
+        <div class="card text-bg-dark border-light mb-3">
+            <div class="card-body">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <h5 class="card-title"><a href="{% url 'category' pk=category.pk name=category.name|slugify %}">{{ category.name }}</a></h5>
+                </div>
+                <p class="card-text">{{ category.description|safe }}</p>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <p class="card-text"><small class="text-white"> {{ category.kind }}</small></p>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</main>
+{% endblock %}
