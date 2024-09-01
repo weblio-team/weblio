@@ -27,28 +27,6 @@ class Category(models.Model):
 def get_default_category():
     return Category.objects.get_or_create(name='Uncategorized')[0].id
 
-class Post(models.Model):
-    title = models.CharField(max_length=100)
-    title_tag = models.CharField(max_length=100)
-    summary = models.CharField(max_length=100, default=lorem_ipsum.words(10)) 
-    body = models.CharField(max_length=100, default=lorem_ipsum.words(10)) 
-    date_posted = models.DateTimeField(auto_now_add=True)
-    author = models.ForeignKey(Member, on_delete=models.CASCADE)
-    status = models.CharField(max_length=20, choices=(('draft', 'Draft'), ('to_edit', 'To Edit'), ('to_publish', 'To Publish'),('published', 'Published'),), default='draft')
-    category = models.ForeignKey(Category, on_delete=models.SET_DEFAULT, default=get_default_category)
-    
-    def __str__(self):
-        return self.title + ' | ' + str(self.author)
-    
-    def get_absolute_url(self):
-        return reverse('post', args=[
-            self.pk,
-            slugify(self.category.name),
-            self.date_posted.strftime('%m'),
-            self.date_posted.strftime('%Y'),
-            slugify(self.title)
-        ])
-
 def get_lorem_ipsum_text():
     response = requests.get('https://loripsum.net/api/15/long/headers/decorate/link/ul/ol/dl/bq/code')
     if response.status_code == 200:
@@ -62,7 +40,7 @@ class Post(models.Model):
     body = CKEditor5Field('Text', config_name='extends', blank=True, default=get_lorem_ipsum_text)
     date_posted = models.DateTimeField(auto_now_add=True)
     author = models.ForeignKey(Member, on_delete=models.CASCADE)
-    status = models.CharField(max_length=20, choices=(('draft', 'Draft'), ('to_edit', 'To Edit'), ('to_publish', 'To Publish'),), default='draft')
+    status = models.CharField(max_length=20, choices=(('draft', 'Draft'), ('to_edit', 'To Edit'), ('to_publish', 'To Publish'),('published', 'Published'),), default='draft')
     category = models.ForeignKey(Category, on_delete=models.SET_DEFAULT, default=get_default_category)
     
     def __str__(self):

@@ -16,15 +16,6 @@
                                 <p class="card-text">{{ post.summary|safe }}</p>
                                 <p class="card-text"><small class="text-muted">Author {{ post.author.first_name }} {{ post.author.last_name }}</small></p>
                                 <p class="card-text"><small class="text-muted">Category: {{ post.category }}</small></p>
-                                <div>
-                                    {% if post.status == 'draft' %}
-                                    <span class="badge rounded-pill text-bg-secondary">Draft</span>
-                                    {% elif post.status == 'to_edit' %}
-                                    <span class="badge rounded-pill text-bg-warning">To Edit</span>
-                                    {% elif post.status == 'to_publish' %}
-                                    <span class="badge rounded-pill text-bg-success">To Publish</span>
-                                    {% endif %}
-                                </div>
                             </div>
                         </div>
                     </div>

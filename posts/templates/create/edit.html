@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block content %}
+<main role="main" class="container py-4">
+  <h1>Edit My Post</h1>
+  <form method="post">
+    {% csrf_token %}
+    {{ form.media }}
+    {{ form.as_p }}
+    {% if post.status == 'draft' %}
+      <button class="btn btn-primary" type="submit">Save</button>
+      <button class="btn btn-secondary" name="status" value="to_edit" type="submit">Mandar a edición</button>
+      <button class="btn btn-danger disabled" type="submit">Delete</button>
+    {% endif %}
+  </form>
+</main>
+{% endblock %}

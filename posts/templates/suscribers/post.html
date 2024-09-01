@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}{{post.title_tag}}{% endblock  %}
+{% block content %}
+	<main role="main" class="container py-4">
+		<h1>{{post.title}}</h1>
+		<blockquote class="blockquote">
+			<small>{{post.summary}}</small>
+		</blockquote>
+		<hr>
+		<p>{{post.body|safe}}</p>
+		<small>Posted by {{post.author.first_name}} {{post.author.last_name}} - {{post.date_posted}}</small></br>
+		<small>Category: {{post.category}}</small></br>
+		<small>Tags: {{post.category}}</small></br>
+		<hr>
+		<small>Reaction section TBD</small>
+		<hr>
+		<small>Comment section TBD</small>
+		<hr>
+		<a href="{% url 'posts' %}" class="btn btn-primary">Back to Posts</a>
+	</main>
+{% endblock %}

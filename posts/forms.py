@@ -2,6 +2,7 @@ from django import forms
 from .models import Category, Post, Post
 from django_ckeditor_5.widgets import CKEditor5Widget
 
+# forms for categories views
 class CategoryForm(forms.ModelForm):
     class Meta:
         model = Category
@@ -46,6 +47,7 @@ class CategoryEditForm(forms.ModelForm):
 
         return cleaned_data
     
+# forms for authors views
 class MyPostEditForm(forms.ModelForm):
     class Meta:
         model = Post
@@ -55,7 +57,7 @@ class MyPostEditForm(forms.ModelForm):
             'category': forms.Select(attrs={'class': 'form-control'}),
             'title_tag': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter title tag'}),
             'summary': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Enter summary'}),
-            'body': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Enter body'}),
+            'body': CKEditor5Widget(attrs={"class": "django_ckeditor_5"}, config_name="comment"),
             'status': forms.HiddenInput(),
         }
     
@@ -74,12 +76,12 @@ class ToEditPostForm(forms.ModelForm):
             'category': forms.Select(attrs={'class': 'form-control'}),
             'title_tag': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter title tag'}),
             'summary': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Enter summary'}),
-            'body': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Enter body'}),
+            'body': CKEditor5Widget(attrs={"class": "django_ckeditor_5"}, config_name="comment"),
             'author': forms.Select(attrs={'class': 'form-control'}),
             'status': forms.HiddenInput(),
         }
-    
-class PostForm(forms.ModelForm):
+
+class MyPostAddForm(forms.ModelForm):
     class Meta:
         model = Post
         fields = ['title', 'title_tag', 'summary', 'body', 'author', 'category']
@@ -87,18 +89,6 @@ class PostForm(forms.ModelForm):
             'title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter title'}),
             'category': forms.Select(attrs={'class': 'form-control'}),
             'author': forms.Select(attrs={'class': 'form-control'}),
-            'title_tag': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter title tag'}),
-            'summary': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Enter summary'}),
-            'body': CKEditor5Widget(attrs={"class": "django_ckeditor_5"}, config_name="comment"),
-        }
-
-class EditForm(forms.ModelForm):
-    class Meta:
-        model = Post
-        fields = ['title', 'title_tag', 'summary', 'body', 'category']
-        widgets = {
-            'title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter title'}),
-            'category': forms.Select(attrs={'class': 'form-control'}),
             'title_tag': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter title tag'}),
             'summary': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Enter summary'}),
             'body': CKEditor5Widget(attrs={"class": "django_ckeditor_5"}, config_name="comment"),

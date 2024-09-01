@@ -35,11 +35,8 @@
                 </button>
                 <div class="collapse navbar-collapse" id="navbarSupportedContent">
                     <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
-                                aria-expanded="false">
-                                Categorías
-                            </a>
+                        <li class="nav-item"><a class="nav-link" href="{% url 'posts' %}">Posts</a></li>
+                        <li class="nav-item dropdown"><a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">Categorías</a>
                             <ul class="dropdown-menu">
                                 <li><a class="dropdown-item" href="#">Mis categorías</a></li>
                                 <li><a class="dropdown-item" href="{% url 'categories' %}">Explorar categorías</a></li>
@@ -60,6 +57,7 @@
                         <li class="nav-item dropdown"><a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">Gestión de Contenido</a>
                             <ul class="dropdown-menu">
                                 <li><a class="dropdown-item" href="{% url 'my-posts' %}">Mis Articulos</a></li>
+                                <li><a class="dropdown-item" href="{% url 'add-my-post' %}">Crear un articulo</a></li>
                                 <li><hr class="dropdown-divider"></li>
                                 <li><a class="dropdown-item" href="{% url 'to-edit' %}">Articulos a editar</a></li>
                                 <li><a class="dropdown-item" href="{% url 'to-publish' %}">Articulos a publicar</a></li>

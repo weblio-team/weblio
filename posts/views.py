@@ -8,14 +8,10 @@ from .forms import CategoryForm, CategoryEditForm
 from .forms import MyPostEditForm, ToEditPostForm
 from .models import Post
 
-from .forms import EditForm, PostForm
+from .forms import MyPostAddForm
 from django.db.models import Q
 
-# Create your views here.
-class HomeView(ListView):
-    model = Category
-    template_name = 'categories/home.html'
-    
+# views for category administrators
 class CategoriesView(ListView):
     model = Category
     template_name = 'categories/categories.html'
@@ -98,7 +94,24 @@ class MyPostEditView(UpdateView):
         if status == 'draft':
             form.instance.status = 'to_edit'
         return super().form_valid(form)
-    
+
+class MyPostDeleteView(DeleteView):
+    model = Post
+    template_name = 'create/delete.html'
+    success_url = reverse_lazy('posts')
+
+    def get_object(self):
+        pk = self.kwargs.get("pk")
+        return get_object_or_404(
+            Post, 
+            pk=pk,
+        )
+
+class MyPostAddView(CreateView):
+    model = Post
+    form_class = MyPostAddForm
+    template_name = 'create/create.html'
+
 # views for editors
 class ToEditView(ListView):
     model = Post
@@ -159,9 +172,10 @@ class ToPublishPostView(UpdateView):
         post.save()
         return HttpResponseRedirect(self.success_url)
     
-class PostsView(ListView):
+# views for suscribers
+class SuscriberPostsView(ListView):
     model = Post
-    template_name = 'posts/posts.html'
+    template_name = 'suscribers/posts.html'
     ordering = ['-date_posted']
     
     def get_context_data(self, **kwargs):
@@ -171,7 +185,7 @@ class PostsView(ListView):
 
 class SearchPostView(ListView):
     model = Post
-    template_name = 'posts/posts.html'
+    template_name = 'suscribers/posts.html'
     context_object_name = 'post_search'
 
     def get_queryset(self):
@@ -192,59 +206,11 @@ class SearchPostView(ListView):
         context['categories'] = Category.objects.all()
         return context
 
-# clase para la vista de agregar un post
-class PostAddView(CreateView):
+class SuscriberPostDetailView(DetailView):
     model = Post
-    form_class = PostForm
-    template_name = 'post_add.html'
-
-# clase para la vista de un post en especifico
-class PostDetailView(DetailView):
-    model = Post
-    template_name = 'posts/post.html'
+    template_name = 'suscribers/post.html'
 
     def get_object(self):    
-        pk = self.kwargs.get("pk")
-        category = self.kwargs.get("category")
-        month = self.kwargs.get("month")
-        year = self.kwargs.get("year")
-        title = self.kwargs.get("title")
-        return get_object_or_404(
-            Post, 
-            pk=pk,
-            category__name__iexact=category.replace('-', ' '), 
-            date_posted__month=month, 
-            date_posted__year=year, 
-            title__iexact=title.replace('-', ' ')
-        )
-
-# clase para la vista de editar un post
-class PostEditView(UpdateView):
-    model = Post
-    form_class = EditForm
-    template_name = 'posts/post_edit.html'
-
-    def get_object(self):
-        pk = self.kwargs.get("pk")
-        category = self.kwargs.get("category")
-        month = self.kwargs.get("month")
-        year = self.kwargs.get("year")
-        title = self.kwargs.get("title")
-        return get_object_or_404(
-            Post, 
-            pk=pk,
-            category__name__iexact=category.replace('-', ' '), 
-            date_posted__month=month, 
-            date_posted__year=year, 
-            title__iexact=title.replace('-', ' ')
-        )
-# clase para la vista de eliminar un post
-class PostDeleteView(DeleteView):
-    model = Post
-    template_name = 'posts/post_delete.html'
-    success_url = reverse_lazy('posts')
-
-    def get_object(self):
         pk = self.kwargs.get("pk")
         category = self.kwargs.get("category")
         month = self.kwargs.get("month")
