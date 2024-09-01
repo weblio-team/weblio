@@ -6,6 +6,14 @@ from .models import Member
 from django.views import View
 from django.shortcuts import render, get_object_or_404, redirect
 
+class HomeView(TemplateView):
+    """
+    Vista de la página de inicio.
+
+    Atributos:
+        template_name (str): Ruta del template que se utiliza para renderizar la vista.
+    """
+    template_name = 'home.html'
 
 class MemberListView(TemplateView):
     """

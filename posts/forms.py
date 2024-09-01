@@ -1,5 +1,5 @@
 from django import forms
-from .models import Category, Post
+from .models import Category, Post, Post
 from django_ckeditor_5.widgets import CKEditor5Widget
 
 class CategoryForm(forms.ModelForm):
@@ -45,6 +45,39 @@ class CategoryEditForm(forms.ModelForm):
             self.add_error('price', 'Price is required for premium categories.')
 
         return cleaned_data
+    
+class MyPostEditForm(forms.ModelForm):
+    class Meta:
+        model = Post
+        fields = ['title', 'title_tag', 'summary', 'body', 'category', 'status']
+        widgets = {
+            'title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter title'}),
+            'category': forms.Select(attrs={'class': 'form-control'}),
+            'title_tag': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter title tag'}),
+            'summary': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Enter summary'}),
+            'body': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Enter body'}),
+            'status': forms.HiddenInput(),
+        }
+    
+    def __init__(self, *args, **kwargs):
+        super(MyPostEditForm, self).__init__(*args, **kwargs)
+        if self.instance and self.instance.status != 'draft':
+            for field in self.fields.values():
+                field.widget.attrs['disabled'] = 'disabled'
+        
+class ToEditPostForm(forms.ModelForm):
+    class Meta:
+        model = Post
+        fields = ['title', 'title_tag', 'summary', 'body', 'category', 'author', 'status']
+        widgets = {
+            'title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter title'}),
+            'category': forms.Select(attrs={'class': 'form-control'}),
+            'title_tag': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter title tag'}),
+            'summary': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Enter summary'}),
+            'body': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Enter body'}),
+            'author': forms.Select(attrs={'class': 'form-control'}),
+            'status': forms.HiddenInput(),
+        }
     
 class PostForm(forms.ModelForm):
     class Meta:

@@ -1,9 +1,13 @@
-from django.shortcuts import get_object_or_404, render
+from django.http import HttpResponseRedirect
+from django.shortcuts import get_object_or_404
 from django.urls import reverse_lazy
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from .models import Category, Post
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 from .forms import CategoryForm, CategoryEditForm
+from .forms import MyPostEditForm, ToEditPostForm
+from .models import Post
+
 from .forms import EditForm, PostForm
 from django.db.models import Q
 
@@ -59,6 +63,101 @@ class CategoryDeleteView(PermissionRequiredMixin, DeleteView):
         pk = self.kwargs.get("pk")
         name = self.kwargs.get("name")
         return get_object_or_404(Category, pk=pk, name__iexact=name.replace('-', ' '))
+
+# views for authors
+class MyPostsView(ListView):
+    model = Post
+    template_name = 'create/my_posts.html'
+    ordering = ['-date_posted']
+    
+    def get_queryset(self):
+        return Post.objects.filter(author=self.request.user).order_by('-date_posted')
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['posts'] = context['object_list']
+        return context
+
+class MyPostEditView(UpdateView):
+    model = Post
+    form_class = MyPostEditForm
+    template_name = 'create/edit.html'
+    success_url = reverse_lazy('my-posts')
+
+    def get_object(self, queryset=None):
+        if queryset is None:
+            queryset = self.get_queryset()
+        
+        post_id = self.kwargs.get('pk')
+        post = get_object_or_404(queryset, pk=post_id)
+        return post
+    
+    def form_valid(self, form):
+        status = self.request.POST.get('status')
+        print(status)
+        if status == 'draft':
+            form.instance.status = 'to_edit'
+        return super().form_valid(form)
+    
+# views for editors
+class ToEditView(ListView):
+    model = Post
+    template_name = 'edit/to_edit.html'
+    ordering = ['-date_posted']
+    
+    def get_queryset(self):
+        return Post.objects.filter(status='to_edit').order_by('-date_posted')
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['posts'] = context['object_list']
+        return context
+
+class ToEditPostView(UpdateView):
+    model = Post
+    form_class = ToEditPostForm
+    template_name = 'edit/edit.html'
+    success_url = reverse_lazy('to-edit')
+
+    def get_object(self, queryset=None):
+        if queryset is None:
+            queryset = self.get_queryset()
+        
+        post_id = self.kwargs.get('pk')
+        post = get_object_or_404(queryset, pk=post_id)
+        return post
+    
+    def form_valid(self, form):
+        form.instance.status = self.request.POST.get('status')
+        return super().form_valid(form)
+    
+# views for publishers  
+class ToPublishView(ListView):
+    model = Post
+    template_name = 'publish/to_publish.html'
+    ordering = ['-date_posted']
+    
+    def get_queryset(self):
+        return Post.objects.filter(status='to_publish').order_by('-date_posted')
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['posts'] = context['object_list']
+        return context
+
+class ToPublishPostView(UpdateView):
+    model = Post
+    template_name = 'publish/publish.html'
+    fields = '__all__'
+    success_url = reverse_lazy('to-publish')
+
+    def post(self, request, pk, *args, **kwargs):
+        post = get_object_or_404(Post, pk=pk)
+        status = request.POST.get('status')
+        post.status = status
+
+        post.save()
+        return HttpResponseRedirect(self.success_url)
     
 class PostsView(ListView):
     model = Post
