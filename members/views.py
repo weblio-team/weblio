@@ -14,6 +14,8 @@ from .forms import GroupListForm, CreateGroupForm
 from .models import Member
 from .forms import MemberRegisterForm, MemberJoinForm, MemberEditForm, MemberLoginForm
 from .forms import RoleListForm, RoleCreateForm
+from django.contrib import messages
+from django.http import HttpResponseRedirect 
 
 
 class HomeView(TemplateView):
@@ -439,12 +441,28 @@ class MemberLoginView(LoginView):
     """
     form_class = MemberLoginForm
     template_name = 'members/member_login.html'
+
+
+    def form_invalid(self, form):
+        """
+        Metodo que se llama tras el POST del form con datos invalidos.
+        """
+        username = form.cleaned_data.get('username')
+        password = form.cleaned_data.get('password')
+        self.user = authenticate(self.request, username=username, password=password)
+        if self.user is not None:
+            if not self.user.is_active:
+                messages.info(self.request, "Su cuenta está inactiva. Por favor, contacte al administrador para más detalles.")
+                return HttpResponseRedirect(reverse_lazy('login')) 
+        else:
+            messages.error(self.request, "Error en el nombre de usuario o contraseña. Por favor, intente de nuevo.")
+        return super().form_invalid(form)
     
     def get_success_url(self):
         """
         Devuelve la URL a la que redirigir después de iniciar sesión.
         """
-        return reverse_lazy('posts')  # Ensure 'posts' matches the URL pattern name
+        return reverse_lazy('posts')  
     
 
 
