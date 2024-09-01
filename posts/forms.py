@@ -51,7 +51,7 @@ class CategoryEditForm(forms.ModelForm):
 class MyPostEditForm(forms.ModelForm):
     class Meta:
         model = Post
-        fields = ['title', 'title_tag', 'summary', 'body', 'category', 'status']
+        fields = ['title', 'title_tag', 'summary', 'body', 'category', 'status', 'keywords']
         widgets = {
             'title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter title'}),
             'category': forms.Select(attrs={'class': 'form-control'}),
@@ -59,6 +59,7 @@ class MyPostEditForm(forms.ModelForm):
             'summary': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Enter summary'}),
             'body': CKEditor5Widget(attrs={"class": "django_ckeditor_5"}, config_name="comment"),
             'status': forms.HiddenInput(),
+            'keywords': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter your tags'}),
         }
     
     def __init__(self, *args, **kwargs):
@@ -77,19 +78,36 @@ class ToEditPostForm(forms.ModelForm):
             'title_tag': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter title tag'}),
             'summary': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Enter summary'}),
             'body': CKEditor5Widget(attrs={"class": "django_ckeditor_5"}, config_name="comment"),
-            'author': forms.Select(attrs={'class': 'form-control'}),
+            'author': forms.HiddenInput(),
             'status': forms.HiddenInput(),
         }
 
 class MyPostAddForm(forms.ModelForm):
     class Meta:
         model = Post
-        fields = ['title', 'title_tag', 'summary', 'body', 'author', 'category']
+        fields = ['title', 'title_tag', 'summary', 'body', 'author', 'category', 'keywords']
         widgets = {
             'title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter title'}),
             'category': forms.Select(attrs={'class': 'form-control'}),
-            'author': forms.Select(attrs={'class': 'form-control'}),
+            'author': forms.HiddenInput(),
             'title_tag': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter title tag'}),
             'summary': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Enter summary'}),
             'body': CKEditor5Widget(attrs={"class": "django_ckeditor_5"}, config_name="comment"),
+            'keywords': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter your tags'}),
         }
+
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
+        super(MyPostAddForm, self).__init__(*args, **kwargs)
+        print(user)
+        if user:
+            self.fields['author'].initial = user
+
+    def save(self, commit=True):
+        instance = super(MyPostAddForm, self).save(commit=False)
+        if self.initial.get('author'):
+            instance.author = self.initial['author']
+            print(instance.author)
+        if commit:
+            instance.save()
+        return instance

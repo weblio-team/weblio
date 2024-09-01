@@ -56,6 +56,6 @@ class Member(AbstractBaseUser, PermissionsMixin):
         Retorna la representación en cadena del usuario.
 
         Retorna:
-            - str: El email del usuario.
+            - str: El username del usuario.
         """
-        return self.email
+        return self.username

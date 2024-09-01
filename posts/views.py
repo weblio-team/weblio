@@ -111,6 +111,16 @@ class MyPostAddView(CreateView):
     model = Post
     form_class = MyPostAddForm
     template_name = 'create/create.html'
+    success_url = reverse_lazy('my-posts')
+
+    def get_form_kwargs(self):
+        kwargs = super(MyPostAddView, self).get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs
+
+    def form_valid(self, form):
+        form.instance.author = self.request.user
+        return super(MyPostAddView, self).form_valid(form)
 
 # views for editors
 class ToEditView(ListView):
@@ -178,6 +188,9 @@ class SuscriberPostsView(ListView):
     template_name = 'suscribers/posts.html'
     ordering = ['-date_posted']
     
+    def get_queryset(self):
+        return Post.objects.filter(status='published').order_by('-date_posted')
+    
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['categories'] = Category.objects.all()
@@ -195,7 +208,8 @@ class SearchPostView(ListView):
                 Q(title__iregex=query) | 
                 Q(author__first_name__iregex=query) | 
                 Q(author__last_name__iregex=query) | 
-                Q(category__name__iregex=query)
+                Q(category__name__iregex=query) |
+                Q(keywords__iregex=query)
             )
         else:
             posts = Post.objects.all()

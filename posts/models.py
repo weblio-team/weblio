@@ -42,6 +42,7 @@ class Post(models.Model):
     author = models.ForeignKey(Member, on_delete=models.CASCADE)
     status = models.CharField(max_length=20, choices=(('draft', 'Draft'), ('to_edit', 'To Edit'), ('to_publish', 'To Publish'),('published', 'Published'),), default='draft')
     category = models.ForeignKey(Category, on_delete=models.SET_DEFAULT, default=get_default_category)
+    keywords = models.CharField(max_length=100, blank=True, null=True)
     
     def __str__(self):
         return self.title + ' | ' + str(self.author)
