@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block content %}
+<main role="main" class="container py-4">
+  <h1>Add Post</h1>
+  <form method="post">
+    {% csrf_token %}
+    {{ form.media }}
+    {{ form.as_p }}
+    <button class="btn btn-primary" type="submit">Save</button>
+    <a href="{% url 'posts' %}" class="btn btn-secondary">Cancel</a>
+  </form>
+</main>
+{% endblock %}
