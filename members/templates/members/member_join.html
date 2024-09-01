@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="alert alert-dark alert-dismissible fade show" role="alert">
+    <strong>Alerta:</strong><br>La cuenta quedará inactiva hasta que un administrador evalúe sus datos personales. No podrá acceder a la página ni crear una cuenta con las mismas credenciales.<br>Agradecemos su paciencia.
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <h2 class="text-center">Unirse</h2>
+            {% load custom_filters %}
+            <form method="post">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button type="submit">Unirme</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
