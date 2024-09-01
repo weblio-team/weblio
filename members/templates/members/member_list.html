@@ -10,6 +10,7 @@
             <thead>
                 <tr>
                     <th scope="col">Seleccionar</th>
+                    <th scope="col">Usuario</th>
                     <th scope="col">Email</th>
                     <th scope="col">Grupo</th>
                     <th scope="col">Permisos</th>
@@ -21,6 +22,7 @@
                     <td>
                         <input type="radio" name="selected_member" value="{{ member.id }}">
                     </td>
+                    <td>{{ member.username }}</td>
                     <td>{{ member.email }}</td>
                     <td>
                         {% if member.groups.exists %}

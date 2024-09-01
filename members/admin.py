@@ -1,13 +1,13 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 
-from .forms import MemberCreationForm, MemberChangeForm
+from .forms import MemberRegisterForm, MemberEditForm
 from .models import Member
 
 
 class MemberAdmin(UserAdmin):
-    add_form = MemberCreationForm
-    form = MemberChangeForm
+    add_form = MemberRegisterForm
+    form = MemberEditForm
     model = Member
     list_display = ("email", "is_staff", "is_active",)
     list_filter = ("email", "is_staff", "is_active",)
