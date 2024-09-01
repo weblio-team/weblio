@@ -2,7 +2,6 @@ from django.urls import path
 from .views import GroupListView, CreateGroupView
 from .views import MemberListView, MemberEditView
 
-from .views import RoleListView, RoleCreateView
 from .views import MemberListView, MemberJoinView, MemberRegisterView, MemberLoginView, MemberEditView
 from django.contrib.auth import views as auth_views
 
@@ -15,6 +14,7 @@ urlpatterns = [
     path('join/', MemberJoinView.as_view(), name='member-join'),
     path('register/', MemberRegisterView.as_view(), name='member-register'),
     path('login/', MemberLoginView.as_view(), name='member-login'),
+    path('logout/', auth_views.LogoutView.as_view(), name='logout'),
     
     path('password-reset/', auth_views.PasswordResetView.as_view(), name='reset_password'),
     path('password-reset-sent/', auth_views.PasswordResetDoneView.as_view(), name='password_reset_done'),

@@ -15,10 +15,6 @@ from .models import Member
 from .forms import MemberRegisterForm, MemberJoinForm, MemberEditForm, MemberLoginForm
 from .forms import RoleListForm, RoleCreateForm
 
-from .forms import GroupListForm, CreateGroupForm
-from .models import Member
-from .forms import MemberRegisterForm, MemberJoinForm, MemberEditForm, MemberLoginForm
-from .forms import RoleListForm, RoleCreateForm
 
 class HomeView(TemplateView):
     """
@@ -461,4 +457,4 @@ class MemberJoinView(CreateView):
     form_class = MemberJoinForm
     template_name = 'members/member_join.html'
 
-    success_url = reverse_lazy('member-login')
+    success_url = reverse_lazy('home')

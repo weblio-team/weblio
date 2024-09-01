@@ -1,6 +1,5 @@
 {% extends "base.html" %}
 {% block content %}    
-
     <div class="container marketing">
         <!-- Hero Section -->
         <div class="container my-5">
@@ -9,8 +8,8 @@
                     <h1 class="display-4 fw-bold lh-1 mb-3">Weblio, Tu blog de confianza!</h1>
                     <p class="lead">Lorem ipsum dolor, sit amet consectetur adipisicing elit. Odio reiciendis dolore recusandae cumque tempora illo officiis temporibus? Ducimus adipisci qui ratione repellendus, rerum architecto? Iusto quam nam nisi quia voluptates.</p>
                     <div class="d-grid gap-2 d-md-flex justify-content-md-start">
-                        <button type="button" class="btn btn-primary btn-lg px-4 me-md-2">Iniciar Sesion</button>
-                        <button type="button" class="btn btn-outline-secondary btn-lg px-4">Registrarse</button>
+                        <a class="btn btn-primary btn-lg px-4 me-md-2" href="{% url 'member-login' %}">Iniciar Sesion</a>
+                        <a class="btn btn-outline-secondary btn-lg px-4" href="{% url 'member-register' %}">Registrarse</a>
                     </div>
                 </div>
                 <div class="col-lg-6">
@@ -85,8 +84,8 @@
                         Nobis pariatur nulla et officiis molestias mollitia, quisquam, quo architecto delectus iure eum. 
                         Esse molestias laudantium nihil? Quam tenetur quae doloribus quo.</p>
                     <div class="d-flex justify-content-center mb-4">
-                        <button type="button" class="btn btn-primary btn-lg px-4 me-2">Unirme</button>
-                        <button type="button" class="btn btn-outline-secondary btn-lg px-4">Ya soy parte</button>
+                        <a class="btn btn-primary btn-lg px-4 me-2" href="{% url 'member-join' %}">Unirme</a>
+                        <a class="btn btn-outline-secondary btn-lg px-4" href="{% url 'member-login' %}">Ya soy parte</a>
                     </div>
                     <div class="d-flex justify-content-center">
                         <img src="https://via.placeholder.com/700x400" class="img-fluid rounded" alt="Centered Screenshot" width="700" height="400" loading="lazy">
@@ -96,7 +95,7 @@
             <hr class="featurette-divider">
         </div>
 
-         <!-- Weblio team -->
+        <!-- Weblio team -->
         <div class="container marketing py-4">
             <h1 class="text-center">El equipo de Weblio</h1>
             <div class="row py-4">
