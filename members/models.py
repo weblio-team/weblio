@@ -5,14 +5,6 @@ from django.utils.translation import gettext_lazy as _
 from django.core.exceptions import ObjectDoesNotExist
 from .managers import MemberManager
 
-def get_default_group():
-    try:
-        return Group.objects.get(name='suscriptor')
-    except ObjectDoesNotExist:
-        # Handle the case where the default group does not exist
-        # You might want to create it or handle it differently
-        return None  # or raise an exception, or create the group
-
 class Member(AbstractBaseUser, PermissionsMixin):
     """
     Modelo de usuario personalizado donde el email es el identificador único
@@ -45,14 +37,6 @@ class Member(AbstractBaseUser, PermissionsMixin):
     is_active = models.BooleanField(_('active'), default=True)
     is_staff = models.BooleanField(_('staff status'), default=False)
     date_joined = models.DateTimeField(_('date joined'), auto_now_add=True)
-
-    group = models.ForeignKey(
-        Group,
-        verbose_name=_('group'),
-        on_delete=models.SET_DEFAULT,
-        default = get_default_group,  
-        related_name='members',
-    )
 
     USERNAME_FIELD = 'username'
     REQUIRED_FIELDS = ['email' ,'first_name', 'last_name']

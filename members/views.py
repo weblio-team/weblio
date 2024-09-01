@@ -430,12 +430,13 @@ class MemberLoginView(LoginView):
     """
     form_class = MemberLoginForm
     template_name = 'members/member_login.html'
-
+    
     def get_success_url(self):
         """
         Devuelve la URL a la que redirigir después de iniciar sesión.
         """
         return reverse_lazy('posts')  # Ensure 'posts' matches the URL pattern name
+    
 
 
 class MemberJoinView(CreateView):
@@ -446,4 +447,5 @@ class MemberJoinView(CreateView):
     model = Member
     form_class = MemberJoinForm
     template_name = 'members/member_join.html'
+
     success_url = reverse_lazy('member-login')
