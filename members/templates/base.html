@@ -59,7 +59,9 @@
                 </button>
                 <div class="collapse navbar-collapse" id="navbarSupportedContent">
                     <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                        {% if user|has_group:'suscriptor' %}
                         <li class="nav-item"><a class="nav-link" href="{% url 'posts' %}">Posts</a></li>
+                        {% endif %}
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                 Categorías
@@ -69,7 +71,7 @@
                                 <li><a class="dropdown-item" href="#">Mis categorías</a></li>
                                 {% endif %}
                                 <li><a class="dropdown-item" href="{% url 'categories' %}">Explorar categorías</a></li>
-                                {% if perms.catalog.add_category %}
+                                {% if perms.catalog.add_category or user|has_group:'administrador' %}
                                     <li><hr class="dropdown-divider" /></li>
                                     <li><a class="dropdown-item" href="{% url 'category_add' %}">Nueva Categoría</a></li>
                                 {% endif %}
@@ -83,15 +85,15 @@
                                 Gestión de Contenido
                             </a>
                             <ul class="dropdown-menu">
-                                {% if perms.catalog.add_post %}
+                                {% if perms.catalog.add_post or user|has_group:'autor' %}
                                 <li><a class="dropdown-item" href="{% url 'my-posts' %}">Mis Articulos</a></li>
                                 <li><a class="dropdown-item" href="{% url 'add-my-post' %}">Crear un articulo</a></li>
                                 {% endif %}
-                                {% if perms.catalog.change_post %}
+                                {% if perms.catalog.change_post or user|has_group:'editor' %}
                                 <li><hr class="dropdown-divider"></li>
                                 <li><a class="dropdown-item" href="{% url 'to-edit' %}">Articulos a editar</a></li>
                                 {% endif %}
-                                {% if perms.catalog.publish_post %}
+                                {% if perms.catalog.publish_post or user|has_group:'publicador'%}
                                 <li><hr class="dropdown-divider"></li>
                                 <li><a class="dropdown-item" href="{% url 'to-publish' %}">Articulos a publicar</a></li>
                                 {% endif %}
@@ -100,7 +102,7 @@
                         {% endif %}
 
                         <!-- Modulo de gestion de usuarios -->
-                        {% if perms.catalog.change_member %}
+                        {% if perms.catalog.change_member or user|has_group:'administrador' %}
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                 Gestión de usuarios

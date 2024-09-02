@@ -15,6 +15,7 @@ from .forms import MemberRegisterForm, MemberJoinForm, MemberLoginForm
 from .forms import RoleCreateForm
 from django.contrib import messages
 from django.http import HttpResponseRedirect 
+from django.contrib.auth import authenticate
 
 
 class HomeView(TemplateView):

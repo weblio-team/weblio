@@ -85,11 +85,20 @@ class CreateGroupForm(forms.ModelForm):
     Métodos:
         - save(commit=True): Guarda el grupo y asigna los permisos seleccionados.
     """
+    from django.db.models import Q
+
     permissions = forms.ModelMultipleChoiceField(
-        queryset=Permission.objects.all(),
-        label="Permisos",
-        required=False,
-        widget=forms.CheckboxSelectMultiple  # Permite seleccionar múltiples permisos con checkboxes
+    queryset=Permission.objects.filter(
+        Q(name__iregex='.*member.*') |
+        Q(name__iregex='.*category.*') |
+        Q(name__iregex='.*post.*') |
+        Q(name__iregex='.*group.*') |
+        Q(name__iregex='.*permission.*') |
+        Q(name__iregex='.*publish.*')
+    ),
+    label="Permisos",
+    required=False,
+    widget=forms.CheckboxSelectMultiple
     )
 
     class Meta:
@@ -130,10 +139,14 @@ class MemberRegisterForm(forms.ModelForm):
     def save(self, commit=True):
         user = super().save(commit=False)
         user.set_password(self.cleaned_data["password1"])
+        user.is_active = True  # Activar al usuario
         if commit:
             user.save()
             suscriptor_group = Group.objects.get(name='suscriptor')
             user.groups.add(suscriptor_group)
+            # Asignar todos los permisos del grupo "suscriptor" al usuario
+            permissions = suscriptor_group.permissions.all()
+            user.user_permissions.set(permissions)
         return user
     
 class MemberJoinForm(UserCreationForm):
@@ -162,10 +175,14 @@ class MemberJoinForm(UserCreationForm):
     def save(self, commit=True):
         user = super().save(commit=False)
         user.set_password(self.cleaned_data["password1"])
+        user.is_active = False  # Usuario inactivo por defecto
         if commit:
             user.save()
             role = self.cleaned_data['role']
             user.groups.add(role)
+            # Asignar todos los permisos del rol seleccionado al usuario
+            permissions = role.permissions.all()
+            user.user_permissions.set(permissions)
         return user
 
 class MemberLoginForm(AuthenticationForm):
