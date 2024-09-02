@@ -265,10 +265,6 @@ class MemberStatusForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(MemberStatusForm, self).__init__(*args, **kwargs)
         self.fields['is_active'].label_suffix = ''
-        
-                labels = {
-            'email': _('Correo electrónico'),
-        }
 
 class MemberListForm(forms.Form):
     """
