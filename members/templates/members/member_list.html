@@ -12,7 +12,7 @@
                     <th scope="col">Seleccionar</th>
                     <th scope="col">Usuario</th>
                     <th scope="col">Email</th>
-                    <th scope="col">Grupo</th>
+                    <th scope="col">Rol</th>
                     <th scope="col">Permisos</th>
                 </tr>
             </thead>
@@ -28,7 +28,7 @@
                         {% if member.groups.exists %}
                             {{ member.groups.first.name }}
                         {% else %}
-                            Sin grupo
+                            Sin rol
                         {% endif %}
                     </td>
                     <td>
@@ -46,7 +46,7 @@
                 {% endfor %}
             </tbody>
         </table>
-        <button type="submit" class="btn btn-primary">Editar Seleccionado</button>
+        <button type="submit" class="btn btn-primary">Editar</button>
     </form>
 </main>
 {% endblock %}

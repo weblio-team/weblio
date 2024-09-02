@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block content %}
     <main class="container py-4">
-        <h1>My Posts</h1>
+        <h1>Mis articulos</h1>
         <div class="row">
             <div class="col-md-9">
                 {% for post in posts %}
@@ -14,8 +14,8 @@
                             <div class="card-body">
                                 <h5 class="card-title"><a href="{% url 'edit-my-post' post.id %}">{{ post.title }}</a></h5>
                                 <p class="card-text">{{ post.summary|safe }}</p>
-                                <p class="card-text"><small class="text-muted">Author {{ post.author.first_name }} {{ post.author.last_name }}</small></p>
-                                <p class="card-text"><small class="text-muted">Category: {{ post.category }}</small></p>
+                                <p class="card-text"><small class="text-muted">Autor {{ post.author.first_name }} {{ post.author.last_name }}</small></p>
+                                <p class="card-text"><small class="text-muted">Categoria: {{ post.category }}</small></p>
                                 <div>
                                     {% if post.status == 'draft' %}
                                     <span class="badge rounded-pill text-bg-secondary">Borrador</span>
@@ -32,7 +32,7 @@
                     </div>
                 </div>
                 {% empty %}
-                    <p>No posts found.</p>
+                    <p>No se encontraron articulos.</p>
                 {% endfor %}
             </div>
         </div>

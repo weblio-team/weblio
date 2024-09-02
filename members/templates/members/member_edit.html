@@ -3,11 +3,11 @@
 
 {% block content %}
 <main class="container">
-    <h1>Editar Miembro: {{ member.email }}</h1>
+    <h1>Editar usuario: {{ member.email }}</h1>
     <form method="post">
         {% csrf_token %}
         <div class="mb-3">
-            <label for="groupSelect" class="form-label">Seleccionar Grupo</label>
+            <label for="groupSelect" class="form-label">Seleccionar grupo</label>
             <select class="form-select" id="groupSelect" name="group" onchange="this.form.submit()">
                 {% for group in groups %}
                     <option value="{{ group.id }}" {% if group == selected_group %}selected{% endif %}>{{ group.name }}</option>
@@ -16,7 +16,7 @@
         </div>
         
         {% if selected_group %}
-        <h2>Permisos del Grupo {{ selected_group.name }}</h2>
+        <h2>Permisos del grupo {{ selected_group.name }}</h2>
         <table class="table table-striped">
             <thead>
                 <tr>
@@ -38,7 +38,7 @@
         </table>
         {% endif %}
         
-        <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+        <button type="submit" class="btn btn-primary">Guardar</button>
         <a href="{% url 'member-list' %}" class="btn btn-secondary">Cancelar</a>
     </form>
 </main>

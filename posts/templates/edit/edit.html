@@ -1,12 +1,12 @@
 {% extends "base.html" %}
 {% block content %}
 <main role="main" class="container py-4">
-  <h1>Edit Post</h1>
+  <h1>Editar articulo</h1>
   <form method="post">
     {% csrf_token %}
     {{ form.media }}
     {{ form.as_p }}
-    <button class="btn btn-primary" type="submit">Save</button>
+    <button class="btn btn-primary" type="submit">Guardar</button>
     <button class="btn btn-secondary" type="submit" name="status" value="draft">Mandar a borrador</button>
     <button class="btn btn-primary" type="submit" name="status" value="to_publish">Mandar a publicar</button>
   </form>

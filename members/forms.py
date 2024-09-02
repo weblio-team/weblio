@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth.forms import AuthenticationForm
 from .models import Member
 from django import forms
+from django.utils.translation import gettext as _
 
 
 class MemberCreationForm(UserCreationForm):
@@ -21,6 +22,9 @@ class MemberCreationForm(UserCreationForm):
     class Meta:
         model = Member
         fields = ("email",)
+        labels = {
+            'email': _('Correo electrónico'),
+        }
 
 
 class MemberChangeForm(UserChangeForm):
@@ -38,6 +42,9 @@ class MemberChangeForm(UserChangeForm):
     class Meta:
         model = Member
         fields = ("email",)
+        labels = {
+            'email': _('Correo electrónico'),
+        }
 
 
 class UserListForm(forms.Form):
@@ -90,6 +97,10 @@ class CreateGroupForm(forms.ModelForm):
     class Meta:
         model = Group
         fields = ['name', 'permissions']
+        labels = {
+            'name': _('Nombre'),
+            'permissions': _('Permisos'),
+        }
 
     def save(self, commit=True):
         """
@@ -114,6 +125,12 @@ class MemberRegisterForm(forms.ModelForm):
     class Meta:
         model = Member
         fields = ('username', 'first_name', 'last_name', 'email')
+        labels = {
+            'username': _('Nombre de usuario'),
+            'first_name': _('Nombre'),
+            'last_name': _('Apellido'),
+            'email': _('Correo electrónico'),
+        }
 
     def clean_password2(self):
         password1 = self.cleaned_data.get('password1')
@@ -138,6 +155,12 @@ class MemberJoinForm(UserCreationForm):
     class Meta:
         model = Member
         fields = ('username', 'first_name', 'last_name', 'email')
+        labels = {
+            'username': _('Nombre de usuario'),
+            'first_name': _('Nombre'),
+            'last_name': _('Apellido'),
+            'email': _('Correo electrónico'),
+        }
 
     def __init__(self, *args, **kwargs):
         super(MemberJoinForm, self).__init__(*args, **kwargs)
@@ -170,6 +193,10 @@ class MemberLoginForm(AuthenticationForm):
     class Meta:
         model = Member
         fields = ['username', 'password']
+        labels = {
+            'username': _('Nombre de usuario'),
+            'password': _('Contraseña'),
+        }
 
 class MemberEditForm(UserChangeForm):
     """
@@ -186,6 +213,9 @@ class MemberEditForm(UserChangeForm):
     class Meta:
         model = Member
         fields = ("email",)
+        labels = {
+            'email': _('Correo electrónico'),
+        }
 
 class MemberListForm(forms.Form):
     """
@@ -235,6 +265,10 @@ class RoleCreateForm(forms.ModelForm):
     class Meta:
         model = Group
         fields = ['name', 'permissions']
+        labels = {
+            'name': _('Nombre'),
+            'permissions': _('Permisos'),
+        }
 
     def save(self, commit=True):
         """
