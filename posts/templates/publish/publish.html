@@ -8,12 +8,12 @@
 		</blockquote>
 		<hr>
 		<p>{{post.body|safe}}</p>
-		<small>Posted by {{post.author.first_name}} {{post.author.last_name}}</small></br>
-		<small>Category: {{post.category}}</small></br>
-		<small>Tags: {{post.category}}</small></br>
+		<small>Autor: {{post.author.first_name}} {{post.author.last_name}}</small></br>
+		<small>Categoria: {{post.category}}</small></br>
+		<small>Etiquetas: {{post.keywords}}</small></br>
 		
 		<div class="button-group py-4">
-			<a href="{% url 'to-publish' %}" class="btn btn-primary">Back</a>
+			<a href="{% url 'to-publish' %}" class="btn btn-primary">Volver</a>
 			<form method="post" action="{% url 'publish-a-post' post.pk %}" class="d-inline">
 				{% csrf_token %}
 				<button type="submit" name="status" value="to_edit" class="btn btn-warning">Mandar a edición</button>

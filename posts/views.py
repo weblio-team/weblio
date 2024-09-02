@@ -89,10 +89,11 @@ class MyPostEditView(UpdateView):
         return post
     
     def form_valid(self, form):
-        status = self.request.POST.get('status')
-        print(status)
-        if status == 'draft':
+        # Obtener el valor del botón que fue presionado
+        if 'status' in self.request.POST and self.request.POST['status'] == 'to_edit':
             form.instance.status = 'to_edit'
+        else:
+            form.instance.status = 'draft'
         return super().form_valid(form)
 
 class MyPostDeleteView(DeleteView):

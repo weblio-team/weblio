@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth.forms import AuthenticationForm
 from .models import Member
 from django import forms
+from django.utils.translation import gettext as _
 
 
 class MemberCreationForm(UserCreationForm):
@@ -21,6 +22,14 @@ class MemberCreationForm(UserCreationForm):
     class Meta:
         model = Member
         fields = ("email",)
+        labels = {
+            'email': _('Correo electrónico'),
+        }
+        
+class MemberEditForm(UserChangeForm):
+    class Meta:
+        model = Member
+        fields = ['email', 'password', 'is_staff', 'is_active', 'groups', 'user_permissions']
 
 
 class MemberChangeForm(UserChangeForm):
@@ -38,6 +47,9 @@ class MemberChangeForm(UserChangeForm):
     class Meta:
         model = Member
         fields = ("email",)
+        labels = {
+            'email': _('Correo electrónico'),
+        }
 
 
 class UserListForm(forms.Form):
@@ -80,16 +92,29 @@ class CreateGroupForm(forms.ModelForm):
     Métodos:
         - save(commit=True): Guarda el grupo y asigna los permisos seleccionados.
     """
+    from django.db.models import Q
+
     permissions = forms.ModelMultipleChoiceField(
-        queryset=Permission.objects.all(),
-        label="Permisos",
-        required=False,
-        widget=forms.CheckboxSelectMultiple  # Permite seleccionar múltiples permisos con checkboxes
+    queryset=Permission.objects.filter(
+        Q(name__iregex='.*member.*') |
+        Q(name__iregex='.*category.*') |
+        Q(name__iregex='.*post.*') |
+        Q(name__iregex='.*group.*') |
+        Q(name__iregex='.*permission.*') |
+        Q(name__iregex='.*publish.*')
+    ),
+    label="Permisos",
+    required=False,
+    widget=forms.CheckboxSelectMultiple
     )
 
     class Meta:
         model = Group
         fields = ['name', 'permissions']
+        labels = {
+            'name': _('Nombre'),
+            'permissions': _('Permisos'),
+        }
 
     def save(self, commit=True):
         """
@@ -114,6 +139,12 @@ class MemberRegisterForm(forms.ModelForm):
     class Meta:
         model = Member
         fields = ('username', 'first_name', 'last_name', 'email')
+        labels = {
+            'username': _('Nombre de usuario'),
+            'first_name': _('Nombre'),
+            'last_name': _('Apellido'),
+            'email': _('Correo electrónico'),
+        }
 
     def clean_password2(self):
         password1 = self.cleaned_data.get('password1')
@@ -125,10 +156,14 @@ class MemberRegisterForm(forms.ModelForm):
     def save(self, commit=True):
         user = super().save(commit=False)
         user.set_password(self.cleaned_data["password1"])
+        user.is_active = True  # Activar al usuario
         if commit:
             user.save()
             suscriptor_group = Group.objects.get(name='suscriptor')
             user.groups.add(suscriptor_group)
+            # Asignar todos los permisos del grupo "suscriptor" al usuario
+            permissions = suscriptor_group.permissions.all()
+            user.user_permissions.set(permissions)
         return user
     
 class MemberJoinForm(UserCreationForm):
@@ -138,6 +173,12 @@ class MemberJoinForm(UserCreationForm):
     class Meta:
         model = Member
         fields = ('username', 'first_name', 'last_name', 'email')
+        labels = {
+            'username': _('Nombre de usuario'),
+            'first_name': _('Nombre'),
+            'last_name': _('Apellido'),
+            'email': _('Correo electrónico'),
+        }
 
     def __init__(self, *args, **kwargs):
         super(MemberJoinForm, self).__init__(*args, **kwargs)
@@ -157,10 +198,14 @@ class MemberJoinForm(UserCreationForm):
     def save(self, commit=True):
         user = super().save(commit=False)
         user.set_password(self.cleaned_data["password1"])
+        user.is_active = False  # Usuario inactivo por defecto
         if commit:
             user.save()
             role = self.cleaned_data['role']
             user.groups.add(role)
+            # Asignar todos los permisos del rol seleccionado al usuario
+            permissions = role.permissions.all()
+            user.user_permissions.set(permissions)
         return user
 
 class MemberLoginForm(AuthenticationForm):
@@ -170,22 +215,56 @@ class MemberLoginForm(AuthenticationForm):
     class Meta:
         model = Member
         fields = ['username', 'password']
-
-class MemberEditForm(UserChangeForm):
-    """
-    Formulario para la actualización de un miembro existente.
-
-    Hereda de:
-        - UserChangeForm: Formulario estándar de Django para la edición de usuarios.
-
-    Meta:
-        - model: El modelo `Member` al que está vinculado el formulario.
-        - fields: Campos que se utilizarán en el formulario.
-    """
+        labels = {
+            'username': _('Nombre de usuario'),
+            'password': _('Contraseña'),
+        }
+        
+class MemberEditGroupForm(forms.ModelForm):
+    groups = forms.ModelMultipleChoiceField(
+        queryset=Group.objects.all(),
+        widget=forms.CheckboxSelectMultiple,
+        required=False,
+        label = "Roles"
+    )
 
     class Meta:
         model = Member
-        fields = ("email",)
+        fields = ['groups']
+    
+class MemberEditPermissionForm(forms.ModelForm):
+    permissions = forms.ModelMultipleChoiceField(
+        queryset=Permission.objects.none(),  # Inicialmente vacío
+        widget=forms.CheckboxSelectMultiple,
+        required=False,
+        label="Permisos"
+    )
+    is_active = forms.BooleanField(required=False, label="Activo")
+
+    class Meta:
+        model = Member
+        fields = ['permissions', 'is_active']
+
+    def __init__(self, *args, **kwargs):
+        member = kwargs.get('instance')
+        super(MemberEditPermissionForm, self).__init__(*args, **kwargs)
+        if member:
+            self.fields['permissions'].queryset = Permission.objects.filter(group__user=member).distinct()
+
+
+class MemberStatusForm(forms.ModelForm):
+    class Meta:
+        model = Member
+        fields = ['is_active']
+        widgets = {
+            'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        }
+        labels = {
+            'is_active': 'Activo',
+        }
+    def __init__(self, *args, **kwargs):
+        super(MemberStatusForm, self).__init__(*args, **kwargs)
+        self.fields['is_active'].label_suffix = ''
 
 class MemberListForm(forms.Form):
     """
@@ -235,6 +314,10 @@ class RoleCreateForm(forms.ModelForm):
     class Meta:
         model = Group
         fields = ['name', 'permissions']
+        labels = {
+            'name': _('Nombre'),
+            'permissions': _('Permisos'),
+        }
 
     def save(self, commit=True):
         """

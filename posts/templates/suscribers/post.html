@@ -8,14 +8,14 @@
 		</blockquote>
 		<hr>
 		<p>{{post.body|safe}}</p>
-		<small>Posted by {{post.author.first_name}} {{post.author.last_name}} - {{post.date_posted}}</small></br>
-		<small>Category: {{post.category}}</small></br>
-		<small>Tags: {{post.category}}</small></br>
+		<small>Autor: {{post.author.first_name}} {{post.author.last_name}} - {{post.date_posted}}</small></br>
+		<small>Categoria: {{post.category}}</small></br>
+		<small>Etiquetas: {{post.keywords}}</small></br>
 		<hr>
-		<small>Reaction section TBD</small>
+		<small>Seccion de reacciones TBD</small>
 		<hr>
-		<small>Comment section TBD</small>
+		<small>Seccion de comentarios TBD</small>
 		<hr>
-		<a href="{% url 'posts' %}" class="btn btn-primary">Back to Posts</a>
+		<a href="{% url 'posts' %}" class="btn btn-primary">Volver</a>
 	</main>
 {% endblock %}

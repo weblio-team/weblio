@@ -9,12 +9,12 @@
             <h2>Tipo: {{ category.kind}}</h2>
             <h2>Price: {{category.price}}</h2>
             <p>{{category.description}}</p>
-            <a href="{% url 'categories' %}" class="btn btn-primary">Back to Categories</a>
+            <a href="{% url 'categories' %}" class="btn btn-primary">Volver</a>
             {% if perms.catalog.change_category %}
-                <a href="{% url 'category_edit' pk=category.pk name=category.name|slugify %}" class="btn btn-warning">Edit</a>
+                <a href="{% url 'category_edit' pk=category.pk name=category.name|slugify %}" class="btn btn-warning">Editar</a>
             {% endif %}
             {% if perms.catalog.delete_category %}
-                <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">Delete</button>
+                <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">Eliminar</button>
             {% endif %}
             <!-- {% if user.is_authenticated %} -->
             <!-- {% endif %} -->
@@ -31,15 +31,15 @@
                         </div>
                     {% else %}
                         <div class="modal-header text-black">
-                            <h5 class="modal-title" id="deleteModalLabel">Confirm Delete</h5>
+                            <h5 class="modal-title" id="deleteModalLabel">Eliminar</h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body text-black">
-                            Are you sure you want to delete this category?
+                            Estas seguro de que quieres borrar esta categoria?
                         </div>
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                            <a href="{% url 'category_delete' pk=category.pk name=category.name|slugify %}" class="btn btn-danger">Confirm</a>
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                            <a href="{% url 'category_delete' pk=category.pk name=category.name|slugify %}" class="btn btn-danger">Confirmar</a>
                         </div>
                     {% endif %}
                 </div>

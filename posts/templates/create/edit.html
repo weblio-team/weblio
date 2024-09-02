@@ -1,16 +1,33 @@
 {% extends "base.html" %}
 {% block content %}
 <main role="main" class="container py-4">
-  <h1>Edit My Post</h1>
   <form method="post">
     {% csrf_token %}
-    {{ form.media }}
-    {{ form.as_p }}
     {% if post.status == 'draft' %}
-      <button class="btn btn-primary" type="submit">Save</button>
+      <h1>Editar artículo</h1>
+      {{ form.media }}
+      {{ form.as_p }}
+      <button class="btn btn-primary" type="submit">Guardar</button>
       <button class="btn btn-secondary" name="status" value="to_edit" type="submit">Mandar a edición</button>
-      <button class="btn btn-danger disabled" type="submit">Delete</button>
+      <button class="btn btn-danger disabled" type="submit">Eliminar</button>
+    {% else %}
+      <h1>{{post.title}}</h1>
+        <blockquote class="blockquote">
+          <small>{{post.summary}}</small>
+        </blockquote>
+        <hr>
+        <p>{{post.body|safe}}</p>
+        <small>Autor: {{post.author.first_name}} {{post.author.last_name}}</small></br>
+        <small>Categoria: {{post.category}}</small></br>
+        <small>Etiquetas: {{post.keywords}}</small></br>
+        {% if post.status == 'to_publish' %}
+          <small>Estado: A publicar</small></br>
+        {% elif post.status == 'to_edit' %}
+          <small>Estado: En edición</small></br>
+        {% endif %}
     {% endif %}
+    </br>
+    <a href="{% url 'my-posts' %}" class="btn btn-secondary">Volver a mis artículos</a>
   </form>
 </main>
 {% endblock %}

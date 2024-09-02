@@ -1,11 +1,11 @@
 {% extends "base.html" %}
 {% block content %}
   <main role="main" class="container py-4">
-      <h1>Confirm Delete</h1>
-      <p>Are you sure you want to delete this category?</p>
+      <h1>Confirma la eliminacion</h1>
+      <p>Estas seguro de que quieres borrar esta categoria?</p>
       <form method="post">
         {% csrf_token %}
-        <button type="submit" class="btn btn-danger">Confirm</button>
+        <button type="submit" class="btn btn-danger">Confirmar</button>
         <a href="{% url 'category' pk=category.pk name=category.name|slugify %}" class="btn btn-secondary">Cancel</a>
       </form>
     </main>

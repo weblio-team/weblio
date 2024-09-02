@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block content %}
+<main class="container py-4">
+    <h2>Editar roles de {{ member.username }}</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-light">Guardar</button>
+    </form>
+</main>
+{% endblock %}
+
+<style>
+    body {
+        background-color: #121212;
+        color: #ffffff;
+    }
+</style>
