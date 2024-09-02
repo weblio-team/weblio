@@ -7,7 +7,7 @@
     <form method="post">
         {% csrf_token %}
         <div class="mb-3">
-            <label for="groupSelect" class="form-label">Seleccionar grupo</label>
+            <label for="groupSelect" class="form-label">Seleccionar Rol</label>
             <select class="form-select" id="groupSelect" name="group" onchange="this.form.submit()">
                 {% for group in groups %}
                     <option value="{{ group.id }}" {% if group == selected_group %}selected{% endif %}>{{ group.name }}</option>
@@ -16,7 +16,7 @@
         </div>
         
         {% if selected_group %}
-        <h2>Permisos del grupo {{ selected_group.name }}</h2>
+        <h2>Permisos del Rol {{ selected_group.name }}</h2>
         <table class="table table-striped">
             <thead>
                 <tr>

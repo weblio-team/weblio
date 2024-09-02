@@ -44,6 +44,11 @@ class Post(models.Model):
     category = models.ForeignKey(Category, on_delete=models.SET_DEFAULT, default=get_default_category)
     keywords = models.CharField(max_length=100, blank=True, null=True)
     
+    class Meta:
+        permissions = [
+            ('can_publish', 'Can publish post'),
+        ]
+
     def __str__(self):
         return self.title + ' | ' + str(self.author)
     
