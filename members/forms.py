@@ -107,40 +107,24 @@ class CreateGroupForm(forms.ModelForm):
             group.permissions.set(self.cleaned_data['permissions'])
         return group
 
-class MemberRegisterForm(UserCreationForm):
-    """
-    Formulario para la creación de un nuevo miembro.
-
-    Hereda de:
-        - UserCreationForm: Formulario estándar de Django para la creación de usuarios.
-
-    Meta:
-        - model: El modelo `Member` al que está vinculado el formulario.
-        - fields: Campos que se utilizarán en el formulario.
-    """
+class MemberRegisterForm(forms.ModelForm):
+    password1 = forms.CharField(label='Password', widget=forms.PasswordInput)
+    password2 = forms.CharField(label='Confirm Password', widget=forms.PasswordInput)
 
     class Meta:
         model = Member
-        fields = ['username', 'first_name', 'last_name', 'email', 'password1', 'password2']
-        widgets = {
-            'username': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nombre de usuario'}),
-            'first_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nombre'}),
-            'last_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Apellido'}),
-            'email': forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'Correo electrónico'}),
-            'password1': forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Contraseña'}),
-            'password2': forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Confirmar Contraseña'}),
-        }
+        fields = ('username', 'first_name', 'last_name', 'email')
+
+    def clean_password2(self):
+        password1 = self.cleaned_data.get('password1')
+        password2 = self.cleaned_data.get('password2')
+        if password1 and password2 and password1 != password2:
+            raise forms.ValidationError("Las contraseñas no coinciden")
+        return password2
 
     def save(self, commit=True):
-        """
-        Sobrescribe el método save para crear el usuario con la cuenta activada y 
-        asignar el grupo "suscriptor" por defecto.
-        
-        :param commit: booleano que indica si el objeto debe ser guardado en la base de datos.
-        :return: instancia del usuario creado.
-        """
         user = super().save(commit=False)
-        user.is_active = True  # Activar la cuenta
+        user.set_password(self.cleaned_data["password1"])
         if commit:
             user.save()
             suscriptor_group = Group.objects.get(name='suscriptor')
@@ -148,43 +132,35 @@ class MemberRegisterForm(UserCreationForm):
         return user
     
 class MemberJoinForm(UserCreationForm):
-    """
-    Formulario para unirse al sistema, permitiendo al usuario seleccionar un rol 
-    (grupo de Django). La cuenta se crea desactivada por defecto.
-    """
-
-    rol = forms.ModelChoiceField(
-        queryset=Group.objects.exclude(name='suscriptor'), 
-        label="Seleccione su rol"
-    )
+    password1 = forms.CharField(label='Password', widget=forms.PasswordInput)
+    password2 = forms.CharField(label='Confirm Password', widget=forms.PasswordInput)
 
     class Meta:
         model = Member
-        fields = ['username', 'first_name', 'last_name', 'email', 'password1', 'password2', 'rol']
-        widgets = {
-            'username': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nombre de usuario'}),
-            'first_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nombre'}),
-            'last_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Apellido'}),
-            'email': forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'Correo electrónico'}),
-            'password1': forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Contraseña'}),
-            'password2': forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Confirmar Contraseña'}),
-        }
-        
+        fields = ('username', 'first_name', 'last_name', 'email')
+
+    def __init__(self, *args, **kwargs):
+        super(MemberJoinForm, self).__init__(*args, **kwargs)
+        self.fields['role'] = forms.ModelChoiceField(
+            queryset=Group.objects.exclude(name='suscriptor'),
+            label='Rol',
+            required=True
+        )
+
+    def clean_password2(self):
+        password1 = self.cleaned_data.get('password1')
+        password2 = self.cleaned_data.get('password2')
+        if password1 and password2 and password1 != password2:
+            raise forms.ValidationError("Las contraseñas no coinciden")
+        return password2
+
     def save(self, commit=True):
-        """
-        Sobrescribe el método save para crear el usuario con la cuenta desactivada y 
-        asignar el grupo seleccionado como rol.
-        
-        :param commit: booleano que indica si el objeto debe ser guardado en la base de datos.
-        :return: instancia del usuario creado.
-        """
-        
         user = super().save(commit=False)
-        user.is_active = False  # Desactivar la cuenta inicialmente
+        user.set_password(self.cleaned_data["password1"])
         if commit:
             user.save()
-            group = self.cleaned_data['rol']
-            user.groups.add(group)
+            role = self.cleaned_data['role']
+            user.groups.add(role)
         return user
 
 class MemberLoginForm(AuthenticationForm):

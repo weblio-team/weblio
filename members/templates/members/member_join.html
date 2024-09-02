@@ -1,21 +1,72 @@
 {% extends "base.html" %}
-
+{% block title %}Join!{% endblock %}
 {% block content %}
-<div class="alert alert-dark alert-dismissible fade show" role="alert">
-    <strong>Alerta:</strong><br>La cuenta quedará inactiva hasta que un administrador evalúe sus datos personales. No podrá acceder a la página ni crear una cuenta con las mismas credenciales.<br>Agradecemos su paciencia.
-    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-</div>
-<div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-6">
-            <h2 class="text-center">Unirse</h2>
-            {% load custom_filters %}
-            <form method="post">
+<main class="container-fluid p-0 m-0 vh-100">
+    <div class="row h-100 m-0">
+        <div class="col-md-6 p-0">
+            <img src="https://via.placeholder.com/300" alt="Placeholder Image" class="img-fluid w-100 h-100 object-fit-cover">
+        </div>
+        <div class="col-md-6 d-flex flex-column align-items-center justify-content-center p-4 position-relative">
+            <form method="POST" action="{% url 'member-join' %}" class="w-75 mt-5">
                 {% csrf_token %}
-                {{ form.as_p }}
-                <button type="submit">Unirme</button>
+                <h2 class="text-start mb-4">Unirse</h2>
+                <div class="w-100">
+                    {% if form.errors %}
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            {% for field in form %}
+                                {% for error in field.errors %}
+                                    <p>{{ error }}</p>
+                                {% endfor %}
+                            {% endfor %}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endif %}
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="id_first_name" class="form-label">Nombre</label>
+                            <input type="text" name="first_name" id="id_first_name" class="form-control">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="id_last_name" class="form-label">Apellido</label>
+                            <input type="text" name="last_name" id="id_last_name" class="form-control">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
+                            <label for="id_username" class="form-label">Usuario</label>
+                            <input type="text" name="username" id="id_username" class="form-control">
+                        </div>
+                        <div class="col-md-12 mb-3">
+                            <label for="id_email" class="form-label">Correo</label>
+                            <input type="email" name="email" id="id_email" class="form-control">
+                        </div>
+                        <div class="col-md-12 mb-3">
+                            <label for="id_role" class="form-label">Rol</label>
+                            <select name="role" id="id_role" class="form-select">
+                                {% for role in roles %}
+                                    <option value="{{ role.id }}">{{ role.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="id_password1" class="form-label">Contraseña</label>
+                            <input type="password" name="password1" id="id_password1" class="form-control">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="id_password2" class="form-label">Confirmar Contraseña</label>
+                            <input type="password" name="password2" id="id_password2" class="form-control">
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Registrarse</button>
+                    <div class="d-flex justify-content-between mt-3">
+                        <p class="mb-0">¿Ya tienes una cuenta? <a href="{% url 'member-login' %}">Inicia sesión</a></p>
+                        <p class="mb-0"><a href="#">¡Trabaja con nosotros!</a></p>
+                    </div>
+                </div>
             </form>
         </div>
     </div>
-</div>
+</main>
 {% endblock %}
