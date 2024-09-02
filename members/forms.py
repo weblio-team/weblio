@@ -21,6 +21,11 @@ class MemberCreationForm(UserCreationForm):
     class Meta:
         model = Member
         fields = ("email",)
+        
+class MemberEditForm(UserChangeForm):
+    class Meta:
+        model = Member
+        fields = ['email', 'password', 'is_staff', 'is_active', 'groups', 'user_permissions']
 
 
 class MemberChangeForm(UserChangeForm):
@@ -194,23 +199,54 @@ class MemberLoginForm(AuthenticationForm):
     class Meta:
         model = Member
         fields = ['username', 'password']
-
-class MemberEditForm(UserChangeForm):
-    """
-    Formulario para la actualización de un miembro existente.
-
-    Hereda de:
-        - UserChangeForm: Formulario estándar de Django para la edición de usuarios.
-
-    Meta:
-        - model: El modelo `Member` al que está vinculado el formulario.
-        - fields: Campos que se utilizarán en el formulario.
-    """
+        
+class MemberEditGroupForm(forms.ModelForm):
+    groups = forms.ModelMultipleChoiceField(
+        queryset=Group.objects.all(),
+        widget=forms.CheckboxSelectMultiple,
+        required=False,
+        label = "Roles"
+    )
 
     class Meta:
         model = Member
-        fields = ("email",)
+        fields = ['groups']
+    
+class MemberEditPermissionForm(forms.ModelForm):
+    permissions = forms.ModelMultipleChoiceField(
+        queryset=Permission.objects.none(),  # Inicialmente vacío
+        widget=forms.CheckboxSelectMultiple,
+        required=False,
+        label="Permisos"
+    )
+    is_active = forms.BooleanField(required=False, label="Activo")
 
+    class Meta:
+        model = Member
+        fields = ['permissions', 'is_active']
+
+    def __init__(self, *args, **kwargs):
+        member = kwargs.get('instance')
+        super(MemberEditPermissionForm, self).__init__(*args, **kwargs)
+        if member:
+            self.fields['permissions'].queryset = Permission.objects.filter(group__user=member).distinct()
+
+
+class MemberStatusForm(forms.ModelForm):
+    class Meta:
+        model = Member
+        fields = ['is_active']
+        widgets = {
+            'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        }
+        labels = {
+            'is_active': 'Activo',
+        }
+    def __init__(self, *args, **kwargs):
+        super(MemberStatusForm, self).__init__(*args, **kwargs)
+        self.fields['is_active'].label_suffix = ''
+        
+        
 class MemberListForm(forms.Form):
     """
     Formulario que lista todos los miembros del sistema.

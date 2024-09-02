@@ -1,0 +1,24 @@
+<!-- templates/members/member_status.html -->
+{% extends "base.html" %}
+
+{% block content %}
+<main class="container py-4">
+    <h2 class="mb-3">Cambiar estado de {{ member.username }}</h2>
+    <form method="post">
+        {% csrf_token %}
+        <div class="form-check">
+            {{ form.is_active }}
+            {{ form.is_active.label_tag }}
+        </div>
+        <button type="submit" class="btn btn-light mt-3">Guardar</button>
+        <a href="{% url 'member-list' %}" class="btn btn-light mt-3">Cancelar</a>
+    </form>
+</main>
+{% endblock %}
+
+<style>
+    body {
+        background-color: #121212;
+        color: #ffffff;
+    }
+</style>

@@ -1,19 +1,18 @@
+from pyexpat.errors import messages
 from django.views.generic import FormView, TemplateView,  CreateView
 from django.urls import reverse_lazy
 
 from django.contrib.auth.models import Group
-from django.contrib.auth import authenticate, login
 from django.contrib.auth.views import LoginView
-from django.contrib.auth.forms import AuthenticationForm
 from .models import Member
-from django.views import View
+from django import views
 from django.views.generic import CreateView
 from django.shortcuts import render, get_object_or_404, redirect
 
-from .forms import GroupListForm, CreateGroupForm
+from .forms import CreateGroupForm, MemberEditGroupForm, MemberEditPermissionForm, MemberStatusForm
 from .models import Member
-from .forms import MemberRegisterForm, MemberJoinForm, MemberEditForm, MemberLoginForm
-from .forms import RoleListForm, RoleCreateForm
+from .forms import MemberRegisterForm, MemberJoinForm, MemberLoginForm
+from .forms import RoleCreateForm
 
 
 class MemberListView(TemplateView):
@@ -52,8 +51,16 @@ class MemberListView(TemplateView):
             HttpResponse: Redirige a la vista de edición del miembro seleccionado.
         """
         selected_member_id = request.POST.get('selected_member')
+        action = request.POST.get('action')
+        
         if selected_member_id:
-            return redirect('member-edit', pk=selected_member_id)
+            if action == 'edit_group':
+                return redirect('member-edit-group', pk=selected_member_id)
+            elif action == 'edit_permission':
+                return redirect('member-edit-permission', pk=selected_member_id)
+            elif action == 'toggle_status':
+                return redirect('member-status', pk=selected_member_id)
+
         return self.get(request, *args, **kwargs)
 
 
@@ -150,7 +157,7 @@ class CreateGroupView(FormView):
         return super().form_valid(form)
 
 
-class MemberEditView(View):
+class MemberEditView(views.View):
     """
     Vista para editar el grupo y permisos de un miembro.
 
@@ -307,112 +314,80 @@ class RoleCreateView(FormView):
         return super().form_valid(form)
 
 
-class MemberListView(TemplateView):
-    """
-    Vista para listar todos los miembros con su grupo y permisos.
-
-    Atributos:
-        template_name (str): Ruta del template que se utiliza para renderizar la vista.
-
-    Métodos:
-        get_context_data(**kwargs): Agrega los miembros con sus grupos y permisos al contexto de la plantilla.
-        post(request, *args, **kwargs): Maneja la selección de un miembro y redirige a la página de edición.
-    """
-    template_name = 'members/member_list.html'
-
-    def get_context_data(self, **kwargs):
-        """
-        Agrega los miembros con sus grupos y permisos al contexto de la plantilla.
-
-        Returns:
-            dict: Contexto con los miembros, grupos y permisos.
-        """
-        context = super().get_context_data(**kwargs)
-        members = Member.objects.all().prefetch_related('groups', 'user_permissions')
-        context['members'] = members
-        return context
-
-    def post(self, request, *args, **kwargs):
-        """
-        Maneja la selección de un miembro y redirige a la página de edición.
-
-        Args:
-            request (HttpRequest): El objeto de la solicitud HTTP.
-
-        Returns:
-            HttpResponse: Redirige a la vista de edición del miembro seleccionado.
-        """
-        selected_member_id = request.POST.get('selected_member')
-        if selected_member_id:
-            return redirect('member-edit', pk=selected_member_id)
-        return self.get(request, *args, **kwargs)
-
-
-class MemberEditView(View):
-    """
-    Vista para editar el grupo y permisos de un miembro.
-
-    Atributos:
-        template_name (str): Ruta del template que se utiliza para renderizar la vista.
-
-    Métodos:
-        get(request, pk): Obtiene los detalles del miembro y los renderiza en la plantilla.
-        post(request, pk): Procesa las modificaciones de grupo y permisos y redirige a la lista de miembros.
-    """
-    template_name = 'members/member_edit.html'
-
+class MemberEditGroupView(views.View):
     def get(self, request, pk):
-        """
-        Obtiene los detalles del miembro y los renderiza en la plantilla.
-
-        Args:
-            request (HttpRequest): El objeto de la solicitud HTTP.
-            pk (int): La clave primaria del miembro.
-
-        Returns:
-            HttpResponse: Renderiza la plantilla con los detalles del miembro.
-        """
         member = get_object_or_404(Member, pk=pk)
-        groups = Group.objects.all()
-        selected_group = member.groups.first()
-        permissions = selected_group.permissions.all() if selected_group else []
-
-        context = {
-            'member': member,
-            'groups': groups,
-            'selected_group': selected_group,
-            'permissions': permissions,
-        }
-        return render(request, self.template_name, context)
+        form = MemberEditGroupForm(instance=member)
+        return render(request, 'members/edit_group.html', {'form': form, 'member': member})
 
     def post(self, request, pk):
-        """
-        Procesa las modificaciones de grupo y permisos y redirige a la lista de miembros.
-
-        Args:
-            request (HttpRequest): El objeto de la solicitud HTTP.
-            pk (int): La clave primaria del miembro.
-
-        Returns:
-            HttpResponse: Redirige a la lista de miembros después de guardar los cambios.
-        """
         member = get_object_or_404(Member, pk=pk)
-        group_id = request.POST.get('group')
-        selected_group = Group.objects.get(id=group_id)
+        form = MemberEditGroupForm(request.POST, instance=member)
+        if form.is_valid():
+            # Obtener los grupos actuales antes de actualizar
+            current_groups = set(member.groups.all())
+            member = form.save(commit=False)
+            new_groups = set(form.cleaned_data['groups'])
+            
+            # Determinar los grupos desasignados
+            removed_groups = current_groups - new_groups
+            
+            # Actualizar los grupos del miembro
+            member.groups.set(new_groups)
+            member.save()
+            
+            # Desasignar permisos de los grupos removidos
+            for group in removed_groups:
+                member.user_permissions.remove(*group.permissions.all())
+            
+            # Asignar permisos de los nuevos grupos
+            for group in new_groups:
+                member.user_permissions.add(*group.permissions.all())
+            
+            return redirect('member-list')
+        return render(request, 'members/edit_group.html', {'form': form, 'member': member})
+    
+class MemberEditPermissionView(views.View):
+    def get(self, request, pk):
+        member = get_object_or_404(Member, pk=pk)
+        form = MemberEditPermissionForm(instance=member)
+        user_permissions = member.user_permissions.all()
+        return render(request, 'members/edit_permission.html', {
+            'form': form,
+            'member': member,
+            'user_permissions': user_permissions
+        })
 
-        # Actualizar grupo del miembro
-        member.groups.clear()
-        member.groups.add(selected_group)
+    def post(self, request, pk):
+        member = get_object_or_404(Member, pk=pk)
+        form = MemberEditPermissionForm(request.POST, instance=member)
+        if form.is_valid():
+            member = form.save(commit=False)
+            member.save()  # Guardar el objeto Member primero
+            member.user_permissions.set(form.cleaned_data['permissions'])
+            return redirect('member-list')
+        return render(request, 'members/edit_permission.html', {
+            'form': form,
+            'member': member,
+            'user_permissions': member.user_permissions.all()
+        })
 
-        # Actualizar permisos según el checkbox
-        selected_permissions = request.POST.getlist('permissions')
-        member.user_permissions.clear()
-        member.user_permissions.add(*selected_permissions)
+class MemberStatusView(views.View):
+    template_name = 'members/member_status.html'
 
-        # Redirigir a la lista de miembros después de guardar los cambios
-        return redirect('member-list')
+    def get(self, request, pk):
+        member = get_object_or_404(Member, pk=pk)
+        form = MemberStatusForm(instance=member)
+        return render(request, self.template_name, {'form': form, 'member': member})
 
-
+    def post(self, request, pk):
+        member = get_object_or_404(Member, pk=pk)
+        form = MemberStatusForm(request.POST, instance=member)
+        if form.is_valid():
+            form.save()
+            return redirect('member-list')
+        return render(request, self.template_name, {'form': form, 'member': member})
+    
 class MemberRegisterView(CreateView):
     """
     Vista para manejar el formulario de registro. La cuenta se crea con el rol de 
