@@ -140,5 +140,23 @@
             29
         ]
     }
+},
+{
+    "model": "members.member",
+    "pk": 9,
+    "fields": {
+        "password": "pbkdf2_sha256$870000$irdOzMk3rSM3ZZ6J8qMQP4$Rr2L6ZmuDE7sEw7tHfYQmlHf6IfseAZG1XQp+zwDzGk=",
+        "last_login": "2024-09-02T16:36:29.654Z",
+        "is_superuser": true,
+        "username": "kevinx",
+        "first_name": "kevin",
+        "last_name": "a",
+        "email": "kevinx@weblio.com",
+        "is_active": true,
+        "is_staff": true,
+        "date_joined": "2024-09-02T16:36:12.696Z",
+        "groups": [],
+        "user_permissions": []
+    }
 }
 ]
