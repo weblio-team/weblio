@@ -1,6 +1,8 @@
 from pathlib import Path
 import os
 import dj_database_url
+import urllib.parse
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -133,6 +135,15 @@ CKEDITOR_5_CONFIGS = {
     'default': {
         'toolbar': ['heading', '|', 'bold', 'italic', 'link',
                     'bulletedList', 'numberedList', 'blockQuote', 'imageUpload', ],
+        'contentsCss': [
+                'data:text/css;charset=utf-8,' + urllib.parse.quote("""
+                    .ck-editor__editable {
+                        color: black; /* Black text */
+                        max-height: 70vh; /* Maximum height */
+                        overflow-y: auto; /* Enable vertical scrolling */
+                    }
+            """),
+        ],
     },
     'comment': {
         'blockToolbar': [
