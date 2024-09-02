@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block content %}
+<main class="container">
+    <h1>Editar permisos de {{ member.username }}</h1>
+    <form method="post">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="permissions">Permisos:</label>
+            <ul>
+                {% for perm in form.fields.permissions.queryset %}
+                    <li>
+                        <input type="checkbox" name="permissions" value="{{ perm.id }}" id="perm_{{ perm.id }}"
+                        {% if perm in user_permissions %} checked {% endif %}>
+                        <label for="perm_{{ perm.id }}">{{ perm.name }}</label>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+        <button type="submit" class="btn btn-light">Guardar</button>
+        <a href="{% url 'member-list' %}" class="btn btn-light">Cancelar</a>
+    </form>
+</main>
+{% endblock %}
+
+<style>
+    body {
+        background-color: #121212;
+        color: #ffffff;
+    }
+</style>
