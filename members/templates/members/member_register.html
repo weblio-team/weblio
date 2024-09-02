@@ -1,82 +1,17 @@
 {% extends "base.html" %}
 
 {% block content %}
-
 <div class="container mt-5">
     <div class="row justify-content-center">
         <div class="col-md-6">
             <h2 class="text-center">Registrarse</h2>
-            
+            {% load custom_filters %}
             <form method="post">
                 {% csrf_token %}
-                <p>
-    <label for="id_username">Username:</label>
-    <input type="text" name="username" class="form-control" placeholder="Nombre de usuario" maxlength="150" autofocus required id="id_username">
-    
-    
-    </p>
-
-    
-    <p>
-    <label for="id_first_name">Nombre:</label>
-    <input type="text" name="first_name" class="form-control" placeholder="Nombre" maxlength="30" required id="id_first_name">
-    
-    
-    </p>
-
-    
-    <p>
-    <label for="id_last_name">Apellidos:</label>
-    <input type="text" name="last_name" class="form-control" placeholder="Apellido" maxlength="150" required id="id_last_name">
-    
-    
-    </p>
-
-    
-    <p>
-    <label for="id_email">Dirección de correo electrónico:</label>
-    <input type="email" name="email" class="form-control" placeholder="Correo electrónico" maxlength="254" required id="id_email">
-    
-    
-    </p>
-
-    
-    <p>
-    <label for="id_password1">Contraseña:</label>
-    <input type="password" name="password1" autocomplete="new-password" aria-describedby="id_password1_helptext" id="id_password1">
-    
-        <span class="helptext" id="id_password1_helptext"><ul><li>Su contraseña no puede asemejarse tanto a su otra información personal.</li><li>Su contraseña debe contener al menos 8 caracteres.</li><li>Su contraseña no puede ser una clave utilizada comúnmente.</li><li>Su contraseña no puede ser completamente numérica.</li></ul></span>
-    
-    
-    </p>
-
-    
-    <p>
-    <label for="id_password2">Contraseña (confirmación):</label>
-    <input type="password" name="password2" autocomplete="new-password" aria-describedby="id_password2_helptext" id="id_password2">
-    
-        <span class="helptext" id="id_password2_helptext">Para verificar, introduzca la misma contraseña anterior.</span>
-    
-    
-    </p>
-
-    
-    <p>
-    
-    <div id="id_usable_password" class="radiolist inline"><div>
-    
-
-</div>
-
-<div>
-
-</div>
-</div>
-    </p>
+                {{ form.as_p }}
                 <button type="submit">Registrarse</button>
             </form>
         </div>
     </div>
 </div>
-
 {% endblock %}
