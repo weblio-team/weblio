@@ -425,15 +425,9 @@ class MemberEditView(View):
 
 
 class MemberRegisterView(CreateView):
-    """
-    Vista para manejar el formulario de registro. La cuenta se crea con el rol de 
-    "suscriptor" y se activa automáticamente.
-    """
-    model = Member
     form_class = MemberRegisterForm
     template_name = 'members/member_register.html'
     success_url = reverse_lazy('member-login')
-
 
 class MemberLoginView(LoginView):
     """
@@ -471,8 +465,15 @@ class MemberJoinView(CreateView):
     Vista para manejar el formulario de unirse al sistema. El usuario selecciona un rol 
     (grupo de Django) y la cuenta se crea desactivada inicialmente.
     """
-    model = Member
     form_class = MemberJoinForm
     template_name = 'members/member_join.html'
-
     success_url = reverse_lazy('home')
+
+    def get_context_data(self, **kwargs):
+        """
+        Agrega los roles al contexto, excluyendo el rol 'suscriptor'.
+        """
+        context = super().get_context_data(**kwargs)
+        roles = Group.objects.exclude(name='suscriptor')
+        context['roles'] = roles
+        return context
