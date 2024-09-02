@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}{{post.title_tag}}{% endblock  %}
+{% block content %}
+	<main role="main" class="container py-4">
+		<h1>{{post.title}}</h1>
+		<blockquote class="blockquote">
+			<small>{{post.summary}}</small>
+		</blockquote>
+		<hr>
+		<p>{{post.body|safe}}</p>
+		<small>Autor: {{post.author.first_name}} {{post.author.last_name}}</small></br>
+		<small>Categoria: {{post.category}}</small></br>
+		<small>Etiquetas: {{post.keywords}}</small></br>
+		
+		<div class="button-group py-4">
+			<a href="{% url 'to-publish' %}" class="btn btn-primary">Volver</a>
+			<form method="post" action="{% url 'publish-a-post' post.pk %}" class="d-inline">
+				{% csrf_token %}
+				<button type="submit" name="status" value="to_edit" class="btn btn-warning">Mandar a edición</button>
+				<button type="submit" name="status" value="published" class="btn btn-success">Publicar</button>
+			</form>
+		</div>
+	</main>
+{% endblock %}

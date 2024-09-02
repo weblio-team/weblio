@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block content %}
+    <main role="main" class="container py-4">
+        <h2>Crear categoria</h2>
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="btn btn-primary">Guardar</button>
+        </form>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const kindSelect = document.getElementById('id_kind');
+                const priceInput = document.getElementById('id_price');
+
+                function togglePriceInput() {
+                    if (kindSelect.value === 'premium') {
+                        priceInput.removeAttribute('readonly');
+                    } else {
+                        priceInput.setAttribute('readonly', 'readonly');
+                        priceInput.value = '0.00'; // Clear the price input when not premium
+                    }
+                }
+
+                // Initial check
+                togglePriceInput();
+
+                // Add event listener
+                kindSelect.addEventListener('change', togglePriceInput);
+
+                togglePriceInput();
+
+            });
+        </script>
+    </main>
+{% endblock %}

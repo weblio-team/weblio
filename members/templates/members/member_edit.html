@@ -1,0 +1,45 @@
+<!-- templates/member_edit.html -->
+{% extends "base.html" %}
+
+{% block content %}
+<main class="container">
+    <h1>Editar usuario: {{ member.email }}</h1>
+    <form method="post">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label for="groupSelect" class="form-label">Seleccionar Rol</label>
+            <select class="form-select" id="groupSelect" name="group" onchange="this.form.submit()">
+                {% for group in groups %}
+                    <option value="{{ group.id }}" {% if group == selected_group %}selected{% endif %}>{{ group.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        {% if selected_group %}
+        <h2>Permisos del Rol {{ selected_group.name }}</h2>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th scope="col">Permiso</th>
+                    <th scope="col">Activo</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for permission in permissions %}
+                <tr>
+                    <td>{{ permission.name }}</td>
+                    <td>
+                        <input type="checkbox" name="permissions" value="{{ permission.id }}" 
+                        {% if permission in member.user_permissions.all %}checked{% endif %}>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
+        
+        <button type="submit" class="btn btn-primary">Guardar</button>
+        <a href="{% url 'member-list' %}" class="btn btn-secondary">Cancelar</a>
+    </form>
+</main>
+{% endblock %}

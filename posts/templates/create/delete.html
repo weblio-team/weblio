@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block content %}
+<main role="main" class="container py-4">
+  <h1>Confirma la eliminacion</h1>
+  <p>Estas seguro de que quieres borrar este articulo?</p>
+  <form method="post">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-danger">Confirmar</button>
+    <a href="{% url 'post' post.pk post.category.name|slugify post.date_posted|date:'m' post.date_posted|date:'Y' post.title|slugify %}" class="btn btn-secondary">Cancel</a>
+  </form>
+</main>
+{% endblock %}

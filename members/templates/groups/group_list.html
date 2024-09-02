@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block content %}
+<main class="container py-4">
+    <h1>Lista de Roles</h1>
+    <table class="table table-dark table-striped table-bordered">
+        <thead>
+            <tr>
+                <th scope="col">Rol</th>
+                <th scope="col">Permisos</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for group in groups %}
+            <tr>
+                <td>{{ group.name }}</td>
+                <td>
+                    {% if group.permissions.exists %}
+                        <ul>
+                            {% for permission in group.permissions.all %}
+                                <li>{{ permission.name }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        Sin permisos
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</main>
+{% endblock %}
+
+<style>
+    body {
+        background-color: #121212;
+        color: #ffffff;
+    }
+
+    .table-dark {
+        background-color: #343a40;
+    }
+
+    .table-dark th, .table-dark td {
+        border-color: #454d55;
+    }
+
+    .table-dark thead th {
+        color: #ffffff;
+        background-color: #454d55;
+    }
+
+    .table-dark tbody tr {
+        color: #ffffff;
+    }
+
+    .table-dark tbody tr:nth-of-type(odd) {
+        background-color: #3c3f41;
+    }
+
+    .table-dark tbody tr:nth-of-type(even) {
+        background-color: #343a40;
+    }
+
+    .btn-primary {
+        background-color: #007bff;
+        border-color: #007bff;
+    }
+
+    .btn-primary:hover {
+        background-color: #0056b3;
+        border-color: #004085;
+    }
+</style>
