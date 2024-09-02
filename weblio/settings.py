@@ -62,7 +62,7 @@ WSGI_APPLICATION = 'weblio.wsgi.application'
 # Database
 DATABASES = {
     'default': dj_database_url.config(
-        default='postgresql://postgres.zohsevysirrbyyvmnhqu:weblio123is2@aws-0-sa-east-1.pooler.supabase.com:6543/postgres'
+        default='postgresql://postgres.bnrtxzlxyqufgeubptmv:cincoenIS2*@aws-0-sa-east-1.pooler.supabase.com:6543/postgres'
     )
 }
 
