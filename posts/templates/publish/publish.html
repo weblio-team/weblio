@@ -10,7 +10,7 @@
 		<p>{{post.body|safe}}</p>
 		<small>Autor: {{post.author.first_name}} {{post.author.last_name}}</small></br>
 		<small>Categoria: {{post.category}}</small></br>
-		<small>Etiquetas: {{post.category}}</small></br>
+		<small>Etiquetas: {{post.keywords}}</small></br>
 		
 		<div class="button-group py-4">
 			<a href="{% url 'to-publish' %}" class="btn btn-primary">Volver</a>

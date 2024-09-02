@@ -2,6 +2,7 @@ from django import forms
 from django.utils.translation import gettext as _
 from .models import Category, Post, Post
 from django_ckeditor_5.widgets import CKEditor5Widget
+from django.utils.safestring import mark_safe
 
 # forms for categories views
 class CategoryForm(forms.ModelForm):
@@ -86,20 +87,25 @@ class MyPostEditForm(forms.ModelForm):
             'status': _('Estado'),
         }
         widgets = {
-            'title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Insertar titulo'}),
+            'title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Insertar título'}),
             'category': forms.Select(attrs={'class': 'form-control'}),
-            'title_tag': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Insertar etiqueta de titulo'}),
+            'title_tag': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Insertar etiqueta de título'}),
             'summary': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Insertar resumen'}),
             'body': CKEditor5Widget(attrs={"class": "django_ckeditor_5"}, config_name="comment"),
             'status': forms.HiddenInput(),
             'keywords': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Insertar etiquetas'}),
         }
-    
+
     def __init__(self, *args, **kwargs):
         super(MyPostEditForm, self).__init__(*args, **kwargs)
         if self.instance and self.instance.status != 'draft':
-            for field in self.fields.values():
+            # Eliminar el campo `body` del formulario
+            self.fields.pop('body', None)
+
+            # Deshabilitar los otros campos
+            for field_name, field in self.fields.items():
                 field.widget.attrs['disabled'] = 'disabled'
+
         
 class ToEditPostForm(forms.ModelForm):
     class Meta:
