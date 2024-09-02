@@ -1,0 +1,58 @@
+[
+{
+    "model": "auth.group",
+    "pk": 1,
+    "fields": {
+        "name": "suscriptor",
+        "permissions": [
+            28,
+            32
+        ]
+    }
+},
+{
+    "model": "auth.group",
+    "pk": 2,
+    "fields": {
+        "name": "autor",
+        "permissions": [
+            29
+        ]
+    }
+},
+{
+    "model": "auth.group",
+    "pk": 3,
+    "fields": {
+        "name": "editor",
+        "permissions": [
+            30
+        ]
+    }
+},
+{
+    "model": "auth.group",
+    "pk": 4,
+    "fields": {
+        "name": "publicador",
+        "permissions": [
+            33
+        ]
+    }
+},
+{
+    "model": "auth.group",
+    "pk": 5,
+    "fields": {
+        "name": "administrador",
+        "permissions": [
+            22,
+            24,
+            25,
+            26,
+            27,
+            28
+        ]
+    }
+}
+]

@@ -1,0 +1,1102 @@
+[
+    {
+        "model": "posts.category",
+        "pk": null,
+        "fields": {
+            "name": "Horror",
+            "description": "Cras mi pede, malesuada in, imperdiet et, commodo vulputate, justo. In",
+            "alias": "MX",
+            "price": 0,
+            "kind": "free"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": null,
+        "fields": {
+            "name": "Horror",
+            "description": "Nunc rhoncus dui vel sem. Sed sagittis. Nam congue, risus sem",
+            "alias": "US",
+            "price": 87.83,
+            "kind": "premium"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": null,
+        "fields": {
+            "name": "Action|Comedy",
+            "description": "Praesent blandit. Nam nulla. Integer pede justo, lacinia eget, tincidunt eget,",
+            "alias": "ES",
+            "price": 0,
+            "kind": "free"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": null,
+        "fields": {
+            "name": "Sci-Fi",
+            "description": "Sed ante. Vivamus tortor. Duis mattis eg",
+            "alias": "BR",
+            "price": 0,
+            "kind": "free"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": null,
+        "fields": {
+            "name": "Adventure|Animation|Fantasy|Romance",
+            "description": "In hac habitasse platea dictumst. Aliquam augue quam, sollicitu",
+            "alias": "US",
+            "price": 6.44,
+            "kind": "premium"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": null,
+        "fields": {
+            "name": "Children|Fantasy",
+            "description": "Nunc rhoncus dui vel sem. Sed sagittis. Nam congue, risus semper porta volutpat, quam pede lobor",
+            "alias": "CN",
+            "price": 14.04,
+            "kind": "premium"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": null,
+        "fields": {
+            "name": "Romance|Western",
+            "description": "Nullam porttitor lacus at turpis. Donec posu",
+            "alias": "MM",
+            "price": 46.88,
+            "kind": "public"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": null,
+        "fields": {
+            "name": "Comedy",
+            "description": "Quisque erat eros, viv",
+            "alias": "CA",
+            "price": 0,
+            "kind": "free"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": null,
+        "fields": {
+            "name": "Action|Adventure|Animation|Children|Comedy|Fantasy",
+            "description": "Donec posuere metus vitae ipsum. Aliquam non mauris. Morbi non lectus. Aliquam sit",
+            "alias": "ES",
+            "price": 7.01,
+            "kind": "premium"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": null,
+        "fields": {
+            "name": "Adventure|Drama",
+            "description": "Suspendisse potenti. Nullam porttitor lacus at turpis. Donec posuere metus vitae ipsum. A",
+            "alias": "VN",
+            "price": 29.96,
+            "kind": "premium"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": null,
+        "fields": {
+            "name": "Drama|Musical",
+            "description": "Aenean lectus. Pellentesque eget nunc. Donec quis ",
+            "alias": "US",
+            "price": 33.71,
+            "kind": "premium"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": null,
+        "fields": {
+            "name": "Drama",
+            "description": "Duis aliquam convallis nunc. Proin at t",
+            "alias": "CN",
+            "price": 30.56,
+            "kind": "premium"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": null,
+        "fields": {
+            "name": "Documentary|Drama|Musical",
+            "description": "Praesent lectus. Vestibulum quam sapien, v",
+            "alias": "CD",
+            "price": 24.59,
+            "kind": "premium"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": null,
+        "fields": {
+            "name": "Drama|Musical",
+            "description": "Integer a nibh. In quis justo. Maecenas rhoncus aliquam lacus. Morbi quis tortor id nulla ultrice",
+            "alias": "PH",
+            "price": 3.06,
+            "kind": "premium"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": null,
+        "fields": {
+            "name": "Comedy",
+            "description": "Etiam vel augue. Vestibulum rutrum rutrum neque. Aenean auctor gravida sem. Praesent ",
+            "alias": "JP",
+            "price": 87.67,
+            "kind": "public"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": null,
+        "fields": {
+            "name": "Comedy",
+            "description": "Fusce posuere felis sed lacus. Morbi sem mauris, laoreet ut, rhoncus aliquet, pulvinar sed, nisl",
+            "alias": "CA",
+            "price": 47.84,
+            "kind": "public"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": null,
+        "fields": {
+            "name": "Drama",
+            "description": "Integer non velit. Donec diam neque, vestibulum eget, vulputate ut, ultrices vel, augue. Ve",
+            "alias": "TD",
+            "price": 0,
+            "kind": "free"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": null,
+        "fields": {
+            "name": "Drama",
+            "description": "Vestibulum ante ipsum primis in faucib",
+            "alias": "MX",
+            "price": 2.46,
+            "kind": "premium"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": null,
+        "fields": {
+            "name": "Horror",
+            "description": "Nulla tellus. In sagittis dui vel nisl. Duis ac nibh. Fusce lacus purus, aliquet at, feugiat non,",
+            "alias": "PG",
+            "price": 0,
+            "kind": "free"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": null,
+        "fields": {
+            "name": "Drama",
+            "description": "Donec quis orci eget orci vehicula condimentum. Curabitur in libero ut massa volutpat conval",
+            "alias": "US",
+            "price": 10.21,
+            "kind": "premium"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": null,
+        "fields": {
+            "name": "Action|Sci-Fi|Thriller",
+            "description": "Donec quis orci eget orci vehicula condimentum. Curabitur in libero ut ma",
+            "alias": "PK",
+            "price": 0,
+            "kind": "free"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": null,
+        "fields": {
+            "name": "Comedy|Romance",
+            "description": "Duis mattis egestas metus",
+            "alias": "ZW",
+            "price": 83.14,
+            "kind": "public"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": null,
+        "fields": {
+            "name": "Drama",
+            "description": "Integer aliquet, massa id lobortis convallis, tor",
+            "alias": "IN",
+            "price": 55.57,
+            "kind": "public"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": null,
+        "fields": {
+            "name": "Action|Adventure|Animation|Children|Comedy",
+            "description": "Vestibulum sed magna at nunc commodo placerat. Praesent blandit. Nam nulla. Intege",
+            "alias": "PY",
+            "price": 37.35,
+            "kind": "premium"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": null,
+        "fields": {
+            "name": "Drama",
+            "description": "Phasellus in felis. Donec semper sapien a libero. Nam dui. P",
+            "alias": "NP",
+            "price": 0,
+            "kind": "free"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": null,
+        "fields": {
+            "name": "Comedy|Romance",
+            "description": "Vivamus metus arcu, adipiscing molestie, hendrerit at, vulputate vitae, nisl. Aenean lectus. Pelle",
+            "alias": "AU",
+            "price": 20.96,
+            "kind": "public"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": null,
+        "fields": {
+            "name": "Action|Sci-Fi",
+            "description": "Etiam faucibus cursus urna. Ut tellus. Nulla ut erat id mauris vulputate elementum. Nullam varius.",
+            "alias": "ES",
+            "price": 0,
+            "kind": "free"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": null,
+        "fields": {
+            "name": "Crime|Drama|Mystery|Thriller",
+            "description": "Integer pede justo, lacinia eget, tincidunt eget, tempus vel",
+            "alias": "AU",
+            "price": 97.68,
+            "kind": "premium"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": null,
+        "fields": {
+            "name": "Action|Comedy|Western",
+            "description": "Morbi vestibulum, velit id pretium iaculis",
+            "alias": "FI",
+            "price": 0,
+            "kind": "free"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": null,
+        "fields": {
+            "name": "Action|Animation|Horror|Sci-Fi|Thriller",
+            "description": "Phasellus sit amet erat. Nulla tempus. Vivamus i",
+            "alias": "US",
+            "price": 34.78,
+            "kind": "premium"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": null,
+        "fields": {
+            "name": "Action",
+            "description": "Aenean lectus. Pellentesque eget nunc. Donec quis orci ",
+            "alias": "BR",
+            "price": 3.47,
+            "kind": "public"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": null,
+        "fields": {
+            "name": "Action|Crime|Thriller",
+            "description": "Nullam molestie nibh in lectus. Pellentes",
+            "alias": "BR",
+            "price": 48.15,
+            "kind": "premium"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": null,
+        "fields": {
+            "name": "Action|Adventure|Drama|Horror|Thriller",
+            "description": "Mauris enim leo, rhoncus sed, vestibulum sit amet, cursus id, turpis. Integer aliquet, massa id",
+            "alias": "US",
+            "price": 0,
+            "kind": "free"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": null,
+        "fields": {
+            "name": "Comedy|Drama|Romance",
+            "description": "Aenean lectus. Pellentesque eget n",
+            "alias": "PK",
+            "price": 84.01,
+            "kind": "public"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": null,
+        "fields": {
+            "name": "Drama",
+            "description": "Nullam sit amet turpis elementum ligula vehicula consequat. Morbi a ipsum. In",
+            "alias": "BQ",
+            "price": 35.66,
+            "kind": "public"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": null,
+        "fields": {
+            "name": "Horror|Thriller",
+            "description": "Praesent lectus. Vestibulum quam sapien, varius ut, blandit non, interdum in, ante. Vestibulum",
+            "alias": "AR",
+            "price": 0,
+            "kind": "free"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": null,
+        "fields": {
+            "name": "Action|Drama|War",
+            "description": "Morbi odio odio, elementum eu, interdum eu, tincidunt in, leo. Maecenas pulvinar lobortis est. Ph",
+            "alias": "CN",
+            "price": 10.4,
+            "kind": "premium"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": null,
+        "fields": {
+            "name": "Documentary",
+            "description": "Morbi ut odio. Cras ",
+            "alias": "CA",
+            "price": 14.3,
+            "kind": "public"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": null,
+        "fields": {
+            "name": "Sci-Fi",
+            "description": "Nulla tellus. In sagittis dui vel nisl. Duis ac nibh. Fusce lacus purus, aliquet at,",
+            "alias": "BS",
+            "price": 0,
+            "kind": "free"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": null,
+        "fields": {
+            "name": "Comedy|Drama",
+            "description": "In hac habitasse platea dictumst. Aliquam augue quam, sol",
+            "alias": "GQ",
+            "price": 13.5,
+            "kind": "public"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": null,
+        "fields": {
+            "name": "Crime|Thriller",
+            "description": "Vivamus metus arcu, adi",
+            "alias": "US",
+            "price": 0,
+            "kind": "free"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": null,
+        "fields": {
+            "name": "Drama",
+            "description": "Duis bibendum, felis sed interdum venenatis, turpis enim blandit mi,",
+            "alias": "CD",
+            "price": 27.16,
+            "kind": "public"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": null,
+        "fields": {
+            "name": "Crime|Drama|Thriller",
+            "description": "Integer a nibh. In quis justo. Maecenas rhoncus aliquam lacus. Morbi quis tortor",
+            "alias": "CA",
+            "price": 88.74,
+            "kind": "premium"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": null,
+        "fields": {
+            "name": "Drama",
+            "description": "Donec quis orci eget orci vehicula condimentum. Curabitur in li",
+            "alias": "AU",
+            "price": 65.23,
+            "kind": "public"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": null,
+        "fields": {
+            "name": "Comedy",
+            "description": "Vestibulum sed magna at nunc commodo placerat",
+            "alias": "US",
+            "price": 0,
+            "kind": "free"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": null,
+        "fields": {
+            "name": "Drama|Sci-Fi",
+            "description": "Vestibulum ac est lacinia nisi venenatis tristique. Fusce congue, diam id ornare ",
+            "alias": "GB",
+            "price": 15.53,
+            "kind": "public"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": null,
+        "fields": {
+            "name": "Fantasy",
+            "description": "Nulla neque libero, convallis eget, eleifend luctus, ultricies eu, nibh. Qui",
+            "alias": "GB",
+            "price": 26.11,
+            "kind": "public"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": null,
+        "fields": {
+            "name": "Action|Adventure|Comedy|Romance",
+            "description": "Suspendisse accumsan tortor quis turpis. Sed ante. Vivamus t",
+            "alias": "AR",
+            "price": 15.74,
+            "kind": "premium"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": null,
+        "fields": {
+            "name": "Action|Adventure|Animation|Children",
+            "description": "Vivamus vestibulum sagittis sapien. Cum sociis natoqu",
+            "alias": "CO",
+            "price": 0,
+            "kind": "free"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": null,
+        "fields": {
+            "name": "Animation|Fantasy",
+            "description": "Morbi sem mauris, laoreet ut, rhoncus alique",
+            "alias": "US",
+            "price": 0.69,
+            "kind": "public"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": null,
+        "fields": {
+            "name": "Comedy",
+            "description": "Maecenas rhoncus aliquam l",
+            "alias": "US",
+            "price": 0,
+            "kind": "free"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": null,
+        "fields": {
+            "name": "Action",
+            "description": "Pellentesque eget nunc. Donec quis orci eget orci vehicula condimentum. Curabitur ",
+            "alias": "KR",
+            "price": 0,
+            "kind": "free"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": null,
+        "fields": {
+            "name": "Adventure|Drama",
+            "description": "Duis ac nibh. Fusce lacus purus, aliquet at, feugiat non, pretium quis,",
+            "alias": "MM",
+            "price": 0,
+            "kind": "free"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": null,
+        "fields": {
+            "name": "Animation|Comedy",
+            "description": "Fusce consequat. Nulla nisl. Nunc ",
+            "alias": "US",
+            "price": 20.39,
+            "kind": "premium"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": null,
+        "fields": {
+            "name": "Comedy",
+            "description": "Nullam orci pede, venenatis non, sodales sed, tincidunt eu, felis. Fusce posu",
+            "alias": "GL",
+            "price": 48.66,
+            "kind": "premium"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": null,
+        "fields": {
+            "name": "Drama",
+            "description": "In hac habitasse platea dictumst. Morbi vestibulum, ",
+            "alias": "US",
+            "price": 44.58,
+            "kind": "premium"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": null,
+        "fields": {
+            "name": "Horror",
+            "description": "Donec ut mauris eget massa",
+            "alias": "ZA",
+            "price": 40.65,
+            "kind": "public"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": null,
+        "fields": {
+            "name": "Drama",
+            "description": "Nunc rhoncus dui vel sem. Sed sagittis. Nam congue, risus semper porta volutpat, quam pede",
+            "alias": "KR",
+            "price": 77.38,
+            "kind": "premium"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": null,
+        "fields": {
+            "name": "Documentary",
+            "description": "Vivamus metus arcu, adipiscing molestie, hendrerit at, vulputate vitae, ni",
+            "alias": "US",
+            "price": 74.28,
+            "kind": "public"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": null,
+        "fields": {
+            "name": "Crime|Drama|Thriller",
+            "description": "Praesent id massa id nisl venenatis lacinia. Aenean sit amet justo. Mo",
+            "alias": "PK",
+            "price": 70.39,
+            "kind": "premium"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": null,
+        "fields": {
+            "name": "Action|Adventure|Thriller",
+            "description": "Quisque ut erat. Curabitur gravida nisi at nibh. In hac habitasse platea dictumst",
+            "alias": "CZ",
+            "price": 97.27,
+            "kind": "premium"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": null,
+        "fields": {
+            "name": "Action|Adventure|Crime|Drama|Romance|Thriller",
+            "description": "Nulla tempus. Vivamus i",
+            "alias": "US",
+            "price": 6.51,
+            "kind": "public"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": null,
+        "fields": {
+            "name": "Horror|Mystery",
+            "description": "Nulla nisl. Nunc nisl. Duis bibendum, felis sed interdum venen",
+            "alias": "AU",
+            "price": 0,
+            "kind": "free"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": null,
+        "fields": {
+            "name": "Drama|Romance",
+            "description": "Duis mattis egestas metus. Aenean fermentum. Donec ut mauris eget m",
+            "alias": "AU",
+            "price": 25.08,
+            "kind": "public"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": null,
+        "fields": {
+            "name": "Documentary",
+            "description": "Aliquam quis turpis eget elit sodales scelerisque. Mauris sit amet eros. Suspendisse accums",
+            "alias": "AU",
+            "price": 44.37,
+            "kind": "premium"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": null,
+        "fields": {
+            "name": "Comedy",
+            "description": "Etiam vel augue. Vestibulum rutru",
+            "alias": "TW",
+            "price": 0,
+            "kind": "free"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": null,
+        "fields": {
+            "name": "Action|Adventure|Comedy|Crime|Mystery|Thriller",
+            "description": "Aliquam erat volutpat. In con",
+            "alias": "FI",
+            "price": 23.77,
+            "kind": "public"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": null,
+        "fields": {
+            "name": "Comedy|Musical|Romance",
+            "description": "Donec posuere metus vitae ipsum. Aliquam non mauris. Morbi non lectus. Aliquam s",
+            "alias": "RU",
+            "price": 44.6,
+            "kind": "public"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": null,
+        "fields": {
+            "name": "Adventure|Children",
+            "description": "Integer aliquet, massa id lobortis convallis, tortor risus dapibus augue, ve",
+            "alias": "CN",
+            "price": 0,
+            "kind": "free"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": null,
+        "fields": {
+            "name": "Drama",
+            "description": "Aliquam quis turpis e",
+            "alias": "IE",
+            "price": 73.31,
+            "kind": "premium"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": null,
+        "fields": {
+            "name": "Drama|Sci-Fi",
+            "description": "Donec diam neque, vestibulum eget, v",
+            "alias": "MH",
+            "price": 61.25,
+            "kind": "public"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": null,
+        "fields": {
+            "name": "Crime|Drama|Mystery",
+            "description": "Donec diam neque, vestibulum eget, vulputate ut, ult",
+            "alias": "US",
+            "price": 13.32,
+            "kind": "public"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": null,
+        "fields": {
+            "name": "Drama|Romance",
+            "description": "Vestibulum rutrum rutr",
+            "alias": "FJ",
+            "price": 54.98,
+            "kind": "public"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": null,
+        "fields": {
+            "name": "Comedy",
+            "description": "Maecenas tincidunt lacus at velit. Vivamus vel nulla eget eros elementum pellentesque. Quisque p",
+            "alias": "AU",
+            "price": 0,
+            "kind": "free"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": null,
+        "fields": {
+            "name": "Action",
+            "description": "Aliquam augue quam, sollicitudin vitae, consectetuer eget, rutrum at, lorem. Integer tincidunt ",
+            "alias": "UZ",
+            "price": 0,
+            "kind": "free"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": null,
+        "fields": {
+            "name": "Adventure|Comedy|Drama",
+            "description": "Vestibulum rutrum rutrum neque. Aenea",
+            "alias": "US",
+            "price": 62.27,
+            "kind": "public"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": null,
+        "fields": {
+            "name": "Comedy|Musical|Romance",
+            "description": "Nunc rhoncus dui vel sem. Sed sagittis. Nam congue, risus s",
+            "alias": "AU",
+            "price": 35.44,
+            "kind": "premium"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": null,
+        "fields": {
+            "name": "Drama",
+            "description": "Donec ut dolor. Morbi vel lectus in quam fring",
+            "alias": "US",
+            "price": 28.0,
+            "kind": "public"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": null,
+        "fields": {
+            "name": "Children|Comedy|Fantasy",
+            "description": "Vestibulum ac est lacinia nisi venenatis tristique. Fusce congue, diam id ornare imperdiet, sap",
+            "alias": "CA",
+            "price": 52.13,
+            "kind": "public"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": null,
+        "fields": {
+            "name": "Animation|Drama|War",
+            "description": "Nunc purus. Phasellus in felis. Donec semper sapien a libero. Nam dui. Proin leo od",
+            "alias": "UZ",
+            "price": 37.63,
+            "kind": "premium"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": null,
+        "fields": {
+            "name": "Drama|Mystery",
+            "description": "Donec ut mauris eget massa te",
+            "alias": "RU",
+            "price": 87.25,
+            "kind": "premium"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": null,
+        "fields": {
+            "name": "Action|Thriller",
+            "description": "Maecenas pulvinar lobortis est. Phasellus sit ",
+            "alias": "CV",
+            "price": 54.66,
+            "kind": "premium"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": null,
+        "fields": {
+            "name": "Comedy|Drama|Romance",
+            "description": "Quisque id justo sit amet sapien dignissi",
+            "alias": "BR",
+            "price": 81.51,
+            "kind": "premium"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": null,
+        "fields": {
+            "name": "Comedy|Drama|Romance",
+            "description": "Morbi odio odio, elementum eu, interdum eu,",
+            "alias": "RU",
+            "price": 20.13,
+            "kind": "public"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": null,
+        "fields": {
+            "name": "Comedy|Romance",
+            "description": "Nunc nisl. Duis bibendum, felis sed interdum venenatis, turpis enim blandit mi, in p",
+            "alias": "MW",
+            "price": 0,
+            "kind": "free"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": null,
+        "fields": {
+            "name": "Drama",
+            "description": "Etiam vel augue. Vestibulum r",
+            "alias": "US",
+            "price": 0,
+            "kind": "free"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": null,
+        "fields": {
+            "name": "Drama",
+            "description": "Donec diam neque, vestibulum eg",
+            "alias": "US",
+            "price": 0,
+            "kind": "free"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": null,
+        "fields": {
+            "name": "Action|Sci-Fi",
+            "description": "Aliquam sit amet diam in magna bibendum imperdiet. Nullam orci pede, venenatis non, sod",
+            "alias": "US",
+            "price": 51.08,
+            "kind": "public"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": null,
+        "fields": {
+            "name": "Drama|Romance",
+            "description": "Vivamus tortor. Duis mattis egestas metus.",
+            "alias": "US",
+            "price": 0,
+            "kind": "free"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": null,
+        "fields": {
+            "name": "Drama|War",
+            "description": "Donec ut mauris eget massa tempor convallis. Nulla neque libero, convall",
+            "alias": "MG",
+            "price": 32.08,
+            "kind": "public"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": null,
+        "fields": {
+            "name": "Comedy|Drama",
+            "description": "Nam nulla. Integer pede justo, lacinia eget, tincidunt eget, tempus vel, pede. Morbi portti",
+            "alias": "AU",
+            "price": 42.79,
+            "kind": "premium"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": null,
+        "fields": {
+            "name": "Drama",
+            "description": "Cras in purus eu magna vulputate luctus. Cum sociis natoque penatibus et magnis dis partu",
+            "alias": "CG",
+            "price": 30.19,
+            "kind": "premium"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": null,
+        "fields": {
+            "name": "Drama|Sci-Fi",
+            "description": "Nunc nisl. Duis bibendum",
+            "alias": "BR",
+            "price": 63.12,
+            "kind": "premium"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": null,
+        "fields": {
+            "name": "Horror|Thriller",
+            "description": "Nunc rhoncus dui vel sem. Sed sagittis. Nam congue, risus semper porta volutpat, quam pe",
+            "alias": "PE",
+            "price": 42.95,
+            "kind": "public"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": null,
+        "fields": {
+            "name": "Adventure|Children|Drama|Fantasy",
+            "description": "Praesent id massa id nisl venenatis lacinia. ",
+            "alias": "NZ",
+            "price": 36.17,
+            "kind": "premium"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": null,
+        "fields": {
+            "name": "Drama|Musical|War",
+            "description": "Maecenas pulvinar lobortis ",
+            "alias": "FR",
+            "price": 0,
+            "kind": "free"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": null,
+        "fields": {
+            "name": "Documentary",
+            "description": "Suspendisse accumsan tortor quis turpis. Sed ante. Vivamus tortor. Duis mattis egesta",
+            "alias": "AU",
+            "price": 97.0,
+            "kind": "public"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": null,
+        "fields": {
+            "name": "Drama",
+            "description": "Cum sociis natoque penatibus et magnis dis parturien",
+            "alias": "CN",
+            "price": 48.5,
+            "kind": "public"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": null,
+        "fields": {
+            "name": "Horror",
+            "description": "Aliquam augue quam, sollicitudin vitae, consectetuer eget, rutrum at, lorem. Integer tincidunt",
+            "alias": "IR",
+            "price": 0.58,
+            "kind": "public"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": null,
+        "fields": {
+            "name": "Documentary|Sci-Fi",
+            "description": "Mauris sit amet eros. Suspendisse accumsan tortor quis turpis. Sed ante. Vivamus t",
+            "alias": "SE",
+            "price": 0,
+            "kind": "free"
+        }
+    }
+]
