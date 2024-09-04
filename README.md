@@ -16,7 +16,7 @@ Weblio es un proyecto de un CMS basado en Django para la creación de blogs. El 
 - CMS completo para la gestión de blogs.
 - Interfaz rica en contenido, con un editor WYSIWYG gracias a `django-ckeditor`.
 - Despliegue fácil en Heroku.
-- Compatible con múltiples lenguajes y opciones de formato gracias a la integración con Sphinx para documentación.
+- Documentación automática mediante Sphinx.
 - Estilizado con Bootstrap 5.3.0 para una interfaz moderna y responsiva.
 
 ## 🛠️ Tecnologías usadas
@@ -170,6 +170,98 @@ heroku open
 ```
 
 Ahora podrás acceder a la aplicación en Heroku en la URL proporcionada.
+
+## 🔨 Poblar la base de datos con datos de ejemplo
+
+Puedes poblar la base de datos con datos de ejemplo usando los scripts `sample_data.bat` (para Windows) y `sample_data.sh` (para Mac/Linux). Estos scripts insertan datos predefinidos para que puedas probar el CMS rápidamente.
+
+### En Windows
+
+1. Abre una terminal de comandos (CMD) en la raíz del proyecto.
+2. Ejecuta el siguiente comando:
+
+```bash
+sample_data.bat
+```
+
+### En Mac/Linux
+
+1. Abre una terminal en la raíz del proyecto.
+2. Da permisos de ejecución al script si es necesario:
+
+```bash
+chmod +x sample_data.sh
+```
+
+3. Ejecuta el script:
+
+```bash
+./sample_data.sh
+```
+
+### ¿Qué hacen estos scripts?
+
+Estos scripts ejecutan una serie de comandos Django que crean y poblan la base de datos con contenido de ejemplo, como publicaciones, usuarios y comentarios.
+
+## 📤 Exportación de datos
+
+El script `export_data` te permite exportar los datos actuales de la base de datos a un archivo JSON. Esto es útil para hacer backups de los datos o moverlos entre diferentes entornos.
+
+### Uso de `export_data` en Windows
+
+1. Abre la terminal de comandos.
+2. Ejecuta el siguiente comando:
+
+```bash
+export_data.bat
+```
+
+### Uso de `export_data` en Mac/Linux
+
+1. Abre una terminal.
+2. Da permisos de ejecución si es necesario:
+
+```bash
+chmod +x export_data.sh
+```
+
+3. Ejecuta el script:
+
+```bash
+./export_data.sh
+```
+
+Esto generará un archivo `.json` con los datos exportados, que luego podrás importar en otro entorno usando el comando `loaddata` de Django.
+
+## 🛠️ Verificación de la codificación de archivos: `check_encoding`
+
+El script `check_encoding` es una herramienta que verifica si los archivos del proyecto están usando la codificación correcta, lo cual es importante para evitar errores en diferentes sistemas operativos o con diferentes configuraciones locales.
+
+### Uso en Windows
+
+1. Abre la terminal de comandos.
+2. Ejecuta el siguiente comando:
+
+```bash
+check_encoding.bat
+```
+
+### Uso en Mac/Linux
+
+1. Abre una terminal.
+2. Da permisos de ejecución al script:
+
+```bash
+chmod +x check_encoding.sh
+```
+
+3. Ejecuta el script:
+
+```bash
+./check_encoding.sh
+```
+
+Este script revisará todos los archivos en el proyecto y te notificará si encuentra archivos con codificación incorrecta.
 
 ## 📝 Documentación con Sphinx
 
