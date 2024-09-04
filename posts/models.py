@@ -4,7 +4,7 @@ from django.urls import reverse
 from django.utils.text import slugify
 from django.core.validators import MinValueValidator
 from members.models import Member
-from django_ckeditor_5.fields import CKEditor5Field
+from ckeditor_uploader.fields import RichTextUploadingField
 from members.models import Member
 import requests
 
@@ -82,7 +82,7 @@ class Post(models.Model):
     title = models.CharField(max_length=100)
     title_tag = models.CharField(max_length=100)
     summary = models.CharField(max_length=100, default=lorem_ipsum.words(10)) 
-    body = CKEditor5Field('Text', config_name='extends', blank=True, default=get_lorem_ipsum_text)
+    body = RichTextUploadingField('Text', blank=True, default=get_lorem_ipsum_text)
     date_posted = models.DateTimeField(auto_now_add=True)
     author = models.ForeignKey(Member, on_delete=models.CASCADE)
     status = models.CharField(max_length=20, choices=(('draft', 'Draft'), ('to_edit', 'To Edit'), ('to_publish', 'To Publish'), ('published', 'Published'),), default='draft')
