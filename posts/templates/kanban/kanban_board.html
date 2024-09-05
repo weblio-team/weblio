@@ -4,26 +4,26 @@
 {% block content %}
 <style>
     .kanban-footer {
-    position: sticky;
-    bottom: 0;
-    width: 100%;
-    background: linear-gradient(to top, #212529, transparent);
-    z-index: 1000; 
-    padding: 20px 0; 
-    text-align: center;
-}
+        position: sticky;
+        bottom: 0;
+        width: 100%;
+        background: linear-gradient(to top, #212529, transparent);
+        z-index: 1000; 
+        padding: 20px 0; 
+        text-align: center;
+    }
     .kanban-footer .btn {
-    font-size: 18px;
-    padding: 10px 20px;
-    background-color: #007bff;
-    color: white;
-    border: none;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
+        font-size: 18px;
+        padding: 10px 20px;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
 
-.kanban-footer .btn:hover {
-    background-color: #0056b3; /* Cambiar el color del botón al pasar el mouse */
-}
+    .kanban-footer .btn:hover {
+        background-color: #0056b3; /* Cambiar el color del botón al pasar el mouse */
+    }
 </style>
 <main>
     <div class="container mt-3">
@@ -37,7 +37,9 @@
                         {% for post in draft_posts %}
                         <div class="card border border-dark mb-3" draggable="true" id="card-{{ post.pk }}">
                             <div class="card-body">
-                                <h5 class="card-title card-link">{{ post.title }}</h5>
+                                <h5 class="card-title">
+                                    <a href="{% url 'edit-my-post' post.pk %}" class="card-link">{{ post.title }}</a>
+                                </h5>
                                 <h6 class="card-text text-muted">Autor: {{ post.author }}</h6>
                                 <h6 class="card-text text-muted">Categoria: {{ post.category }}</h6>
                                 <span class="badge bg-secondary">{{ post.status }}</span>
@@ -81,8 +83,7 @@
                         <div class="card border border-dark mb-3" draggable="true" id="card-{{ post.pk }}">
                             <div class="card-body">
                                 <h5 class="card-title">
-                                    <a href="{% url 'post' post.pk post.category.name|slugify post.date_posted|date:'m' post.date_posted|date:'Y' post.title|slugify %}"
-                                        class="card-link">{{ post.title }}</a>
+                                    <a href="{% url 'post' post.pk post.category.name|slugify post.date_posted|date:'m' post.date_posted|date:'Y' post.title|slugify %}" class="card-link">{{ post.title }}</a>
                                 </h5>
                                 <h6 class="card-text text-muted">Autor: {{ post.author }}</h6>
                                 <h6 class="card-text text-muted">Categoria: {{ post.category }}</h6>
@@ -121,6 +122,8 @@
             zone.appendChild(curPost);
             const post_id = curPost.id.split('-')[1]; // Extract post ID from card ID
             const status_id = zone.dataset.status; // Get status from column data attribute
+            curPost.dataset.status = status_id; // Update the data-status attribute
+            updatePostLink(curPost, post_id, status_id); // Update the post link
             movedPosts.push({ post_id, status_id });
         });
     });
@@ -130,6 +133,34 @@
         send_bulk_request(movedPosts);
         movedPosts = []; // Clear the moved posts array after sending the request
     });
+
+    function updatePostLink(postElement, postId, statusId) {
+        const titleElement = postElement.querySelector('.card-title');
+        let url = '';
+        switch (statusId) {
+            case 'draft':
+                url = `{% url 'edit-my-post' 0 %}`.replace('0', postId);
+                titleElement.innerHTML = `<a href="${url}" class="card-link">${titleElement.textContent}</a>`;
+                break;
+            case 'to_edit':
+                url = `{% url 'edit-a-post' 0 %}`.replace('0', postId);
+                titleElement.innerHTML = `<a href="${url}" class="card-link">${titleElement.textContent}</a>`;
+                break;
+            case 'to_publish':
+                url = `{% url 'publish-a-post' 0 %}`.replace('0', postId);
+                titleElement.innerHTML = `<a href="${url}" class="card-link">${titleElement.textContent}</a>`;
+                break;
+            case 'published':
+                url = `{% url 'post' 0 'category' 'month' 'year' 'title' %}`
+                    .replace('0', postId)
+                    .replace('category', postElement.querySelector('.card-text.text-muted').textContent.split(': ')[1].toLowerCase())
+                    .replace('month', '01') // Replace with actual month
+                    .replace('year', '2023') // Replace with actual year
+                    .replace('title', titleElement.textContent.toLowerCase().replace(/ /g, '-'));
+                titleElement.innerHTML = `<a href="${url}" class="card-link">${titleElement.textContent}</a>`;
+                break;
+        }
+    }
 
     function send_bulk_request(movedPosts) {
         fetch("{% url 'update-posts-status' %}", {
