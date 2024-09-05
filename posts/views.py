@@ -1,11 +1,16 @@
-from django.http import HttpResponseRedirect
-from django.shortcuts import get_object_or_404
-from django.urls import reverse_lazy
+import json
+from django.http import HttpResponseRedirect, JsonResponse
+from django.shortcuts import get_object_or_404, redirect
+from django.urls import reverse, reverse_lazy
 from django.contrib.auth.mixins import PermissionRequiredMixin
+from django.utils.decorators import method_decorator
+from django.views import View
 from .models import Category, Post
-from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
-from .forms import CategoryForm, CategoryEditForm, MyPostEditForm, ToEditPostForm, MyPostAddForm
+from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView, TemplateView
+from .forms import CategoryForm, CategoryEditForm, KanbanBoardForm, MyPostEditForm, ToEditPostForm, MyPostAddForm
 from django.db.models import Q
+from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth.mixins import LoginRequiredMixin
 
 # views for category administrators
 
@@ -414,3 +419,87 @@ class SuscriberPostDetailView(DetailView):
             date_posted__year=year, 
             title__iexact=title.replace('-', ' ')
         )
+    
+
+
+class KanbanBoardView(TemplateView):
+    """
+    Una vista para mostrar un tablero Kanban.
+    Esta vista extiende la clase TemplateView y renderiza la plantilla 'kanban/kanban_board.html'.
+    Proporciona los siguientes datos de contexto a la plantilla:
+    - 'draft_posts': Un queryset de objetos Post con status='draft'.
+    - 'to_edit_posts': Un queryset de objetos Post con status='to_edit'.
+    - 'to_publish_posts': Un queryset de objetos Post con status='to_publish'.
+    - 'published_posts': Un queryset de objetos Post con status='published'.
+    - 'form': Una instancia de KanbanBoardForm.
+    La vista también maneja las solicitudes POST. Si el formulario es válido, guarda los datos del formulario y redirige
+    al usuario a la URL 'kanban-board'. Si el formulario no es válido, vuelve a renderizar la vista con el
+    formulario y los datos de contexto existentes.
+    """
+    template_name = 'kanban/kanban_board.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['draft_posts'] = Post.objects.filter(status='draft')
+        context['to_edit_posts'] = Post.objects.filter(status='to_edit')
+        context['to_publish_posts'] = Post.objects.filter(status='to_publish')
+        context['published_posts'] = Post.objects.filter(status='published')
+        context['form'] = KanbanBoardForm()
+        return context
+    
+    def post(self, request, *args, **kwargs):
+        form = KanbanBoardForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('kanban-board')
+        return self.get(request, *args, **kwargs)
+    
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class UpdatePostsStatusView(View):
+    """
+Vista para actualizar el estado de los articulos.
+
+Esta vista se encarga de recibir una solicitud POST con datos en formato JSON.
+Los datos deben contener una lista de articulos movidos, donde cada elemento
+de la lista debe tener el ID de articulo y el ID del nuevo estado.
+
+Si el articulo existe, se actualiza su estado con el nuevo ID proporcionado.
+Si el articulo no existe, se ignora y se continúa con los demás articulos.
+
+La vista devuelve una respuesta JSON indicando si la actualización fue exitosa o no.
+
+Atributos:
+    - csrf_exempt: Decorador para eximir la vista de la protección CSRF.
+
+Métodos:
+    - post: Método que maneja la solicitud POST y actualiza los estados de los articulos.
+
+Parámetros de la solicitud:
+    - request: La solicitud HTTP recibida.
+    - args: Argumentos posicionales adicionales.
+    - kwargs: Argumentos de palabras clave adicionales.
+
+Excepciones:
+    - Post.DoesNotExist: Se produce si una publicación no existe en la base de datos.
+
+Retorno:
+    - JsonResponse: Respuesta JSON indicando si la actualización fue exitosa o no.
+"""
+    def post(self, request, *args, **kwargs):
+        try:
+            data = json.loads(request.body)
+            movedPosts = data.get('movedPosts', [])
+            for item in movedPosts:
+                post_id = item.get('post_id')
+                status_id = item.get('status_id')
+                try:
+                    post = Post.objects.get(pk=post_id)
+                    post.status = status_id
+                    post.save()
+                except Post.DoesNotExist:
+                    pass
+            return JsonResponse({'success': True})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})

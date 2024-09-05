@@ -159,3 +159,9 @@ class MyPostAddForm(forms.ModelForm):
         if commit:
             instance.save()
         return instance
+    
+    
+class KanbanBoardForm(forms.ModelForm):
+    class Meta:
+        model = Post
+        fields = ['title', 'status', 'author', 'category']

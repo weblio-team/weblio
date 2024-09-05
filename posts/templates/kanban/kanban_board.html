@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<style>
+    .kanban-footer {
+    position: sticky;
+    bottom: 0;
+    width: 100%;
+    background: linear-gradient(to top, #212529, transparent);
+    z-index: 1000; 
+    padding: 20px 0; 
+    text-align: center;
+}
+    .kanban-footer .btn {
+    font-size: 18px;
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.kanban-footer .btn:hover {
+    background-color: #0056b3; /* Cambiar el color del botón al pasar el mouse */
+}
+</style>
+<main>
+    <div class="container mt-3">
+        <h1>Tablero Kanban</h1>
+        <div class="board">
+            <form method="post" id="kanban-board">
+                {% csrf_token %}
+                <div class="row">
+                    <div class="col column" id="borrador" data-status="draft">
+                        <h3>Borrador</h3>
+                        {% for post in draft_posts %}
+                        <div class="card border border-dark mb-3" draggable="true" id="card-{{ post.pk }}">
+                            <div class="card-body">
+                                <h5 class="card-title card-link">{{ post.title }}</h5>
+                                <h6 class="card-text text-muted">Autor: {{ post.author }}</h6>
+                                <h6 class="card-text text-muted">Categoria: {{ post.category }}</h6>
+                                <span class="badge bg-secondary">{{ post.status }}</span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <div class="col column" id="editar" data-status="to_edit">
+                        <h3>A editar</h3>
+                        {% for post in to_edit_posts %}
+                        <div class="card border border-dark mb-3" draggable="true" id="card-{{ post.pk }}">
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    <a href="{% url 'edit-a-post' post.pk %}" class="card-link">{{ post.title }}</a>
+                                </h5>
+                                <h6 class="card-text text-muted">Autor: {{ post.author }}</h6>
+                                <h6 class="card-text text-muted">Categoria: {{ post.category }}</h6>
+                                <span class="badge bg-primary">{{ post.status }}</span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <div class="col column" id="publicar" data-status="to_publish">
+                        <h3>A publicar</h3>
+                        {% for post in to_publish_posts %}
+                        <div class="card border border-dark mb-3" draggable="true" id="card-{{ post.pk }}">
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    <a href="{% url 'publish-a-post' post.pk %}" class="card-link">{{ post.title }}</a>
+                                </h5>
+                                <h6 class="card-text text-muted">Autor: {{ post.author }}</h6>
+                                <h6 class="card-text text-muted">Categoria: {{ post.category }}</h6>
+                                <span class="badge bg-warning">{{ post.status }}</span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <div class="col column" id="publicado" data-status="published">
+                        <h3>Publicado</h3>
+                        {% for post in published_posts %}
+                        <div class="card border border-dark mb-3" draggable="true" id="card-{{ post.pk }}">
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    <a href="{% url 'post' post.pk post.category.name|slugify post.date_posted|date:'m' post.date_posted|date:'Y' post.title|slugify %}"
+                                        class="card-link">{{ post.title }}</a>
+                                </h5>
+                                <h6 class="card-text text-muted">Autor: {{ post.author }}</h6>
+                                <h6 class="card-text text-muted">Categoria: {{ post.category }}</h6>
+                                <span class="badge bg-success">{{ post.status }}</span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="kanban-footer">
+            <button class="btn btn-primary btn-lg" id="actualizar-button">Actualizar</button>
+        </div>
+    </div>
+</main>
+<script>
+    const draggables = document.querySelectorAll(".card");
+    const droppables = document.querySelectorAll(".column");
+    const actualizarButton = document.getElementById("actualizar-button");
+    let movedPosts = [];
+
+    draggables.forEach((post) => {
+        post.addEventListener("dragstart", () => {
+            post.classList.add("is-dragging");
+        });
+        post.addEventListener("dragend", () => {
+            post.classList.remove("is-dragging");
+        });
+    });
+
+    droppables.forEach((zone) => {
+        zone.addEventListener("dragover", (e) => {
+            e.preventDefault();
+            const curPost = document.querySelector(".is-dragging");
+            zone.appendChild(curPost);
+            const post_id = curPost.id.split('-')[1]; // Extract post ID from card ID
+            const status_id = zone.dataset.status; // Get status from column data attribute
+            movedPosts.push({ post_id, status_id });
+        });
+    });
+
+    actualizarButton.addEventListener("click", () => {
+        console.log('Moved Posts:', movedPosts); // Debugging statement
+        send_bulk_request(movedPosts);
+        movedPosts = []; // Clear the moved posts array after sending the request
+    });
+
+    function send_bulk_request(movedPosts) {
+        fetch("{% url 'update-posts-status' %}", {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'), // Ensure CSRF token is included
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ movedPosts })
+        })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Success:', data); // Debugging statement
+                if (data.success) {
+                    location.reload(); // Reload the page to see the changes
+                }
+            })
+            .catch((error) => {
+                console.error('Error:', error); // Debugging statement
+            });
+    }
+
+    // Function to get CSRF token from cookies
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+</script>
+{% endblock %}
