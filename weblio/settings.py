@@ -1,7 +1,6 @@
 from pathlib import Path
 import os
 import dj_database_url
-import urllib.parse
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -26,7 +25,8 @@ INSTALLED_APPS = [
     'members',
     'posts',
     'ckeditor',
-    'ckeditor_uploader'
+    'ckeditor_uploader',
+    'storages',
 ]
 
 MIDDLEWARE = [
@@ -103,18 +103,41 @@ LOGOUT_REDIRECT_URL = '/'
 STATIC_URL = 'static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
-MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+if DEBUG:
+    MEDIA_URL = '/media/'
+    MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# Configuración de Google Cloud Storage
+from google.oauth2 import service_account
+GS_CREDENTIALS = service_account.Credentials.from_service_account_file(
+    "gcpCredentials.json"
+)
+STORAGES = {
+    'default': {
+        "BACKEND": "storages.backends.gcloud.GoogleCloudStorage",
+        "OPTIONS": {
+            "bucket_name": "bucket-weblio",
+            "credentials": GS_CREDENTIALS,
+            "location": "media",
+            "default_acl": None,
+            "querystring_auth": False,
+        }
+    },
+    'staticfiles': {
+        'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage',
+    },
+}
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Custom user model
-AUTH_USER_MODEL = "members.Member"  
+AUTH_USER_MODEL = "members.Member"
 
 # Ckeditor settings
 CKEDITOR_UPLOAD_PATH = "uploads/"
-CKEDITOR_SETTINGS = {
+CKEDITOR_BASEPATH = '/static/ckeditor/ckeditor/'
+CKEDITOR_CONFIGS = {
     'default': {
         'toolbar': 'all',
         'skin': 'moono-lisa',
