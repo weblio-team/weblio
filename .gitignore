@@ -155,7 +155,6 @@ dmypy.json
 cython_debug/
 
 # Static files
-static/
 media/
 
 # PyCharm
