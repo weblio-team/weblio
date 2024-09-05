@@ -143,27 +143,34 @@ heroku login
 heroku create nombre-de-tu-app
 ```
 
-### 4. Desplegar en Heroku
+### 4. Crear la aplicación en Heroku
+
+```bash
+heroku config:set DISABLE_COLLECTSTATIC=1
+```
+
+### 5. Desplegar en Heroku
 
 Sube tus cambios al repositorio de Heroku:
 
 ```bash
+heroku git:remote -a nombre-de-tu-app
 git push heroku tu_rama_de_produccion:main
 ```
 
-### 5. Migrar la base de datos en Heroku
+### 6. Migrar la base de datos en Heroku
 
 ```bash
 heroku run python manage.py migrate
 ```
 
-### 6. Crear un superusuario para el panel de administración
+### 7. Crear un superusuario para el panel de administración
 
 ```bash
 heroku run python manage.py createsuperuser
 ```
 
-### 7. Encender el servicio de Heroku
+### 8. Encender el servicio de Heroku
 
 ```bash
 heroku open
@@ -171,113 +178,45 @@ heroku open
 
 Ahora podrás acceder a la aplicación en Heroku en la URL proporcionada.
 
-## 🔨 Poblar la base de datos con datos de ejemplo
+## 🔄 Generación de Datos con `populate.py`
 
-Puedes poblar la base de datos con datos de ejemplo usando los scripts `sample_data.bat` (para Windows) y `sample_data.sh` (para Mac/Linux). Estos scripts insertan datos predefinidos para que puedas probar el CMS rápidamente.
+El proyecto incluye un script llamado `populate.py`, el cual está diseñado para la creación y exportación de datos en formato `.json`. Este script es útil para poblar rápidamente la base de datos con información de ejemplo o para exportar datos existentes para su uso en otros entornos.
 
-### En Windows
+### Uso de `populate.py`
 
-1. Abre una terminal de comandos (CMD) en la raíz del proyecto.
-2. Ejecuta el siguiente comando:
+El script acepta dos parámetros principales:
 
-```bash
-sample_data.bat
-```
+- `import`: Permite importar datos desde archivos `.json` a la base de datos.
+- `export`: Exporta los datos de la base de datos a archivos `.json`.
 
-### En Mac/Linux
+Los archivos generados o utilizados por este script se almacenan en un directorio llamado `populate`, que debe existir en el mismo nivel del script o será creado automáticamente.
 
-1. Abre una terminal en la raíz del proyecto.
-2. Da permisos de ejecución al script si es necesario:
+### Ejemplo de uso
 
-```bash
-chmod +x sample_data.sh
-```
+1. Para exportar datos de la base de datos a archivos `.json`, ejecuta el siguiente comando:
 
-3. Ejecuta el script:
+   ```bash
+   python populate.py export
+   ```
 
-```bash
-./sample_data.sh
-```
+   Esto generará archivos `.json` dentro de la carpeta `populate/` con los datos correspondientes.
 
-### ¿Qué hacen estos scripts?
+2. Para importar datos desde archivos `.json` a la base de datos:
 
-Estos scripts ejecutan una serie de comandos Django que crean y poblan la base de datos con contenido de ejemplo, como publicaciones, usuarios y comentarios.
+   ```bash
+   python populate.py import
+   ```
 
-## 📤 Exportación de datos
+   Esto leerá los archivos `.json` de la carpeta `populate/` y cargará los datos en la base de datos.
 
-El script `export_data` te permite exportar los datos actuales de la base de datos a un archivo JSON. Esto es útil para hacer backups de los datos o moverlos entre diferentes entornos.
-
-### Uso de `export_data` en Windows
-
-1. Abre la terminal de comandos.
-2. Ejecuta el siguiente comando:
-
-```bash
-export_data.bat
-```
-
-### Uso de `export_data` en Mac/Linux
-
-1. Abre una terminal.
-2. Da permisos de ejecución si es necesario:
-
-```bash
-chmod +x export_data.sh
-```
-
-3. Ejecuta el script:
-
-```bash
-./export_data.sh
-```
-
-Esto generará un archivo `.json` con los datos exportados, que luego podrás importar en otro entorno usando el comando `loaddata` de Django.
-
-## 🛠️ Verificación de la codificación de archivos: `check_encoding`
-
-El script `check_encoding` es una herramienta que verifica si los archivos del proyecto están usando la codificación correcta, lo cual es importante para evitar errores en diferentes sistemas operativos o con diferentes configuraciones locales.
-
-### Uso en Windows
-
-1. Abre la terminal de comandos.
-2. Ejecuta el siguiente comando:
-
-```bash
-check_encoding.bat
-```
-
-### Uso en Mac/Linux
-
-1. Abre una terminal.
-2. Da permisos de ejecución al script:
-
-```bash
-chmod +x check_encoding.sh
-```
-
-3. Ejecuta el script:
-
-```bash
-./check_encoding.sh
-```
-
-Este script revisará todos los archivos en el proyecto y te notificará si encuentra archivos con codificación incorrecta.
+### Nota
+Asegúrate de tener las dependencias y la base de datos correctamente configuradas antes de ejecutar el script, ya que es necesario para la correcta creación o importación de los datos.
 
 ## 📝 Documentación con Sphinx
 
 Este proyecto usa Sphinx para la generación automática de la documentación técnica. La documentación de Sphinx permite mantener una guía actualizada sobre el uso y desarrollo del proyecto.
 
-### 1. Instalación de Sphinx
-
-Sphinx ya está incluido en las dependencias del proyecto. Para inicializar la documentación por primera vez, navega a la raíz del proyecto y ejecuta:
-
-```bash
-sphinx-quickstart docs
-```
-
-Esto generará una estructura básica de archivos dentro del directorio `docs`.
-
-### 2. Compilar la documentación
+### 1. Compilar la documentación
 
 Para compilar la documentación en formato HTML, ejecuta los siguientes comandos:
 
@@ -288,7 +227,7 @@ make html
 
 Esto generará una versión HTML de la documentación en la carpeta `_build/html`. Podrás abrir el archivo `index.html` en tu navegador para revisar la documentación.
 
-### 3. Actualización de la documentación
+### 2. Actualización de la documentación
 
 Cada vez que hagas cambios en el código o desees actualizar la documentación, asegúrate de recompilarla con:
 
