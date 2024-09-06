@@ -440,11 +440,33 @@ class KanbanBoardView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['draft_posts'] = Post.objects.filter(status='draft')
-        context['to_edit_posts'] = Post.objects.filter(status='to_edit')
-        context['to_publish_posts'] = Post.objects.filter(status='to_publish')
-        context['published_posts'] = Post.objects.filter(status='published')
-        context['form'] = KanbanBoardForm()
+        user = self.request.user
+
+        # Check user permissions
+        can_create = user.has_perm('posts.add_post')
+        can_edit = user.has_perm('posts.change_post')
+        can_publish = user.has_perm('posts.can_publish')
+
+        if can_create and not can_edit and not can_publish:
+            # User can only create posts, show only their posts
+            draft_posts = Post.objects.filter(status='draft', author=user)
+            to_edit_posts = Post.objects.filter(status='to_edit', author=user)
+            to_publish_posts = Post.objects.filter(status='to_publish', author=user)
+            published_posts = Post.objects.filter(status='published', author=user)
+        else:
+            # User has other permissions, show all posts
+            draft_posts = Post.objects.filter(status='draft')
+            to_edit_posts = Post.objects.filter(status='to_edit')
+            to_publish_posts = Post.objects.filter(status='to_publish')
+            published_posts = Post.objects.filter(status='published')
+
+        context.update({
+            'draft_posts': draft_posts,
+            'to_edit_posts': to_edit_posts,
+            'to_publish_posts': to_publish_posts,
+            'published_posts': published_posts,
+            'form': KanbanBoardForm(),
+        })
         return context
     
     def post(self, request, *args, **kwargs):
