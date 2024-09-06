@@ -1,6 +1,7 @@
 from pathlib import Path
 import os
 import dj_database_url
+from google.oauth2 import service_account
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -9,9 +10,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-upbpz=nvj$stnporclt2p*#7f2v_#&p=gjmjyu_jnt6cyqwi2t'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True  # Cambiar a False en producción
 
-ALLOWED_HOSTS = ['.herokuapp.com', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['.herokuapp.com', 'localhost', '127.0.0.1'] if not DEBUG else []
+
 SILENCED_SYSTEM_CHECKS = ['ckeditor.W001']
 
 # Application definition
@@ -66,6 +68,11 @@ DATABASES = {
     'default': dj_database_url.config(
         default='postgresql://postgres.bnrtxzlxyqufgeubptmv:cincoenIS2*@aws-0-sa-east-1.pooler.supabase.com:6543/postgres'
     )
+} if not DEBUG else {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
 }
 
 
@@ -103,30 +110,29 @@ LOGOUT_REDIRECT_URL = '/'
 STATIC_URL = 'static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
+# Media files
 if DEBUG:
     MEDIA_URL = '/media/'
     MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-
-# Configuración de Google Cloud Storage
-from google.oauth2 import service_account
-GS_CREDENTIALS = service_account.Credentials.from_service_account_file(
-    "gcpCredentials.json"
-)
-STORAGES = {
-    'default': {
-        "BACKEND": "storages.backends.gcloud.GoogleCloudStorage",
-        "OPTIONS": {
-            "bucket_name": "bucket-weblio",
-            "credentials": GS_CREDENTIALS,
-            "location": "media",
-            "default_acl": None,
-            "querystring_auth": False,
-        }
-    },
-    'staticfiles': {
-        'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage',
-    },
-}
+else:
+    GS_CREDENTIALS = service_account.Credentials.from_service_account_file(
+        "gcpCredentials.json"
+    )
+    STORAGES = {
+        'default': {
+            "BACKEND": "storages.backends.gcloud.GoogleCloudStorage",
+            "OPTIONS": {
+                "bucket_name": "bucket-weblio",
+                "credentials": GS_CREDENTIALS,
+                "location": "media",
+                "default_acl": None,
+                "querystring_auth": False,
+            }
+        },
+        'staticfiles': {
+            'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage',
+        },
+    }
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
