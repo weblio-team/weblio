@@ -1,0 +1,1 @@
+web: gunicorn weblio.wsgi --log-file -

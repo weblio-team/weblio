@@ -7,4 +7,5 @@ urlpatterns = [
     path('members/', include('members.urls')),
     path('posts/', include('posts.urls')),
     path('', HomeView.as_view(), name='home'),
+    path("ckeditor/", include('services.urls')),
 ]
