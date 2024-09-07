@@ -1,0 +1,258 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<style>
+    .kanban-footer {
+        position: sticky;
+        bottom: 0;
+        width: 100%;
+        background: linear-gradient(to top, #212529, transparent);
+        z-index: 1000;
+        padding: 20px 0;
+        text-align: center;
+    }
+
+    .kanban-footer .btn {
+        font-size: 18px;
+        padding: 10px 20px;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .kanban-footer .btn:hover {
+        background-color: #0056b3;
+    }
+</style>
+<main>
+    <div class="container mt-3">
+        <h1>Tablero Kanban</h1>
+        <div class="board" 
+        data-can-create="{{ perms.posts.add_post }}"
+        data-can-edit="{{ perms.posts.change_post }}" 
+        data-can-publish="{{ perms.posts.can_publish }}">
+            <form method="post" id="kanban-board">
+                {% csrf_token %}
+                <div class="row">
+                    <div class="col column" id="borrador" data-status="draft">
+                        <h3>Borrador</h3>
+                        {% for post in draft_posts %}
+                        <div class="card border border-dark mb-3" draggable="true" id="card-{{ post.pk }}"
+                            data-author="{{ post.author.pk }}">
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    {% if post.author == user %}
+                                    <a href="{% url 'edit-my-post' post.pk %}" class="card-link">{{ post.title }}</a>
+                                    {% else %}
+                                    {{ post.title }}
+                                    {% endif %}
+                                </h5>
+                                <h6 class="card-text text-muted">Autor: {{ post.author }}</h6>
+                                <h6 class="card-text text-muted">Categoria: {{ post.category }}</h6>
+                                <span class="badge bg-secondary">{{ post.status }}</span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <div class="col column" id="editar" data-status="to_edit">
+                        <h3>A editar</h3>
+                        {% for post in to_edit_posts %}
+                        <div class="card border border-dark mb-3" draggable="true" id="card-{{ post.pk }}"
+                            data-author="{{ post.author.pk }}">
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    {% if perms.posts.change_post %}
+                                    <a href="{% url 'edit-a-post' post.pk %}" class="card-link">{{ post.title }}</a>
+                                    {% else %}
+                                    {{ post.title }}
+                                    {% endif %}
+                                </h5>
+                                <h6 class="card-text text-muted">Autor: {{ post.author }}</h6>
+                                <h6 class="card-text text-muted">Categoria: {{ post.category }}</h6>
+                                <span class="badge bg-primary">{{ post.status }}</span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <div class="col column" id="publicar" data-status="to_publish">
+                        <h3>A publicar</h3>
+                        {% for post in to_publish_posts %}
+                        <div class="card border border-dark mb-3" draggable="true" id="card-{{ post.pk }}"
+                            data-author="{{ post.author.pk }}">
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    {% if perms.posts.can_publish %}
+                                    <a href="{% url 'publish-a-post' post.pk %}" class="card-link">{{ post.title }}</a>
+                                    {% else %}
+                                    {{ post.title }}
+                                    {% endif %}
+                                </h5>
+                                <h6 class="card-text text-muted">Autor: {{ post.author }}</h6>
+                                <h6 class="card-text text-muted">Categoria: {{ post.category }}</h6>
+                                <span class="badge bg-warning">{{ post.status }}</span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <div class="col column" id="publicado" data-status="published">
+                        <h3>Publicado</h3>
+                        {% for post in published_posts %}
+                        <div class="card border border-dark mb-3" draggable="true" id="card-{{ post.pk }}"
+                            data-author="{{ post.author.pk }}">
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    <a href="{% url 'post' post.pk post.category.name|slugify post.date_posted|date:'m' post.date_posted|date:'Y' post.title|slugify %}"
+                                        class="card-link">{{ post.title }}</a>
+                                </h5>
+                                <h6 class="card-text text-muted">Autor: {{ post.author }}</h6>
+                                <h6 class="card-text text-muted">Categoria: {{ post.category }}</h6>
+                                <span class="badge bg-success">{{ post.status }}</span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="kanban-footer">
+            <button class="btn btn-primary btn-lg" id="actualizar-button">Actualizar</button>
+        </div>
+    </div>
+</main>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const draggables = document.querySelectorAll(".card");
+    const droppables = document.querySelectorAll(".column");
+    const actualizarButton = document.getElementById("actualizar-button");
+    const board = document.querySelector('.board');
+    const canCreate = board.dataset.canCreate === 'True';
+    const canEdit = board.dataset.canEdit === 'True';
+    const canPublish = board.dataset.canPublish === 'True';
+    const userId = "{{ user.pk }}";
+    let movedPosts = [];
+
+    draggables.forEach((post) => {
+        post.addEventListener("dragstart", () => {
+            post.classList.add("is-dragging");
+        });
+
+        post.addEventListener("dragend", () => {
+            post.classList.remove("is-dragging");
+        });
+    });
+
+    droppables.forEach((zone) => {
+        zone.addEventListener("dragover", (e) => {
+            e.preventDefault();
+            const curPost = document.querySelector(".is-dragging");
+            if (!curPost) {
+                console.log('No post is being dragged.');
+                return;
+            }
+
+            const postAuthorId = curPost.dataset.author;
+            const postStatus = curPost.closest('.column').dataset.status;
+            const targetStatus = zone.dataset.status;
+
+            console.log(`Trying to move post ID: ${curPost.id} from ${postStatus} to ${targetStatus}`);
+
+            if (canMovePost(postStatus, targetStatus, postAuthorId)) {
+                console.log(`Move allowed for post ID: ${curPost.id}`);
+                zone.appendChild(curPost);
+                const post_id = curPost.id.split('-')[1]; // Extract post ID from card ID
+                curPost.dataset.status = targetStatus; // Update the data-status attribute
+                updatePostLink(curPost, post_id, targetStatus); // Update the post link
+                movedPosts.push({ post_id, status_id: targetStatus });
+            }
+        });
+    });
+
+    actualizarButton.addEventListener("click", () => {
+        console.log('Moved Posts:', movedPosts); // Debugging statement
+        send_bulk_request(movedPosts);
+        movedPosts = []; // Clear the moved posts array after sending the request
+    });
+
+    function canMovePost(currentStatus, targetStatus, postAuthorId) {
+        console.log(`Checking permissions for moving post from ${currentStatus} to ${targetStatus} by user ${userId}`);
+        if (currentStatus === 'draft' && targetStatus === 'to_edit' && canCreate && postAuthorId == userId) {
+            return true;
+        }
+        if (currentStatus === 'to_edit' && (targetStatus === 'draft' || targetStatus === 'to_publish') && canEdit) {
+            return true;
+        }
+        if (currentStatus === 'to_publish' && (targetStatus === 'published' || targetStatus === 'to_edit') && canPublish) {
+            return true;
+        }
+        return false;
+    }
+
+    function updatePostLink(postElement, postId, statusId) {
+        const titleElement = postElement.querySelector('.card-title');
+        let url = '';
+        switch (statusId) {
+            case 'draft':
+                url = `{% url 'edit-my-post' 0 %}`.replace('0', postId);
+                titleElement.innerHTML = `<a href="${url}" class="card-link">${titleElement.textContent}</a>`;
+                break;
+            case 'to_edit':
+                url = `{% url 'edit-a-post' 0 %}`.replace('0', postId);
+                titleElement.innerHTML = `<a href="${url}" class="card-link">${titleElement.textContent}</a>`;
+                break;
+            case 'to_publish':
+                url = `{% url 'publish-a-post' 0 %}`.replace('0', postId);
+                titleElement.innerHTML = `<a href="${url}" class="card-link">${titleElement.textContent}</a>`;
+                break;
+            case 'published':
+                url = `{% url 'post' 0 'category' 'month' 'year' 'title' %}`
+                    .replace('0', postId)
+                    .replace('category', postElement.querySelector('.card-text.text-muted').textContent.split(': ')[1].toLowerCase())
+                    .replace('month', '01') // Replace with actual month
+                    .replace('year', '2023') // Replace with actual year
+                    .replace('title', titleElement.textContent.toLowerCase().replace(/ /g, '-'));
+                titleElement.innerHTML = `<a href="${url}" class="card-link">${titleElement.textContent}</a>`;
+                break;
+        }
+    }
+
+    function send_bulk_request(movedPosts) {
+        fetch("{% url 'update-posts-status' %}", {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'), // Ensure CSRF token is included
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ movedPosts })
+        })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Success:', data); // Debugging statement
+                if (data.success) {
+                    location.reload(); // Reload the page to see the changes
+                }
+            })
+            .catch((error) => {
+                console.error('Error:', error); // Debugging statement
+            });
+    }
+
+    // Function to get CSRF token from cookies
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+});
+</script>
+{% endblock %}

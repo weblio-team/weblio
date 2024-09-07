@@ -1,11 +1,11 @@
-from django.urls import path, include
-from .views import SearchPostView, SuscriberPostsView, SuscriberPostDetailView
+from django.urls import path
+from .views import SearchPostView, SuscriberPostsView, SuscriberPostDetailView, UpdatePostsStatusView
 from .views import CategoriesView, CategoryAddView, CategoryDetailView, CategoryEditView, CategoryDeleteView
 from .views import ToEditView, ToEditPostView
 from .views import ToPublishView, ToPublishPostView
 from .views import MyPostsView, MyPostEditView, MyPostAddView, MyPostDeleteView
-from django.conf import settings
-from django.conf.urls.static import static
+from .views import KanbanBoardView
+
 
 urlpatterns = [
     
@@ -35,7 +35,9 @@ urlpatterns = [
     # urls for publishers
     path('to-publish/', ToPublishView.as_view(), name='to-publish'),
     path('to-publish/<int:pk>/', ToPublishPostView.as_view(), name='publish-a-post'),
-    
-    path("ckeditor5/", include('django_ckeditor_5.urls')),
-    
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+    # urls for kanban board
+    path('kanban-board/', KanbanBoardView.as_view(), name='kanban-board'),
+    path('update-posts-status/', UpdatePostsStatusView.as_view(), name='update-posts-status'),
+
+]

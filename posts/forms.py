@@ -1,7 +1,7 @@
 from django import forms
 from django.utils.translation import gettext as _
 from .models import Category, Post, Post
-from django_ckeditor_5.widgets import CKEditor5Widget
+from ckeditor_uploader.widgets import CKEditorUploadingWidget
 from django.utils.safestring import mark_safe
 
 # forms for categories views
@@ -91,7 +91,7 @@ class MyPostEditForm(forms.ModelForm):
             'category': forms.Select(attrs={'class': 'form-control'}),
             'title_tag': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Insertar etiqueta de título'}),
             'summary': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Insertar resumen'}),
-            'body': CKEditor5Widget(attrs={"class": "django_ckeditor_5"}, config_name="comment"),
+            'body': CKEditorUploadingWidget(attrs={"class": "ckeditor"}),
             'status': forms.HiddenInput(),
             'keywords': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Insertar etiquetas'}),
         }
@@ -116,7 +116,7 @@ class ToEditPostForm(forms.ModelForm):
             'category': forms.Select(attrs={'class': 'form-control'}),
             'title_tag': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Insertar etiqueta de titulo'}),
             'summary': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Insertar resumen'}),
-            'body': CKEditor5Widget(attrs={"class": "django_ckeditor_5"}, config_name="comment"),
+            'body': CKEditorUploadingWidget(attrs={"class": "ckeditor"}),
             'author': forms.HiddenInput(),
             'status': forms.HiddenInput(),
         }
@@ -140,7 +140,7 @@ class MyPostAddForm(forms.ModelForm):
             'author': forms.HiddenInput(),
             'title_tag': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Insertar etiqueta de titulo'}),
             'summary': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Insertar resumen'}),
-            'body': CKEditor5Widget(attrs={"class": "django_ckeditor_5"}, config_name="comment"),
+            'body': CKEditorUploadingWidget(attrs={"class": "ckeditor"}),
             'keywords': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Insertar etiquetas'}),
         }
 
@@ -159,3 +159,9 @@ class MyPostAddForm(forms.ModelForm):
         if commit:
             instance.save()
         return instance
+    
+    
+class KanbanBoardForm(forms.ModelForm):
+    class Meta:
+        model = Post
+        fields = ['title', 'status', 'author', 'category']
