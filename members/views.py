@@ -327,12 +327,41 @@ class RoleCreateView(FormView):
 
 
 class MemberEditGroupView(views.View):
+    """
+    Vista para editar los roles (grupos) de un miembro.
+
+    Métodos:
+        - get: Recupera el miembro especificado por pk, y muestra un formulario para editar sus roles.
+        - post: Procesa el formulario enviado para actualizar los roles del miembro, ajustando los permisos en consecuencia.
+    """
     def get(self, request, pk):
+        """
+        Recupera el miembro especificado por pk y muestra un formulario para editar sus roles.
+
+        Args:
+            request: La solicitud HTTP.
+            pk: El identificador del miembro cuyo rol se va a editar.
+
+        Returns:
+            Renderiza la plantilla 'members/edit_group.html' con el formulario y los datos del miembro.
+        """
+
         member = get_object_or_404(Member, pk=pk)
         form = MemberEditGroupForm(instance=member)
         return render(request, 'members/edit_group.html', {'form': form, 'member': member})
 
     def post(self, request, pk):
+        """
+        Procesa el formulario enviado para actualizar los roles del miembro.
+
+        Args:
+            request: La solicitud HTTP que contiene los datos del formulario.
+            pk: El identificador del miembro cuyo rol se va a actualizar.
+
+        Returns:
+            Redirige a la lista de miembros si el formulario es válido; en caso contrario, vuelve a mostrar el formulario con errores.
+        """
+
         member = get_object_or_404(Member, pk=pk)
         form = MemberEditGroupForm(request.POST, instance=member)
         if form.is_valid():
@@ -360,17 +389,47 @@ class MemberEditGroupView(views.View):
         return render(request, 'members/edit_group.html', {'form': form, 'member': member})
     
 class MemberEditPermissionView(views.View):
+    """
+    Vista para editar los permisos de un miembro.
+
+    Métodos:
+        - get: Recupera el miembro especificado por pk y muestra un formulario para editar sus permisos, junto con los permisos actuales y los nombres de los grupos a los que pertenece.
+        - post: Procesa el formulario enviado para actualizar los permisos del miembro.
+    """
     def get(self, request, pk):
+        """
+        Recupera el miembro especificado por pk y muestra un formulario para editar sus permisos.
+
+        Args:
+            request: La solicitud HTTP.
+            pk: El identificador del miembro cuyos permisos se van a editar.
+
+        Returns:
+            Renderiza la plantilla 'members/edit_permission.html' con el formulario, permisos actuales y nombres de los grupos del miembro.
+        """
         member = get_object_or_404(Member, pk=pk)
         form = MemberEditPermissionForm(instance=member)
         user_permissions = member.user_permissions.all()
+        group_names = member.groups.values_list('name', flat = True)
+
         return render(request, 'members/edit_permission.html', {
             'form': form,
             'member': member,
-            'user_permissions': user_permissions
+            'user_permissions': user_permissions,
+            'group_names': group_names
         })
 
     def post(self, request, pk):
+        """
+        Procesa el formulario enviado para actualizar los permisos del miembro.
+
+        Args:
+            request: La solicitud HTTP que contiene los datos del formulario.
+            pk: El identificador del miembro cuyos permisos se van a actualizar.
+
+        Returns:
+            Redirige a la lista de miembros si el formulario es válido; en caso contrario, vuelve a mostrar el formulario con errores.
+        """
         member = get_object_or_404(Member, pk=pk)
         form = MemberEditPermissionForm(request.POST, instance=member)
         if form.is_valid():
@@ -385,14 +444,42 @@ class MemberEditPermissionView(views.View):
         })
 
 class MemberStatusView(views.View):
+    """
+    Vista para editar el estado de activación de un miembro.
+
+    Métodos:
+        - get: Recupera el miembro especificado por pk y muestra un formulario para editar su estado de activación.
+        - post: Procesa el formulario enviado para actualizar el estado de activación del miembro.
+
+    """
     template_name = 'members/member_status.html'
 
     def get(self, request, pk):
+        """
+        Recupera el miembro especificado por pk y muestra un formulario para editar su estado de activación.
+
+        Args:
+            request: La solicitud HTTP.
+            pk: El identificador del miembro cuyo estado de activación se va a editar.
+
+        Returns:
+            Renderiza la plantilla 'members/member_status.html' con el formulario para editar el estado de activación del miembro.
+        """    
         member = get_object_or_404(Member, pk=pk)
         form = MemberStatusForm(instance=member)
         return render(request, self.template_name, {'form': form, 'member': member})
 
     def post(self, request, pk):
+        """
+        Procesa el formulario enviado para actualizar el estado de activación del miembro.
+
+        Args:
+            request: La solicitud HTTP que contiene los datos del formulario.
+            pk: El identificador del miembro cuyo estado de activación se va a actualizar.
+
+        Returns:
+            Redirige a la lista de miembros si el formulario es válido; en caso contrario, vuelve a mostrar el formulario con errores.
+        """
         member = get_object_or_404(Member, pk=pk)
         form = MemberStatusForm(request.POST, instance=member)
         if form.is_valid():
