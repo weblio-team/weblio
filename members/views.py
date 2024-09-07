@@ -1,5 +1,5 @@
 from pyexpat.errors import messages
-from django.views.generic import FormView, TemplateView,  CreateView
+from django.views.generic import FormView, TemplateView,  CreateView, UpdateView
 from django.urls import reverse_lazy
 
 from django.contrib.auth.models import Group
@@ -13,6 +13,8 @@ from .forms import CreateGroupForm, MemberEditGroupForm, MemberEditPermissionFor
 from .models import Member
 from .forms import MemberRegisterForm, MemberJoinForm, MemberLoginForm
 from .forms import RoleCreateForm
+from .forms import UserChangeForm
+from .forms import EditProfileForm
 from django.contrib import messages
 from django.http import HttpResponseRedirect 
 from django.contrib.auth import authenticate
@@ -453,3 +455,15 @@ class MemberJoinView(CreateView):
         roles = Group.objects.exclude(name='suscriptor')
         context['roles'] = roles
         return context
+    
+class UserEditView(UpdateView):
+    form_class = EditProfileForm
+    template_name = 'members/edit_profile.html'
+    success_url = reverse_lazy('home')
+
+    def get_object(self):
+        return self.request.user
+
+
+def profile_view(request):
+    return render(request, 'members/profile.html', {'user': request.user})

@@ -334,3 +334,33 @@ class RoleCreateForm(forms.ModelForm):
             group.save()
             group.permissions.set(self.cleaned_data['permissions'])
         return group
+
+class EditProfileForm(UserChangeForm):
+    email = forms.EmailField(
+        widget=forms.EmailInput(attrs={'class': 'form-control'}),
+        label='Correo electrónico'
+    )
+    first_name = forms.CharField(
+        max_length=100,
+        widget=forms.TextInput(attrs={'class': 'form-control'}),
+        label='Nombre'
+    )
+    last_name = forms.CharField(
+        max_length=100,
+        widget=forms.TextInput(attrs={'class': 'form-control'}),
+        label='Apellido'
+    )
+    username = forms.CharField(
+        max_length=100,
+        widget=forms.TextInput(attrs={'class': 'form-control'}),
+        label='Usuario'
+    )
+
+    class Meta:
+        model = Member
+        fields = ( 'username', 'first_name', 'last_name', 'email')
+    
+    def __init__(self, *args, **kwargs):
+        super(EditProfileForm, self).__init__(*args, **kwargs)
+        # Excluir los campos de contraseña
+        self.fields.pop('password', None)
