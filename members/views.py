@@ -12,10 +12,10 @@ from django.shortcuts import render, get_object_or_404, redirect
 from .forms import CreateGroupForm, MemberEditGroupForm, MemberEditPermissionForm, MemberStatusForm
 from .models import Member
 from .forms import MemberRegisterForm, MemberJoinForm, MemberLoginForm
-from .forms import RoleCreateForm
 from django.contrib import messages
 from django.http import HttpResponseRedirect 
 from django.contrib.auth import authenticate
+from django.contrib.auth.mixins import PermissionRequiredMixin, LoginRequiredMixin
 
 
 class HomeView(TemplateView):
@@ -27,18 +27,122 @@ class HomeView(TemplateView):
     """
     template_name = 'home.html'
 
-class MemberListView(TemplateView):
+
+# views for groups
+class GroupListView(LoginRequiredMixin, PermissionRequiredMixin, TemplateView):
+    """
+    Vista para listar todos los grupos junto con sus permisos.
+
+    Atributos:
+        template_name (str): Ruta del template que se utiliza para renderizar la vista.
+        permission_required (list): Lista de permisos requeridos para acceder a la vista.
+
+    Métodos:
+        get_context_data(**kwargs): Agrega los grupos con sus permisos al contexto de la plantilla.
+        form_valid(form): Procesa el formulario cuando es válido.
+        form_invalid(form): Procesa el formulario cuando es inválido.
+    """
+    template_name = 'groups/group_list.html'
+    permission_required = ['auth.view_group',]
+
+    def get_context_data(self, **kwargs):
+        """
+        Agrega los grupos con sus permisos al contexto de la plantilla.
+
+        Returns:
+            dict: Contexto con los grupos y permisos.
+        """
+        context = super().get_context_data(**kwargs)
+        groups = Group.objects.all().prefetch_related('permissions')
+        context['groups'] = groups
+        return context
+
+    def form_valid(self, form):
+        """
+        Procesa el formulario cuando es válido.
+
+        Args:
+            form (GroupListForm): El formulario que ha sido validado.
+
+        Returns:
+            HttpResponse: Respuesta con el contexto actualizado con los permisos del grupo seleccionado.
+        """
+        group_id = form.cleaned_data['group'].id
+        group = Group.objects.get(id=group_id)
+        permissions = group.permissions.all()
+        
+        # Pasar los permisos al contexto de la plantilla
+        context = self.get_context_data(form=form, permissions=permissions)
+        return self.render_to_response(context)
+    
+    def form_invalid(self, form):
+        """
+        Procesa el formulario cuando es inválido.
+
+        Args:
+            form (GroupListForm): El formulario inválido.
+
+        Returns:
+            HttpResponse: Respuesta con el contexto de la plantilla, sin permisos.
+        """
+        context = self.get_context_data(form=form, permissions=None)
+        return self.render_to_response(context)
+
+
+class CreateGroupView(LoginRequiredMixin, PermissionRequiredMixin, FormView):
+    """
+    Vista para crear un nuevo grupo y asignarle permisos.
+
+    Muestra un formulario que permite ingresar un nombre para el nuevo grupo
+    y asignarle múltiples permisos.
+
+    Atributos:
+        template_name (str): Ruta del template que se utiliza para renderizar la vista.
+        form_class (class): Clase del formulario que se utiliza en la vista.
+        success_url (str): URL a la que se redirige después de que el formulario es válido.
+        permission_required (list): Lista de permisos requeridos para acceder a la vista.
+
+    Métodos:
+        form_valid(form): Método que se ejecuta cuando el formulario es válido y guarda el nuevo grupo.
+    """
+    template_name = 'groups/group_create.html'
+    form_class = CreateGroupForm
+    success_url = reverse_lazy('group-list')
+    permission_required = ['auth.add_group', 
+                           'auth.add_permission'
+        ]
+
+    def form_valid(self, form):
+        """
+        Procesa el formulario cuando es válido.
+
+        Este método guarda el nuevo grupo y asigna los permisos seleccionados.
+
+        Args:
+            form (CreateGroupForm): El formulario que ha sido validado.
+
+        Returns:
+            HttpResponse: Redirige a `success_url` después de crear el grupo.
+        """
+        form.save()
+        return super().form_valid(form)
+
+# views for members
+class MemberListView(LoginRequiredMixin, PermissionRequiredMixin, TemplateView):
     """
     Vista para listar todos los miembros con su grupo y permisos.
 
     Atributos:
         template_name (str): Ruta del template que se utiliza para renderizar la vista.
+        permission_required (list): Lista de permisos requeridos para acceder a la vista.
 
     Métodos:
         get_context_data(**kwargs): Agrega los miembros con sus grupos y permisos al contexto de la plantilla.
         post(request, *args, **kwargs): Maneja la selección de un miembro y redirige a la página de edición.
     """
     template_name = 'members/member_list.html'
+    permission_required = ['auth.view_member',
+        ]
 
     def get_context_data(self, **kwargs):
         """
@@ -76,263 +180,39 @@ class MemberListView(TemplateView):
         return self.get(request, *args, **kwargs)
 
 
-class GroupListView(TemplateView):
+class MemberEditGroupView(LoginRequiredMixin, PermissionRequiredMixin, views.View):
     """
-    Vista para listar todos los grupos junto con sus permisos.
-
+    Vista para editar los grupos de un miembro.
     Atributos:
-        template_name (str): Ruta del template que se utiliza para renderizar la vista.
-
-    Métodos:
-        get_context_data(**kwargs): Agrega los grupos con sus permisos al contexto de la plantilla.
-        form_valid(form): Procesa el formulario cuando es válido.
-        form_invalid(form): Procesa el formulario cuando es inválido.
+        permission_required (list): Lista de permisos requeridos para acceder a la vista.
     """
-    template_name = 'groups/group_list.html'
 
-    def get_context_data(self, **kwargs):
-        """
-        Agrega los grupos con sus permisos al contexto de la plantilla.
-
-        Returns:
-            dict: Contexto con los grupos y permisos.
-        """
-        context = super().get_context_data(**kwargs)
-        groups = Group.objects.all().prefetch_related('permissions')
-        context['groups'] = groups
-        return context
-
-    def form_valid(self, form):
-        """
-        Procesa el formulario cuando es válido.
-
-        Args:
-            form (GroupListForm): El formulario que ha sido validado.
-
-        Returns:
-            HttpResponse: Respuesta con el contexto actualizado con los permisos del grupo seleccionado.
-        """
-        group_id = form.cleaned_data['group'].id
-        group = Group.objects.get(id=group_id)
-        permissions = group.permissions.all()
-        
-        # Pasar los permisos al contexto de la plantilla
-        context = self.get_context_data(form=form, permissions=permissions)
-        return self.render_to_response(context)
-    
-    def form_invalid(self, form):
-        """
-        Procesa el formulario cuando es inválido.
-
-        Args:
-            form (GroupListForm): El formulario inválido.
-
-        Returns:
-            HttpResponse: Respuesta con el contexto de la plantilla, sin permisos.
-        """
-        context = self.get_context_data(form=form, permissions=None)
-        return self.render_to_response(context)
-
-
-class CreateGroupView(FormView):
-    """
-    Vista para crear un nuevo grupo y asignarle permisos.
-
-    Muestra un formulario que permite ingresar un nombre para el nuevo grupo
-    y asignarle múltiples permisos.
-
-    Atributos:
-        template_name (str): Ruta del template que se utiliza para renderizar la vista.
-        form_class (class): Clase del formulario que se utiliza en la vista.
-        success_url (str): URL a la que se redirige después de que el formulario es válido.
-
-    Métodos:
-        form_valid(form): Método que se ejecuta cuando el formulario es válido y guarda el nuevo grupo.
-    """
-    template_name = 'groups/group_create.html'
-    form_class = CreateGroupForm
-    success_url = reverse_lazy('group-list')
-
-    def form_valid(self, form):
-        """
-        Procesa el formulario cuando es válido.
-
-        Este método guarda el nuevo grupo y asigna los permisos seleccionados.
-
-        Args:
-            form (CreateGroupForm): El formulario que ha sido validado.
-
-        Returns:
-            HttpResponse: Redirige a `success_url` después de crear el grupo.
-        """
-        form.save()
-        return super().form_valid(form)
-
-
-class MemberEditView(views.View):
-    """
-    Vista para editar el grupo y permisos de un miembro.
-
-    Atributos:
-        template_name (str): Ruta del template que se utiliza para renderizar la vista.
-
-    Métodos:
-        get(request, pk): Obtiene los detalles del miembro y los renderiza en la plantilla.
-        post(request, pk): Procesa las modificaciones de grupo y permisos y redirige a la lista de miembros.
-    """
-    template_name = 'members/member_edit.html'
+    permission_required = ['auth.change_member',
+        ]
 
     def get(self, request, pk):
         """
-        Obtiene los detalles del miembro y los renderiza en la plantilla.
-
-        Args:
-            request (HttpRequest): El objeto de la solicitud HTTP.
-            pk (int): La clave primaria del miembro.
-
-        Returns:
-            HttpResponse: Renderiza la plantilla con los detalles del miembro.
+        Obtiene el formulario de edición de grupos para un miembro existente.
+        Parámetros:
+        - request: La solicitud HTTP recibida.
+        - pk: El ID del miembro a editar.
+        Retorna:
+        - Una respuesta HTTP con el formulario de edición de grupos y el miembro.
         """
-        member = get_object_or_404(Member, pk=pk)
-        groups = Group.objects.all()
-        selected_group = member.groups.first()
-        permissions = selected_group.permissions.all() if selected_group else []
-
-        context = {
-            'member': member,
-            'groups': groups,
-            'selected_group': selected_group,
-            'permissions': permissions,
-        }
-        return render(request, self.template_name, context)
-
-    def post(self, request, pk):
-        """
-        Procesa las modificaciones de grupo y permisos y redirige a la lista de miembros.
-
-        Args:
-            request (HttpRequest): El objeto de la solicitud HTTP.
-            pk (int): La clave primaria del miembro.
-
-        Returns:
-            HttpResponse: Redirige a la lista de miembros después de guardar los cambios.
-        """
-        member = get_object_or_404(Member, pk=pk)
-        group_id = request.POST.get('group')
-        selected_group = Group.objects.get(id=group_id)
-
-        # Actualizar grupo del miembro
-        member.groups.clear()
-        member.groups.add(selected_group)
-
-        # Actualizar permisos según el checkbox
-        selected_permissions = request.POST.getlist('permissions')
-        member.user_permissions.clear()
-        member.user_permissions.add(*selected_permissions)
-
-        # Redirigir a la lista de miembros después de guardar los cambios
-        return redirect('member-list')
-    
-class RoleListView(TemplateView):
-    """
-    Vista para listar todos los grupos junto con sus permisos.
-
-    Atributos:
-        template_name (str): Ruta del template que se utiliza para renderizar la vista.
-
-    Métodos:
-        get_context_data(**kwargs): Agrega los grupos con sus permisos al contexto de la plantilla.
-        form_valid(form): Procesa el formulario cuando es válido.
-        form_invalid(form): Procesa el formulario cuando es inválido.
-    """
-    template_name = 'groups/group_list.html'
-
-    def get_context_data(self, **kwargs):
-        """
-        Agrega los grupos con sus permisos al contexto de la plantilla.
-
-        Returns:
-            dict: Contexto con los grupos y permisos.
-        """
-        context = super().get_context_data(**kwargs)
-        groups = Group.objects.all().prefetch_related('permissions')
-        context['groups'] = groups
-        return context
-
-    def form_valid(self, form):
-        """
-        Procesa el formulario cuando es válido.
-
-        Args:
-            form (GroupListForm): El formulario que ha sido validado.
-
-        Returns:
-            HttpResponse: Respuesta con el contexto actualizado con los permisos del grupo seleccionado.
-        """
-        group_id = form.cleaned_data['group'].id
-        group = Group.objects.get(id=group_id)
-        permissions = group.permissions.all()
-        
-        # Pasar los permisos al contexto de la plantilla
-        context = self.get_context_data(form=form, permissions=permissions)
-        return self.render_to_response(context)
-    
-    def form_invalid(self, form):
-        """
-        Procesa el formulario cuando es inválido.
-
-        Args:
-            form (GroupListForm): El formulario inválido.
-
-        Returns:
-            HttpResponse: Respuesta con el contexto de la plantilla, sin permisos.
-        """
-        context = self.get_context_data(form=form, permissions=None)
-        return self.render_to_response(context)
-
-
-class RoleCreateView(FormView):
-    """
-    Vista para crear un nuevo grupo y asignarle permisos.
-
-    Muestra un formulario que permite ingresar un nombre para el nuevo grupo
-    y asignarle múltiples permisos.
-
-    Atributos:
-        template_name (str): Ruta del template que se utiliza para renderizar la vista.
-        form_class (class): Clase del formulario que se utiliza en la vista.
-        success_url (str): URL a la que se redirige después de que el formulario es válido.
-
-    Métodos:
-        form_valid(form): Método que se ejecuta cuando el formulario es válido y guarda el nuevo grupo.
-    """
-    template_name = 'groups/group_create.html'
-    form_class = RoleCreateForm
-    success_url = reverse_lazy('group-list')
-
-    def form_valid(self, form):
-        """
-        Procesa el formulario cuando es válido.
-
-        Este método guarda el nuevo grupo y asigna los permisos seleccionados.
-
-        Args:
-            form (CreateGroupForm): El formulario que ha sido validado.
-
-        Returns:
-            HttpResponse: Redirige a `success_url` después de crear el grupo.
-        """
-        form.save()
-        return super().form_valid(form)
-
-
-class MemberEditGroupView(views.View):
-    def get(self, request, pk):
         member = get_object_or_404(Member, pk=pk)
         form = MemberEditGroupForm(instance=member)
         return render(request, 'members/edit_group.html', {'form': form, 'member': member})
 
     def post(self, request, pk):
+        """
+        Actualiza los grupos de un miembro y sus permisos asociados.
+        Parámetros:
+        - request: La solicitud HTTP recibida.
+        - pk: El ID del miembro a editar.
+        Retorna:
+        - Una respuesta HTTP redirigiendo a la lista de miembros si la actualización es exitosa,
+          o una respuesta HTTP con el formulario de edición de grupos y el miembro en caso contrario.
+        """
         member = get_object_or_404(Member, pk=pk)
         form = MemberEditGroupForm(request.POST, instance=member)
         if form.is_valid():
@@ -359,8 +239,33 @@ class MemberEditGroupView(views.View):
             return redirect('member-list')
         return render(request, 'members/edit_group.html', {'form': form, 'member': member})
     
-class MemberEditPermissionView(views.View):
+
+class MemberEditPermissionView(LoginRequiredMixin, PermissionRequiredMixin, views.View):
+    """
+    Vista de edición de permisos de miembro.
+    Esta vista permite editar los permisos de un miembro específico.
+    Se espera que se proporcione un ID de miembro válido como parámetro de ruta.
+
+    Atributos:
+        permission_required: Lista de permisos requeridos para acceder a esta vista.
+    
+    Métodos:
+        get(request, pk): Obtiene el formulario de edición de permisos y los permisos actuales del miembro.
+        post(request, pk): Guarda los cambios realizados en el formulario de edición de permisos.
+    """
+
+    permission_required = ['auth.change_member',
+        ]
+    
     def get(self, request, pk):
+        """
+        Obtiene el formulario de edición de permisos y los permisos actuales del miembro.
+        Parámetros:
+        - request: La solicitud HTTP recibida.
+        - pk: El ID del miembro a editar.
+        Retorna:
+        - Una respuesta HTTP que renderiza la plantilla 'members/edit_permission.html' con el formulario, el miembro y los permisos actuales.
+        """
         member = get_object_or_404(Member, pk=pk)
         form = MemberEditPermissionForm(instance=member)
         user_permissions = member.user_permissions.all()
@@ -371,6 +276,15 @@ class MemberEditPermissionView(views.View):
         })
 
     def post(self, request, pk):
+        """
+        Guarda los cambios realizados en el formulario de edición de permisos.
+        Parámetros:
+        - request: La solicitud HTTP recibida.
+        - pk: El ID del miembro a editar.
+        Retorna:
+        - Una respuesta HTTP que redirige a la vista 'member-list' si los cambios se guardaron correctamente.
+        - Una respuesta HTTP que renderiza la plantilla 'members/edit_permission.html' con el formulario, el miembro y los permisos actuales si hay errores en el formulario.
+        """
         member = get_object_or_404(Member, pk=pk)
         form = MemberEditPermissionForm(request.POST, instance=member)
         if form.is_valid():
@@ -384,15 +298,42 @@ class MemberEditPermissionView(views.View):
             'user_permissions': member.user_permissions.all()
         })
 
-class MemberStatusView(views.View):
+
+class MemberStatusView(LoginRequiredMixin, PermissionRequiredMixin, views.View):
+    """
+    Vista para mostrar y actualizar el estado de un miembro.
+    Attributes:
+        template_name (str): El nombre de la plantilla HTML para renderizar la vista.
+        permission_required (list): Lista de permisos requeridos para acceder a la vista.
+    """
     template_name = 'members/member_status.html'
+    permission_required = ['auth.change_member',
+        ]
 
     def get(self, request, pk):
+        """
+        Obtiene un miembro específico y muestra el formulario para actualizar su estado.
+            Args:
+                request (HttpRequest): La solicitud HTTP recibida.
+                pk (int): El ID del miembro.
+            Returns:
+                HttpResponse: La respuesta HTTP que muestra el formulario de estado del miembro.
+        """
+
         member = get_object_or_404(Member, pk=pk)
         form = MemberStatusForm(instance=member)
         return render(request, self.template_name, {'form': form, 'member': member})
 
     def post(self, request, pk):
+        """
+         Actualiza el estado de un miembro específico según los datos enviados en la solicitud POST.
+            Args:
+                request (HttpRequest): La solicitud HTTP recibida.
+                pk (int): El ID del miembro.
+            Returns:
+                HttpResponse: La respuesta HTTP que redirige a la lista de miembros si el formulario es válido,
+                o muestra el formulario de estado del miembro con errores si el formulario no es válido.
+        """
         member = get_object_or_404(Member, pk=pk)
         form = MemberStatusForm(request.POST, instance=member)
         if form.is_valid():
@@ -400,10 +341,12 @@ class MemberStatusView(views.View):
             return redirect('member-list')
         return render(request, self.template_name, {'form': form, 'member': member})
     
+
 class MemberRegisterView(CreateView):
     form_class = MemberRegisterForm
     template_name = 'members/member_register.html'
     success_url = reverse_lazy('member-login')
+
 
 class MemberLoginView(LoginView):
     """
@@ -435,7 +378,6 @@ class MemberLoginView(LoginView):
         return reverse_lazy('posts')  
     
 
-
 class MemberJoinView(CreateView):
     """
     Vista para manejar el formulario de unirse al sistema. El usuario selecciona un rol 
@@ -452,4 +394,53 @@ class MemberJoinView(CreateView):
         context = super().get_context_data(**kwargs)
         roles = Group.objects.exclude(name='suscriptor')
         context['roles'] = roles
+        return context
+
+
+# views for error pages
+class Error404View(TemplateView):
+    """
+    Vista para mostrar la página de error 404.
+    Atributos:
+    - template_name (str): El nombre de la plantilla HTML para mostrar la página de error.
+    """
+    template_name = 'error.html'
+
+    def get_context_data(self, **kwargs):
+        """
+        Obtiene los datos del contexto para la página de error.
+        Parámetros:
+        - kwargs (dict): Argumentos clave-valor adicionales para el contexto.
+        Retorna:
+        - dict: El contexto con los datos de error.
+        """
+        context = super().get_context_data(**kwargs)
+        context['error_code'] = 404
+        context['error_message'] = 'Página no encontrada'
+        context['error_description'] = 'La página que estás buscando no existe o fue movida.'
+        return context
+
+
+class Error500View(TemplateView):
+    """
+    Vista para manejar errores internos del servidor.
+    Atributos:
+    - template_name (str): El nombre de la plantilla a utilizar para mostrar el error.
+    Métodos:
+    - get_context_data(**kwargs): Retorna un diccionario con los datos del contexto para la plantilla.
+    """
+    template_name = 'error.html'
+
+    def get_context_data(self, **kwargs):
+        """
+        Retorna un diccionario con los datos del contexto para la plantilla.
+        Parámetros:
+        - kwargs (dict): Argumentos clave adicionales.
+        Retorna:
+        - context (dict): Un diccionario con los datos del contexto.
+        """
+        context = super().get_context_data(**kwargs)
+        context['error_code'] = 500
+        context['error_message'] = 'Error interno del servidor'
+        context['error_description'] = 'Ocurrió un problema con el servidor. Estamos trabajando para resolverlo.'
         return context

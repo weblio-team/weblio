@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}{{ error_code }} {{ error_message }}{% endblock %}
+{% block content %}
+    <main role="main" class="container h-100 d-flex flex-column justify-content-center align-items-center position-relative">
+        <style>
+            .error-code {
+                font-size: 20rem;
+                font-weight: bold;
+                font-family: 'Arial', sans-serif;
+                color: rgba(255, 255, 255, 0.1);
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                z-index: 0;
+                pointer-events: none;
+            }
+        </style>
+        <div class="error-code">{{ error_code }}</div>
+        <div class="error-container" style="text-align: center; position: relative; z-index: 1;">
+            <div class="error-message" style=" font-size: 2rem; font-weight: bold; margin-bottom: 1rem; color: #f8f9fa; z-index: 1;">{{ error_message }}</div>
+            <p class="error-description" style="color: #adb5bd; margin-bottom: 2rem; z-index: 1;">{{ error_description }}</p>
+            <a href="/" class="btn btn-primary btn-lg" style="z-index: 1;">Volver al inicio</a>
+        </div>
+    </main>
+{% endblock %}

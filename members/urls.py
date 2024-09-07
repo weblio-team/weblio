@@ -2,9 +2,9 @@ from django.urls import path
 from .views import GroupListView, CreateGroupView, MemberEditGroupView, MemberEditPermissionView
 from .views import MemberListView, MemberJoinView, MemberRegisterView, MemberLoginView, MemberStatusView
 from .views import GroupListView, CreateGroupView
-from .views import MemberListView, MemberEditView
+from .views import MemberListView
 
-from .views import MemberListView, MemberJoinView, MemberRegisterView, MemberLoginView, MemberEditView
+from .views import MemberListView, MemberJoinView, MemberRegisterView, MemberLoginView
 from django.contrib.auth import views as auth_views
 
 urlpatterns = [

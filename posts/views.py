@@ -1,8 +1,8 @@
 import json
 from django.http import HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404, redirect
-from django.urls import reverse, reverse_lazy
-from django.contrib.auth.mixins import PermissionRequiredMixin
+from django.urls import reverse_lazy
+from django.contrib.auth.mixins import PermissionRequiredMixin, LoginRequiredMixin
 from django.utils.decorators import method_decorator
 from django.views import View
 from .models import Category, Post
@@ -10,7 +10,6 @@ from django.views.generic import ListView, DetailView, CreateView, UpdateView, D
 from .forms import CategoryForm, CategoryEditForm, KanbanBoardForm, MyPostEditForm, ToEditPostForm, MyPostAddForm
 from django.db.models import Q
 from django.views.decorators.csrf import csrf_exempt
-from django.contrib.auth.mixins import LoginRequiredMixin
 
 # views for category administrators
 
@@ -28,7 +27,7 @@ class CategoriesView(ListView):
     ordering = ['-id']
 
 
-class CategoryAddView(PermissionRequiredMixin, CreateView):
+class CategoryAddView(PermissionRequiredMixin, LoginRequiredMixin, CreateView):
     """
     Vista para crear una nueva categoría, solo accesible para usuarios con permisos específicos.
 
@@ -74,7 +73,7 @@ class CategoryDetailView(DetailView):
         return context
 
 
-class CategoryEditView(PermissionRequiredMixin, UpdateView):
+class CategoryEditView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
     """
     Vista para editar una categoría existente, solo accesible para usuarios con permisos específicos.
 
@@ -96,7 +95,7 @@ class CategoryEditView(PermissionRequiredMixin, UpdateView):
         return get_object_or_404(Category, pk=pk, name__iexact=name.replace('-', ' '))
 
 
-class CategoryDeleteView(PermissionRequiredMixin, DeleteView):
+class CategoryDeleteView(PermissionRequiredMixin, LoginRequiredMixin, DeleteView):
     """
     Vista para eliminar una categoría existente, solo accesible para usuarios con permisos específicos.
 
@@ -120,7 +119,7 @@ class CategoryDeleteView(PermissionRequiredMixin, DeleteView):
 
 # views for authors
 
-class MyPostsView(ListView):
+class MyPostsView(PermissionRequiredMixin, LoginRequiredMixin, ListView):
     """
     Vista para listar todas las publicaciones de un autor específico.
 
@@ -132,6 +131,7 @@ class MyPostsView(ListView):
     model = Post
     template_name = 'create/my_posts.html'
     ordering = ['-date_posted']
+    permission_required = 'posts.add_post'
     
     def get_queryset(self):
         """Obtiene las publicaciones del usuario autenticado, ordenadas por fecha de publicación."""
@@ -144,7 +144,7 @@ class MyPostsView(ListView):
         return context
 
 
-class MyPostEditView(UpdateView):
+class MyPostEditView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
     """
     Vista para editar una publicación existente, accesible para el autor de la publicación.
 
@@ -158,6 +158,7 @@ class MyPostEditView(UpdateView):
     form_class = MyPostEditForm
     template_name = 'create/edit.html'
     success_url = reverse_lazy('my-posts')
+    permission_required = 'posts.add_post'
 
     def get_object(self, queryset=None):
         """Obtiene la publicación específica basada en 'pk'."""
@@ -177,7 +178,7 @@ class MyPostEditView(UpdateView):
         return super().form_valid(form)
 
 
-class MyPostDeleteView(DeleteView):
+class MyPostDeleteView(PermissionRequiredMixin, LoginRequiredMixin, DeleteView):
     """
     Vista para eliminar una publicación existente.
 
@@ -189,6 +190,7 @@ class MyPostDeleteView(DeleteView):
     model = Post
     template_name = 'create/delete.html'
     success_url = reverse_lazy('posts')
+    permission_required = 'posts.add_post'
 
     def get_object(self):
         """Obtiene la publicación específica basada en 'pk'."""
@@ -196,7 +198,7 @@ class MyPostDeleteView(DeleteView):
         return get_object_or_404(Post, pk=pk)
 
 
-class MyPostAddView(CreateView):
+class MyPostAddView(PermissionRequiredMixin, LoginRequiredMixin, CreateView):
     """
     Vista para crear una nueva publicación.
 
@@ -210,6 +212,7 @@ class MyPostAddView(CreateView):
     form_class = MyPostAddForm
     template_name = 'create/create.html'
     success_url = reverse_lazy('my-posts')
+    permission_required = 'posts.add_post'
 
     def get_form_kwargs(self):
         """Añade el usuario autenticado a los argumentos del formulario."""
@@ -225,7 +228,7 @@ class MyPostAddView(CreateView):
 
 # views for editors
 
-class ToEditView(ListView):
+class ToEditView(PermissionRequiredMixin, LoginRequiredMixin, ListView):
     """
     Vista para listar todas las publicaciones que necesitan edición.
 
@@ -237,6 +240,7 @@ class ToEditView(ListView):
     model = Post
     template_name = 'edit/to_edit.html'
     ordering = ['-date_posted']
+    permission_required = 'posts.change_post'
     
     def get_queryset(self):
         """Obtiene las publicaciones con estado 'to_edit', ordenadas por fecha de publicación."""
@@ -249,7 +253,7 @@ class ToEditView(ListView):
         return context
 
 
-class ToEditPostView(UpdateView):
+class ToEditPostView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
     """
     Vista para editar una publicación que está en proceso de edición.
 
@@ -263,6 +267,7 @@ class ToEditPostView(UpdateView):
     form_class = ToEditPostForm
     template_name = 'edit/edit.html'
     success_url = reverse_lazy('to-edit')
+    permission_required = 'posts.change_post'
 
     def get_object(self, queryset=None):
         """Obtiene la publicación específica basada en 'pk'."""
@@ -281,7 +286,7 @@ class ToEditPostView(UpdateView):
 
 # views for publishers
 
-class ToPublishView(ListView):
+class ToPublishView(PermissionRequiredMixin, LoginRequiredMixin, ListView):
     """
     Vista para listar todas las publicaciones que están listas para ser publicadas.
 
@@ -293,6 +298,7 @@ class ToPublishView(ListView):
     model = Post
     template_name = 'publish/to_publish.html'
     ordering = ['-date_posted']
+    permission_required = 'posts.can_publish'
     
     def get_queryset(self):
         """Obtiene las publicaciones con estado 'to_publish', ordenadas por fecha de publicación."""
@@ -305,7 +311,7 @@ class ToPublishView(ListView):
         return context
 
 
-class ToPublishPostView(UpdateView):
+class ToPublishPostView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
     """
     Vista para publicar una publicación, accesible solo para usuarios con permisos de publicación.
 
@@ -319,6 +325,7 @@ class ToPublishPostView(UpdateView):
     template_name = 'publish/publish.html'
     fields = '__all__'
     success_url = reverse_lazy('to-publish')
+    permission_required = 'posts.can_publish'
 
     def post(self, request, pk, *args, **kwargs):
         """Actualiza el estado de la publicación según la entrada del usuario y la guarda."""
@@ -422,7 +429,7 @@ class SuscriberPostDetailView(DetailView):
     
 
 
-class KanbanBoardView(TemplateView):
+class KanbanBoardView(PermissionRequiredMixin, LoginRequiredMixin, TemplateView):
     """
     Una vista para mostrar un tablero Kanban.
     Esta vista extiende la clase TemplateView y renderiza la plantilla 'kanban/kanban_board.html'.
@@ -437,6 +444,10 @@ class KanbanBoardView(TemplateView):
     formulario y los datos de contexto existentes.
     """
     template_name = 'kanban/kanban_board.html'
+    permission_required = ['posts.add_post', 
+                           'posts.change_post', 
+                           'posts.can_publish',
+        ]
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -479,36 +490,40 @@ class KanbanBoardView(TemplateView):
 
 
 @method_decorator(csrf_exempt, name='dispatch')
-class UpdatePostsStatusView(View):
+class UpdatePostsStatusView(PermissionRequiredMixin, LoginRequiredMixin, View):
     """
-Vista para actualizar el estado de los articulos.
+    Vista para actualizar el estado de los articulos.
 
-Esta vista se encarga de recibir una solicitud POST con datos en formato JSON.
-Los datos deben contener una lista de articulos movidos, donde cada elemento
-de la lista debe tener el ID de articulo y el ID del nuevo estado.
+    Esta vista se encarga de recibir una solicitud POST con datos en formato JSON.
+    Los datos deben contener una lista de articulos movidos, donde cada elemento
+    de la lista debe tener el ID de articulo y el ID del nuevo estado.
 
-Si el articulo existe, se actualiza su estado con el nuevo ID proporcionado.
-Si el articulo no existe, se ignora y se continúa con los demás articulos.
+    Si el articulo existe, se actualiza su estado con el nuevo ID proporcionado.
+    Si el articulo no existe, se ignora y se continúa con los demás articulos.
 
-La vista devuelve una respuesta JSON indicando si la actualización fue exitosa o no.
+    La vista devuelve una respuesta JSON indicando si la actualización fue exitosa o no.
 
-Atributos:
-    - csrf_exempt: Decorador para eximir la vista de la protección CSRF.
+    Atributos:
+        - csrf_exempt: Decorador para eximir la vista de la protección CSRF.
 
-Métodos:
-    - post: Método que maneja la solicitud POST y actualiza los estados de los articulos.
+    Métodos:
+        - post: Método que maneja la solicitud POST y actualiza los estados de los articulos.
 
-Parámetros de la solicitud:
-    - request: La solicitud HTTP recibida.
-    - args: Argumentos posicionales adicionales.
-    - kwargs: Argumentos de palabras clave adicionales.
+    Parámetros de la solicitud:
+        - request: La solicitud HTTP recibida.
+        - args: Argumentos posicionales adicionales.
+        - kwargs: Argumentos de palabras clave adicionales.
 
-Excepciones:
-    - Post.DoesNotExist: Se produce si una publicación no existe en la base de datos.
+    Excepciones:
+        - Post.DoesNotExist: Se produce si una publicación no existe en la base de datos.
 
-Retorno:
-    - JsonResponse: Respuesta JSON indicando si la actualización fue exitosa o no.
-"""
+    Retorno:
+        - JsonResponse: Respuesta JSON indicando si la actualización fue exitosa o no.
+    """
+    permission_required = ['posts.add_post',
+                            'posts.change_post',
+                            'posts.can_publish',
+        ]
     def post(self, request, *args, **kwargs):
         try:
             data = json.loads(request.body)
