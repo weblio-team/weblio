@@ -4,22 +4,12 @@
 <main class="container-fluid p-0 m-0" style="height: 92vh; overflow: hidden;">
     <div class="row h-100 m-0">
         <div class="col-md-6 p-0">
-            <img src="https://via.placeholder.com/300" alt="Placeholder Image" class="img-fluid w-100 h-100" style="object-fit: cover;">
+            <img src="https://picsum.photos/seed/picsum/1080" alt="Placeholder Image" class="img-fluid w-100 h-100" style="object-fit: cover;">
         </div>
         <div class="col-md-6 d-flex flex-column align-items-center justify-content-start p-0 position-relative">
             <form method="POST" action="{% url 'member-login' %}" class="w-75 mt-5" style="flex-grow: 1;">
                 {% csrf_token %}
                 <h2 class="text-start">Iniciar sesión</h2>
-                {% if form.errors %}
-                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                        {% for field in form %}
-                            {% for error in field.errors %}
-                                <p>a{{ error }}</p>
-                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                            {% endfor %}
-                        {% endfor %}
-                    </div>
-                {% endif %}
                 <div class="w-100">
                     <div class="mb-3">
                         <label for="id_username" class="form-label">Usuario</label>

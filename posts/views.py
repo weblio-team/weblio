@@ -10,6 +10,7 @@ from django.views.generic import ListView, DetailView, CreateView, UpdateView, D
 from .forms import CategoryForm, CategoryEditForm, KanbanBoardForm, MyPostEditForm, ToEditPostForm, MyPostAddForm
 from django.db.models import Q
 from django.views.decorators.csrf import csrf_exempt
+from django.contrib import messages
 
 # views for category administrators
 
@@ -42,6 +43,11 @@ class CategoryAddView(PermissionRequiredMixin, LoginRequiredMixin, CreateView):
     template_name = 'categories/category_add.html'
     permission_required = 'catalog.add_category'
 
+    def form_valid(self, form):
+        """Valida el formulario y guarda la nueva categoría en la base de datos."""
+        messages.success(self.request, 'La categoría se ha creado correctamente.')
+        return super().form_valid(form)
+
 
 class CategoryDetailView(DetailView):
     """
@@ -70,6 +76,7 @@ class CategoryDetailView(DetailView):
         """Añade información adicional al contexto, como el conteo total de categorías."""
         context = super().get_context_data(**kwargs)
         context['category_count'] = Category.objects.count()
+        context['posts'] = Post.objects.filter(category=self.get_object(), status='published')
         return context
 
 
@@ -93,6 +100,11 @@ class CategoryEditView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
         pk = self.kwargs.get("pk")
         name = self.kwargs.get("name")
         return get_object_or_404(Category, pk=pk, name__iexact=name.replace('-', ' '))
+    
+    def form_valid(self, form):
+        """Valida el formulario y guarda los cambios en la base de datos."""
+        messages.success(self.request, 'La categoría se ha actualizado correctamente.')
+        return super().form_valid(form)
 
 
 class CategoryDeleteView(PermissionRequiredMixin, LoginRequiredMixin, DeleteView):
@@ -115,6 +127,11 @@ class CategoryDeleteView(PermissionRequiredMixin, LoginRequiredMixin, DeleteView
         pk = self.kwargs.get("pk")
         name = self.kwargs.get("name")
         return get_object_or_404(Category, pk=pk, name__iexact=name.replace('-', ' '))
+    
+    def form_valid(self, form):
+        """Valida el formulario y elimina la categoría de la base de datos."""
+        messages.success(self.request, 'La categoría se ha eliminado correctamente.')
+        return super().form_valid(form)
 
 
 # views for authors
@@ -173,8 +190,10 @@ class MyPostEditView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
         """Valida el formulario y actualiza el estado de la publicación según el botón presionado."""
         if 'status' in self.request.POST and self.request.POST['status'] == 'to_edit':
             form.instance.status = 'to_edit'
+            messages.success(self.request, 'La publicación se ha enviado para edición.')
         else:
             form.instance.status = 'draft'
+            messages.success(self.request, 'La publicación se ha guardado como borrador.')
         return super().form_valid(form)
 
 
@@ -196,6 +215,11 @@ class MyPostDeleteView(PermissionRequiredMixin, LoginRequiredMixin, DeleteView):
         """Obtiene la publicación específica basada en 'pk'."""
         pk = self.kwargs.get("pk")
         return get_object_or_404(Post, pk=pk)
+    
+    def form_valid(self, form):
+        """Valida el formulario y elimina la publicación de la base de datos."""
+        messages.success(self.request, 'La publicación se ha eliminado correctamente.')
+        return super().form_valid(form)
 
 
 class MyPostAddView(PermissionRequiredMixin, LoginRequiredMixin, CreateView):
@@ -223,6 +247,7 @@ class MyPostAddView(PermissionRequiredMixin, LoginRequiredMixin, CreateView):
     def form_valid(self, form):
         """Asigna el usuario autenticado como autor de la publicación y valida el formulario."""
         form.instance.author = self.request.user
+        messages.success(self.request, 'La publicación se ha creado correctamente.')
         return super(MyPostAddView, self).form_valid(form)
 
 
@@ -281,6 +306,10 @@ class ToEditPostView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
     def form_valid(self, form):
         """Valida el formulario y actualiza el estado de la publicación según la entrada del usuario."""
         form.instance.status = self.request.POST.get('status')
+        if form.instance.status == 'to_publish':
+            messages.success(self.request, 'La publicación se ha enviado para publicación.')
+        elif form.instance.status == 'draft':
+            messages.success(self.request, 'La publicación se ha guardado como borrador.')
         return super().form_valid(form)
 
 
@@ -331,6 +360,12 @@ class ToPublishPostView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView)
         """Actualiza el estado de la publicación según la entrada del usuario y la guarda."""
         post = get_object_or_404(Post, pk=pk)
         status = request.POST.get('status')
+        
+        if status == 'published':
+            messages.success(request, 'La publicación se ha publicado correctamente.')
+        elif status == 'to_edit':
+            messages.success(request, 'La publicación se ha enviado para edición.')
+
         post.status = status
         post.save()
         return HttpResponseRedirect(self.success_url)
@@ -406,12 +441,35 @@ class SuscriberPostDetailView(DetailView):
         template_name (str): La plantilla que se utilizará para renderizar la vista.
     
     Métodos:
+        dispatch(): Realiza validaciones antes de procesar la solicitud.
         get_object(): Obtiene el objeto de la publicación basado en varios parámetros.
     """
     model = Post
     template_name = 'suscribers/post.html'
 
-    def get_object(self):    
+    def dispatch(self, request, *args, **kwargs):
+        """Realiza validaciones antes de procesar la solicitud."""
+        pk = self.kwargs.get("pk")
+        category = self.kwargs.get("category")
+        month = self.kwargs.get("month")
+        year = self.kwargs.get("year")
+        title = self.kwargs.get("title")
+        post = get_object_or_404(
+            Post, 
+            pk=pk,
+            category__name__iexact=category.replace('-', ' '), 
+            date_posted__month=month, 
+            date_posted__year=year, 
+            title__iexact=title.replace('-', ' ')
+        )
+
+        if request.user.is_anonymous and post.category.kind != 'public':
+            messages.warning(request, "Debe registrarse para ver publicaciones para suscriptores.")
+            return redirect(reverse_lazy('posts'))  # Reemplaza 'home' con el nombre de tu URL de inicio
+
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_object(self):
         """Obtiene la publicación específica basada en 'pk', 'category', 'month', 'year', y 'title'."""
         pk = self.kwargs.get("pk")
         category = self.kwargs.get("category")
@@ -537,6 +595,7 @@ class UpdatePostsStatusView(PermissionRequiredMixin, LoginRequiredMixin, View):
                     post.save()
                 except Post.DoesNotExist:
                     pass
+            messages.success(request, 'Los estados de las publicaciones se han actualizado correctamente.')
             return JsonResponse({'success': True})
         except Exception as e:
             return JsonResponse({'success': False, 'error': str(e)})

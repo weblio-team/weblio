@@ -56,6 +56,16 @@
                 max-height: 70vh; /* Maximum height */
                 overflow-y: auto; /* Enable vertical scrolling */
             }
+            /* Custom styles for alert messages */
+            .alert-fixed {
+                position: fixed;
+                top: 56px; /* Below navbar */
+                right: 20px;
+                z-index: 1050;
+                min-width: 300px;
+                max-width: 500px;
+                border-radius: 0.5rem;
+            }
         </style>
     </head>
     <body>
@@ -73,11 +83,11 @@
                                 Categorías
                             </a>
                             <ul class="dropdown-menu">
-                                {% if user|has_group:'suscriptor'  %}
+                                {% if perms.posts.view_post  %}
                                 <li><a class="dropdown-item" href="#">Mis categorías</a></li>
                                 {% endif %}
                                 <li><a class="dropdown-item" href="{% url 'categories' %}">Explorar categorías</a></li>
-                                {% if perms.catalog.add_category or user|has_group:'administrador' %}
+                                {% if perms.posts.add_category %}
                                     <li><hr class="dropdown-divider" /></li>
                                     <li><a class="dropdown-item" href="{% url 'category_add' %}">Nueva Categoría</a></li>
                                 {% endif %}
@@ -91,15 +101,15 @@
                                 Gestión de Contenido
                             </a>
                             <ul class="dropdown-menu">
-                                {% if perms.catalog.add_post or user|has_group:'autor' %}
+                                {% if perms.posts.add_post or user|has_group:'autor' %}
                                 <li><a class="dropdown-item" href="{% url 'my-posts' %}">Mis Articulos</a></li>
                                 <li><a class="dropdown-item" href="{% url 'add-my-post' %}">Crear un articulo</a></li>
                                 {% endif %}
-                                {% if perms.catalog.change_post or user|has_group:'editor' %}
+                                {% if perms.posts.change_post or user|has_group:'editor' %}
                                 <li><hr class="dropdown-divider"></li>
                                 <li><a class="dropdown-item" href="{% url 'to-edit' %}">Articulos a editar</a></li>
                                 {% endif %}
-                                {% if perms.catalog.publish_post or user|has_group:'publicador'%}
+                                {% if perms.posts.publish_post or user|has_group:'publicador'%}
                                 <li><hr class="dropdown-divider"></li>
                                 <li><a class="dropdown-item" href="{% url 'to-publish' %}">Articulos a publicar</a></li>
                                 {% endif %}
@@ -110,7 +120,7 @@
                         {% endif %}
 
                         <!-- Modulo de gestion de usuarios -->
-                        {% if perms.catalog.change_member or user|has_group:'administrador' %}
+                        {% if perms.auth.change_member or user|has_group:'administrador' %}
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                 Gestión de usuarios
@@ -137,7 +147,7 @@
                         {% else %}
                         <div class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                <img src="https://via.placeholder.com/30" alt="User Image" class="rounded-circle me-2">
+                                <img src="https://picsum.photos/seed/picsum/1080" alt="User Image" class="rounded-circle me-2">
                                 {{ user.first_name }} {{ user.last_name }}
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end">
@@ -157,6 +167,26 @@
                 </div>
             </div>
         </nav>
+
+        <!-- Popup de mensajes (errores, advertencias) -->
+        <div class="container">
+            {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show alert-fixed" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+            {% endif %}
+        </div>
+        <script>
+            setTimeout(function() {
+            document.querySelectorAll('.alert-fixed').forEach(function(alert) {
+                alert.remove();
+            });
+            }, 5000);
+        </script>
+
         <!-- Django block content -->
         <main class="bg-dark text-white">
             {% block content %}{% endblock %}

@@ -7,10 +7,16 @@
                 <div class="col-lg-6">
                     <h1 class="display-4 fw-bold lh-1 mb-3">Weblio, Tu blog de confianza!</h1>
                     <p class="lead">Lorem ipsum dolor, sit amet consectetur adipisicing elit. Odio reiciendis dolore recusandae cumque tempora illo officiis temporibus? Ducimus adipisci qui ratione repellendus, rerum architecto? Iusto quam nam nisi quia voluptates.</p>
-                    <div class="d-grid gap-2 d-md-flex justify-content-md-start">
-                        <a class="btn btn-primary btn-lg px-4 me-md-2" href="{% url 'member-login' %}">Iniciar Sesion</a>
-                        <a class="btn btn-outline-secondary btn-lg px-4" href="{% url 'member-register' %}">Registrarse</a>
-                    </div>
+                    {% if not user.is_authenticated %}
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-start">
+                            <a class="btn btn-primary btn-lg px-4 me-md-2" href="{% url 'member-login' %}">Iniciar Sesion</a>
+                            <a class="btn btn-outline-secondary btn-lg px-4" href="{% url 'member-register' %}">Registrarse</a>
+                        </div>
+                    {% else %}
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-start">
+                            <a class="btn btn-primary btn-lg px-4 me-md-2" href="{% url 'posts' %}">Llévame a ver los artículos!</a>
+                        </div>
+                    {% endif %}
                 </div>
                 <div class="col-lg-6">
                     <img src="https://storage.googleapis.com/bucket-weblio/heroes/01.jpg" class="d-block mx-lg-auto img-fluid" alt="Bootstrap Themes" width="500" height="500" loading="lazy">
@@ -85,7 +91,7 @@
                         Esse molestias laudantium nihil? Quam tenetur quae doloribus quo.</p>
                     <div class="d-flex justify-content-center mb-4">
                         <a class="btn btn-primary btn-lg px-4 me-2" href="{% url 'member-join' %}">Unirme</a>
-                        <a class="btn btn-outline-secondary btn-lg px-4" href="{% url 'member-login' %}">Ya soy parte</a>
+                        <a class="btn btn-outline-secondary btn-lg px-4" href="{% url 'member-login' %}">Ya tengo una cuenta!</a>
                     </div>
                     <div class="d-flex justify-content-center">
                         <img src="https://storage.googleapis.com/bucket-weblio/heroes/02.jpg" class="img-fluid rounded" alt="Centered Screenshot" width="700" height="400" loading="lazy">

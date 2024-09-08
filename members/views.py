@@ -5,7 +5,7 @@ from django.urls import reverse_lazy
 from django.contrib.auth.models import Group
 from django.contrib.auth.views import LoginView
 from .models import Member
-from django import views
+from django import forms, views
 from django.views.generic import CreateView
 from django.shortcuts import render, get_object_or_404, redirect
 
@@ -16,6 +16,7 @@ from django.contrib import messages
 from django.http import HttpResponseRedirect 
 from django.contrib.auth import authenticate
 from django.contrib.auth.mixins import PermissionRequiredMixin, LoginRequiredMixin
+from django.utils.translation import gettext_lazy as _
 
 
 class HomeView(TemplateView):
@@ -125,6 +126,7 @@ class CreateGroupView(LoginRequiredMixin, PermissionRequiredMixin, FormView):
             HttpResponse: Redirige a `success_url` después de crear el grupo.
         """
         form.save()
+        messages.success(self.request, "El grupo ha sido creado.")
         return super().form_valid(form)
 
 # views for members
@@ -236,6 +238,7 @@ class MemberEditGroupView(LoginRequiredMixin, PermissionRequiredMixin, views.Vie
             for group in new_groups:
                 member.user_permissions.add(*group.permissions.all())
             
+            messages.success(self.request, "Los grupos del miembro han sido actualizados.")
             return redirect('member-list')
         return render(request, 'members/edit_group.html', {'form': form, 'member': member})
     
@@ -291,6 +294,7 @@ class MemberEditPermissionView(LoginRequiredMixin, PermissionRequiredMixin, view
             member = form.save(commit=False)
             member.save()  # Guardar el objeto Member primero
             member.user_permissions.set(form.cleaned_data['permissions'])
+            messages.success(self.request, "Los permisos del miembro han sido actualizados.")
             return redirect('member-list')
         return render(request, 'members/edit_permission.html', {
             'form': form,
@@ -337,7 +341,11 @@ class MemberStatusView(LoginRequiredMixin, PermissionRequiredMixin, views.View):
         member = get_object_or_404(Member, pk=pk)
         form = MemberStatusForm(request.POST, instance=member)
         if form.is_valid():
+            """
+            Método que se llama tras el POST del form con datos válidos.
+            """
             form.save()
+            messages.success(self.request, "El estado del miembro ha sido actualizado.")
             return redirect('member-list')
         return render(request, self.template_name, {'form': form, 'member': member})
     
@@ -347,6 +355,32 @@ class MemberRegisterView(CreateView):
     template_name = 'members/member_register.html'
     success_url = reverse_lazy('member-login')
 
+    def form_invalid(self, form):
+        """
+        Método que se llama tras el POST del form con datos inválidos.
+        """
+        # Validar si el usuario ya está registrado
+        if 'username' in form.errors:
+            messages.warning(self.request, "El nombre de usuario ya está registrado.")
+        # Validar si el correo electrónico ya está registrado
+        if 'email' in form.errors:
+            messages.warning(self.request, "El correo electrónico ya está registrado.")
+        # Mostrar los errores de Django
+        for field, errors in form.errors.items():
+            for error in errors:
+                if 'username' in error and 'email' not in error:
+                    messages.warning(self.request, f"{field}: {error}")
+        return super().form_invalid(form)
+
+
+    def form_valid(self, form):
+        """
+        Método que se llama cuando el formulario es válido.
+        """
+        response = super().form_valid(form)
+        messages.success(self.request, "La cuenta ha sido creada. Por favor, inicie sesión.")
+        return response
+
 
 class MemberLoginView(LoginView):
     """
@@ -355,6 +389,13 @@ class MemberLoginView(LoginView):
     form_class = MemberLoginForm
     template_name = 'members/member_login.html'
 
+    def form_valid(self, form):
+        """
+        Método que se llama tras el POST del form con datos válidos.
+        """
+        response = super().form_valid(form)
+        messages.success(self.request, "Bienvenido de vuelta " + self.request.user.username)
+        return response
 
     def form_invalid(self, form):
         """
@@ -365,10 +406,10 @@ class MemberLoginView(LoginView):
         self.user = authenticate(self.request, username=username, password=password)
         if self.user is not None:
             if not self.user.is_active:
-                messages.info(self.request, "Su cuenta está inactiva. Por favor, contacte al administrador para más detalles.")
+                messages.warning(self.request, "Su cuenta está inactiva. Por favor, contacte al administrador para más detalles.")
                 return HttpResponseRedirect(reverse_lazy('login')) 
         else:
-            messages.error(self.request, "Error en el nombre de usuario o contraseña. Por favor, intente de nuevo.")
+            messages.warning(self.request, "Error en el nombre de usuario o contraseña. Por favor, intente de nuevo.")
         return super().form_invalid(form)
     
     def get_success_url(self):
@@ -396,6 +437,13 @@ class MemberJoinView(CreateView):
         context['roles'] = roles
         return context
 
+    def form_valid(self, form):
+        """
+        Muestra un mensaje de éxito cuando el formulario es válido y la cuenta ha sido creada.
+        """
+        response = super().form_valid(form)
+        messages.success(self.request, "La cuenta ha sido creada pero no será activada hasta que un administrador apruebe el login.")
+        return response
 
 # views for error pages
 class Error404View(TemplateView):
