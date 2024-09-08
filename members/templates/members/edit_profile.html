@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% block title %}Edit Profile{% endblock %}
+{% block title %}Editar Perfil{% endblock %}
 {% block content %}
 
 <div class="py-4"></div>
@@ -14,20 +14,18 @@
                 <img src="https://picsum.photos/seed/picsum/150" alt="Foto de perfil" class="img-fluid rounded-circle">
             </div>
         </div>
-        <!-- Botón para editar la foto con el mismo estilo -->
-        <div class="text-center mb-4">
-            <button type="button" class="btn btn-primary">Editar foto</button>
-        </div>
-
         <!-- Formulario para editar el perfil -->
         <form method="POST">
             {% csrf_token %}
             {{ form.as_p }}
+            <!-- Enlace para restablecer contraseña (sin fondo, alineado a la izquierda) -->
+            <div class="mb-3">
+                <a href="{% url 'password_change' %}" class="reset-link">Restablecer Contraseña</a>
+            </div>
             <!-- Botón para modificar perfil con el mismo estilo -->
-            <button class="btn btn-primary w-100">Modificar Perfil</button>
+            <button class="btn btn-primary w-100">Guardar Cambios</button>
         </form>
     </div>
-</div>
 </div>
 
 <style>
@@ -49,6 +47,17 @@
         height: 100%;
         object-fit: cover;
         border-radius: 50%;
+    }
+
+    /* Estilo para el enlace de "Restablecer Contraseña" */
+    .reset-link {
+        text-decoration: none;
+        color: #007bff;
+    }
+
+    .reset-link:hover {
+        text-decoration: underline;
+        color: #0056b3;
     }
 </style>
 

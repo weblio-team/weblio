@@ -3,7 +3,8 @@ from django.views.generic import FormView, TemplateView,  CreateView, UpdateView
 from django.urls import reverse_lazy
 
 from django.contrib.auth.models import Group
-from django.contrib.auth.views import LoginView
+from django.contrib.auth.views import LoginView, PasswordChangeView
+from django.contrib.auth.forms import PasswordChangeForm
 from .models import Member
 from django import views
 from django.views.generic import CreateView
@@ -13,7 +14,7 @@ from .forms import CreateGroupForm, MemberEditGroupForm, MemberEditPermissionFor
 from .models import Member
 from .forms import MemberRegisterForm, MemberJoinForm, MemberLoginForm
 from .forms import RoleCreateForm
-from .forms import UserChangeForm
+from .forms import UserChangeForm, PasswordChangingForm
 from .forms import EditProfileForm
 from django.contrib import messages
 from django.http import HttpResponseRedirect 
@@ -460,7 +461,7 @@ class MemberJoinView(CreateView):
 class UserEditView(UpdateView):
     form_class = EditProfileForm
     template_name = 'members/edit_profile.html'
-    success_url = reverse_lazy('home')
+    success_url = reverse_lazy('profile')
 
     def get_object(self):
         return self.request.user
@@ -469,3 +470,10 @@ class UserEditView(UpdateView):
 @login_required
 def profile_view(request):
     return render(request, 'members/profile.html', {'user': request.user})
+
+class PasswordsChangeView(PasswordChangeView):
+    form_class = PasswordChangingForm
+    success_url = reverse_lazy('edit_profile')
+
+def password_success(request):
+    return render(request, 'members/password_success.html', {})
