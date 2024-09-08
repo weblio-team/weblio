@@ -1,11 +1,21 @@
 {% extends "base.html" %}
-
 {% block content %}
-<main class="container py-4">
-    <h1>Usuarios {% if group %}con rol: {{ group.name }}{% endif %}</h1>
-    <form method="post" action="{% url 'member-list' %}">
+
+  <main role="main" class="container py-4">
+        
+      <h1>Confirma la eliminación</h1>
+      <p>¿Estás seguro de que quieres borrar este rol?</p>
+      {% if error %}
+            <div class="alert alert-danger">{{ error }}</div>
+        {% endif %}
+      <form method="post">
         {% csrf_token %}
-        <table class="table table-dark table-striped table-bordered">
+        <button type="submit" name='action' value="confirm" class="btn btn-danger">Confirmar</button>
+        <a href="{% url 'group-list' %}" class="btn btn-secondary">Cancelar</a>
+      
+      {% if members %}
+      <h3>Usuarios pertenecientes al rol:</h3>
+      <table class="table table-dark table-striped table-bordered">
             <thead>
                 <tr>
                     <th scope="col">Seleccionar</th>
@@ -18,7 +28,7 @@
             </thead>
             <tbody>
                 {% for member in members %}
-                <tr>
+                <tr class="{% if member.group_count == 1 %}table-danger{% endif %}">
                     <td>
                         <input type="radio" name="selected_member" value="{{ member.id }}" {% if forloop.first %}checked{% endif %}>
                     </td>
@@ -51,51 +61,8 @@
                 {% endfor %}
             </tbody>
         </table>
-            <button type="submit" name="action" value="edit_group" class="btn btn-light">Editar Roles</button>
-            <button type="submit" name="action" value="edit_permission" class="btn btn-light">Editar Permisos</button>
-            <button type="submit" name="action" value="toggle_status" class="btn btn-light">Activar/Desactivar</button>
+        <button type="submit" name="action" value="edit_group" class="btn btn-light">Editar Roles</button>
         </form>
-        </main>
-        {% endblock %}
-
-<style>
-    body {
-        background-color: #121212;
-        color: #ffffff;
-    }
-
-    .table-dark {
-        background-color: #343a40;
-    }
-
-    .table-dark th, .table-dark td {
-        border-color: #454d55;
-    }
-
-    .table-dark thead th {
-        color: #ffffff;
-        background-color: #454d55;
-    }
-
-    .table-dark tbody tr {
-        color: #ffffff;
-    }
-
-    .table-dark tbody tr:nth-of-type(odd) {
-        background-color: #3c3f41;
-    }
-
-    .table-dark tbody tr:nth-of-type(even) {
-        background-color: #343a40;
-    }
-
-    .btn-primary {
-        background-color: #007bff;
-        border-color: #007bff;
-    }
-
-    .btn-primary:hover {
-        background-color: #0056b3;
-        border-color: #004085;
-    }
-</style>
+        {% endif %}
+    </main>
+{% endblock %}

@@ -52,6 +52,50 @@ class MemberChangeForm(UserChangeForm):
             'email': _('Correo electrónico'),
         }
 
+class GroupEditForm(forms.ModelForm):
+    """
+    Formulario para editar un grupo y sus permisos.
+
+    Campos:
+        - permissions: Campo de selección múltiple para los permisos del grupo, representado como una lista de casillas de verificación.
+    
+    Meta:
+        - model: El modelo Group que se va a editar.
+        - fields: Los campos del modelo que se incluirán en el formulario.
+        - labels: Etiquetas personalizadas para los campos del formulario.
+    """
+    
+    permissions = forms.ModelMultipleChoiceField(
+        queryset=Permission.objects.all(), 
+        label="Permisos", 
+        required=False,
+        widget=forms.CheckboxSelectMultiple    
+    )
+    
+    class Meta:
+        model = Group
+        fields = ['name', 'permissions']  
+        
+        labels = {
+            'name': _('Nombre'),
+            'permissions': _('Permisos'),
+        }
+
+    def save(self, commit=True):
+        """
+        Guarda el grupo y sus permisos asociados.
+
+        Args:
+            commit: Booleano que indica si se debe guardar el grupo en la base de datos inmediatamente.
+
+        Returns:
+            El grupo guardado con sus permisos actualizados.
+        """
+        group = super().save(commit=False)
+        if commit:
+            group.save()
+            group.permissions.set(self.cleaned_data['permissions'])
+        return group
 
 class UserListForm(forms.Form):
     """

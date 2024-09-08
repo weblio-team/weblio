@@ -7,7 +7,7 @@
         {% csrf_token %}
         {{ form.as_p }} 
         <button type="submit" class="btn btn-light">Guardar</button>
-        <a href="{% url 'member-list' %}" class="btn btn-light">Cancelar</a>
+        <a href="{% if next_url %}{{ next_url }}{% else %}{% url 'member-list' %}{% endif %}" class="btn btn-light">Cancelar</a>
     </form>
 </main>
 {% endblock %}
