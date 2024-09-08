@@ -2,6 +2,8 @@
 {% block title %}Edit Profile{% endblock %}
 {% block content %}
 
+<div class="py-4"></div>
+
 <h1 class="text-center mb-4">Editar Perfil</h1>
 
 <div class="container d-flex justify-content-center">
@@ -9,21 +11,23 @@
         <!-- Imagen de perfil redonda con fondo gris -->
         <div class="d-flex justify-content-center mb-4">
             <div class="profile-pic-container">
-                <img src="ruta/a/imagen.jpg" alt="Foto de perfil" class="img-fluid rounded-circle">
+                <img src="https://picsum.photos/seed/picsum/150" alt="Foto de perfil" class="img-fluid rounded-circle">
             </div>
         </div>
-        <!-- Botón para editar la foto (más pequeño y centrado) -->
+        <!-- Botón para editar la foto con el mismo estilo -->
         <div class="text-center mb-4">
-            <button type="button" class="btn btn-outline-success custom-btn btn-sm">Editar foto</button>
+            <button type="button" class="btn btn-primary">Editar foto</button>
         </div>
 
         <!-- Formulario para editar el perfil -->
         <form method="POST">
             {% csrf_token %}
             {{ form.as_p }}
-            <button class="btn btn-outline-success w-100 custom-btn">Modificar Perfil</button>
+            <!-- Botón para modificar perfil con el mismo estilo -->
+            <button class="btn btn-primary w-100">Modificar Perfil</button>
         </form>
     </div>
+</div>
 </div>
 
 <style>
@@ -45,23 +49,6 @@
         height: 100%;
         object-fit: cover;
         border-radius: 50%;
-    }
-
-    /* Estilos del botón personalizado */
-    .custom-btn {
-        border-color: green; /* Borde verde */
-        color: green;
-    }
-    
-    .custom-btn:hover {
-        background-color: green; /* Se pinta de verde al pasar el cursor */
-        color: white; /* Cambia el texto a blanco */
-    }
-
-    /* Tamaño más pequeño para el botón de editar foto */
-    .btn-sm {
-        padding: 5px 10px;
-        font-size: 0.875rem;
     }
 </style>
 

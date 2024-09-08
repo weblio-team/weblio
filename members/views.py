@@ -18,6 +18,7 @@ from .forms import EditProfileForm
 from django.contrib import messages
 from django.http import HttpResponseRedirect 
 from django.contrib.auth import authenticate
+from django.contrib.auth.decorators import login_required
 
 
 class HomeView(TemplateView):
@@ -465,5 +466,6 @@ class UserEditView(UpdateView):
         return self.request.user
 
 
+@login_required
 def profile_view(request):
     return render(request, 'members/profile.html', {'user': request.user})

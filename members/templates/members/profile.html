@@ -3,24 +3,66 @@
 {% block title %}Perfil de Usuario{% endblock %}
 {% block content %}
 
-<h1 class="text-center mb-4">Perfil de Usuario</h1>
+<div class="py-4">
+    <h1 class="text-center mb-4">Perfil de Usuario</h1>
 
-<!-- Imagen de perfil centrada debajo del título con fondo gris -->
-<div class="container d-flex justify-content-center mb-4">
-    <div class="profile-pic-container">
-        <img src="ruta/a/imagen.jpg" alt="Foto de perfil" class="img-fluid rounded-circle" style="width: 150px; height: 150px; object-fit: cover;">
+    <!-- Imagen de perfil centrada debajo del título con fondo gris -->
+    <div class="container d-flex justify-content-center mb-4">
+        <div class="profile-pic-container">
+            <img src="https://picsum.photos/seed/picsum/150" alt="Foto de perfil" class="img-fluid rounded-circle" style="width: 150px; height: 150px; object-fit: cover;">
+        </div>
     </div>
-</div>
 
-<!-- Contenedor centrado para los datos del usuario -->
-<div class="container d-flex justify-content-center">
-    <div class="form-group col-md-8">
-        <div class="row align-items-center">
-            <!-- Columna con los datos del usuario -->
-            <div class="col-md-12 text-center">
-                <h3>{{ user.first_name }} {{ user.last_name }}</h3>
-                <p><strong>Usuario:</strong> {{ user.username }}</p>
-                <p><strong>Correo electrónico:</strong> {{ user.email }}</p>
+    <!-- Contenedor centrado para los datos del usuario -->
+    <div class="container d-flex justify-content-center">
+        <div class="form-group col-md-8">
+            <div class="row align-items-center">
+                <!-- Columna con los datos del usuario -->
+                <div class="col-md-12 text-center">
+                    <h3> {{ user.username }} </h3>
+                    <p><strong>Nombre:</strong> {{ user.first_name }}</p>
+                    <p><strong>Apellido:</strong> {{ user.last_name }}</p>
+                    <p><strong>Correo electrónico:</strong> {{ user.email }}</p>
+                    
+                    <!-- Badge que cambia de color dependiendo del grupo -->
+                    <span class="badge
+                        {% if not user.groups.exists %}
+                            text-bg-secondary
+                        {% else %}
+                            {% for group in user.groups.all %}
+                                {% if group.name == 'suscriptor' %}
+                                    text-bg-success
+                                {% elif group.name == 'autor' %}
+                                    text-bg-danger
+                                {% elif group.name == 'editor' %}
+                                    text-bg-warning
+                                {% elif group.name == 'publicador' %}
+                                    text-bg-primary
+                                {% elif group.name == 'admin' %}
+                                    text-bg-light
+                                {% endif %}
+                            {% endfor %}
+                        {% endif %}
+                    ">
+                        {% if user.groups.exists %}
+                            {% for group in user.groups.all %}
+                                {{ group.name }}
+                            {% endfor %}
+                        {% else %}
+                            Ninguno
+                        {% endif %}
+                    </span>
+                </div>
+            </div>
+            
+            <!-- Botones "Cambiar Contraseña" y "Editar Perfil" -->
+            <div class="row mt-4">
+                <div class="col-md-12 d-flex justify-content-between">
+                    <!-- Botón "Cambiar Contraseña" a la izquierda -->
+                    <a href="#" class="btn btn-primary">Cambiar Contraseña</a>
+                    <!-- Botón "Editar Perfil" a la derecha -->
+                    <a href="{% url 'edit_profile' %}" class="btn btn-primary">Editar Perfil</a>
+                </div>
             </div>
         </div>
     </div>
@@ -47,18 +89,6 @@
         object-fit: cover;
         border-radius: 50%;
     }
-
-    /* Estilos del botón personalizado */
-    .custom-btn {
-        border-color: green; /* Borde verde */
-        color: green;
-    }
-    
-    .custom-btn:hover {
-        background-color: green; /* Se pinta de verde al pasar el cursor */
-        color: white; /* Cambia el texto a blanco */
-    }
 </style>
 
 {% endblock %}
-
