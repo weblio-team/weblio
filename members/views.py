@@ -475,5 +475,3 @@ class PasswordsChangeView(PasswordChangeView):
     form_class = PasswordChangingForm
     success_url = reverse_lazy('edit_profile')
 
-def password_success(request):
-    return render(request, 'members/password_success.html', {})
