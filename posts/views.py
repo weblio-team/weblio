@@ -1,5 +1,4 @@
 import json
-from pyexpat.errors import messages
 from django.http import Http404, HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
