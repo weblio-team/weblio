@@ -2,6 +2,7 @@ from pathlib import Path
 import os
 import dj_database_url
 from google.oauth2 import service_account
+import urllib.parse
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -29,6 +30,7 @@ INSTALLED_APPS = [
     'ckeditor',
     'ckeditor_uploader',
     'storages',
+    'simple_history',
 ]
 
 MIDDLEWARE = [
@@ -40,6 +42,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'simple_history.middleware.HistoryRequestMiddleware',
 ]
 
 ROOT_URLCONF = 'weblio.urls'
@@ -96,7 +99,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 LANGUAGE_CODE = 'es'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'America/Asuncion'
 
 USE_I18N = True
 
@@ -145,7 +148,14 @@ CKEDITOR_UPLOAD_PATH = "uploads/"
 CKEDITOR_BASEPATH = '/static/ckeditor/ckeditor/'
 CKEDITOR_CONFIGS = {
     'default': {
-        'toolbar': 'all',
+        'toolbar': [
+            {'name': 'basicstyles', 'items': ['Bold', 'Italic', 'Underline']},
+            {'name': 'paragraph', 'items': ['NumberedList', 'BulletedList', 'Blockquote']},
+            {'name': 'insert', 'items': ['Image', 'Table', 'HorizontalRule', 'CodeSnippet']},
+            {'name': 'styles', 'items': ['Format', 'Font', 'FontSize']},
+            {'name': 'colors', 'items': ['TextColor', 'BGColor']},
+            {'name': 'tools', 'items': ['Maximize']},
+        ],
         'skin': 'moono-lisa',
         'codeSnippet_theme': 'monokai',
         'extraPlugins': ','.join(

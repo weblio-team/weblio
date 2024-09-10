@@ -5,6 +5,7 @@ from .views import ToEditView, ToEditPostView
 from .views import ToPublishView, ToPublishPostView
 from .views import MyPostsView, MyPostEditView, MyPostAddView, MyPostDeleteView
 from .views import KanbanBoardView
+from .views import HistoryView
 
 
 urlpatterns = [
@@ -40,4 +41,6 @@ urlpatterns = [
     path('kanban-board/', KanbanBoardView.as_view(), name='kanban-board'),
     path('update-posts-status/', UpdatePostsStatusView.as_view(), name='update-posts-status'),
 
+    # urls for history
+    path('<int:pk>/history/<int:history_id>/', HistoryView.as_view(), name='history'),
 ]

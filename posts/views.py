@@ -1,16 +1,23 @@
 import json
-from django.http import HttpResponseRedirect, JsonResponse
-from django.shortcuts import get_object_or_404, redirect
+import logging
+from pyexpat.errors import messages
+from django.http import Http404, HttpResponseRedirect, JsonResponse
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.utils.decorators import method_decorator
 from django.views import View
+from requests import request
 from .models import Category, Post
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView, TemplateView
-from .forms import CategoryForm, CategoryEditForm, KanbanBoardForm, MyPostEditForm, ToEditPostForm, MyPostAddForm
+from .forms import CategoryForm, CategoryEditForm, KanbanBoardForm, MyPostAddBodyForm, MyPostAddInformationForm, MyPostEditInformationForm, MyPostEditBodyForm, ToEditPostForm
 from django.db.models import Q
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.mixins import LoginRequiredMixin
+from simple_history.utils import update_change_reason
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+
+logger = logging.getLogger(__name__)
 
 # views for category administrators
 
@@ -129,7 +136,7 @@ class MyPostsView(ListView):
         template_name (str): La plantilla que se utilizará para renderizar la vista.
         ordering (list): Lista que define el orden de los resultados.
     """
-    model = Post
+    model = Post()
     template_name = 'create/my_posts.html'
     ordering = ['-date_posted']
     
@@ -146,35 +153,90 @@ class MyPostsView(ListView):
 
 class MyPostEditView(UpdateView):
     """
-    Vista para editar una publicación existente, accesible para el autor de la publicación.
-
-    Atributos:
-        model (Post): El modelo que se utilizará para editar la publicación.
-        form_class (MyPostEditForm): El formulario que se usará para editar la publicación.
-        template_name (str): La plantilla que se utilizará para renderizar la vista.
-        success_url (str): La URL de redirección después de editar la publicación.
+    Vista de edición de publicaciones personalizadas.
+    MyPostEditView es una vista basada en clases que permite a los usuarios editar publicaciones existentes.
+    Utiliza el modelo `Post` y renderiza la plantilla `create/edit.html`. Los campos editables incluyen 
+    `título`, `etiqueta de título`, `resumen`, `cuerpo`, `categoría` y `palabras clave`.
+    Métodos:
+        get_context_data(self, **kwargs):
+            Obtiene el contexto adicional para la plantilla, incluyendo el historial de versiones de la publicación
+            y los formularios de edición. Configura la paginación para el historial de versiones.
+        post(self, request, *args, **kwargs):
+            Maneja la solicitud POST para actualizar la publicación. Si se solicita restaurar una versión anterior,
+            inicializa los formularios con los datos de esa versión. Si no, crea los formularios con los datos 
+            modificados. Guarda la publicación y registra el motivo del cambio en el historial de versiones.
     """
     model = Post
-    form_class = MyPostEditForm
     template_name = 'create/edit.html'
-    success_url = reverse_lazy('my-posts')
+    fields = ['title', 'title_tag', 'summary', 'body', 'category', 'keywords']    
 
-    def get_object(self, queryset=None):
-        """Obtiene la publicación específica basada en 'pk'."""
-        if queryset is None:
-            queryset = self.get_queryset()
-        
-        post_id = self.kwargs.get('pk')
-        post = get_object_or_404(queryset, pk=post_id)
-        return post
-    
-    def form_valid(self, form):
-        """Valida el formulario y actualiza el estado de la publicación según el botón presionado."""
-        if 'status' in self.request.POST and self.request.POST['status'] == 'to_edit':
-            form.instance.status = 'to_edit'
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        post = self.get_object()
+
+        # Order version history by history_date in descending order
+        post_history = post.history.order_by('-history_date')
+
+        # Set up pagination (e.g., 5 items per page)
+        paginator = Paginator(post_history, 5)  # 5 versions per page
+        page = self.request.GET.get('page')
+
+        try:
+            post_history_page = paginator.page(page)
+        except PageNotAnInteger:
+            post_history_page = paginator.page(1)
+        except EmptyPage:
+            post_history_page = paginator.page(paginator.num_pages)
+
+        context['post_history_page'] = post_history_page
+
+        if self.request.POST:
+            context['information_form'] = MyPostEditInformationForm(self.request.POST, instance=self.object)
+            context['body_form'] = MyPostEditBodyForm(self.request.POST, instance=self.object)
         else:
-            form.instance.status = 'draft'
-        return super().form_valid(form)
+            context['information_form'] = MyPostEditInformationForm(instance=self.object)
+            context['body_form'] = MyPostEditBodyForm(instance=self.object)
+
+        return context
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+
+        # Make a copy of POST data to modify
+        post_data = request.POST.copy()
+
+        if 'restore_version' in post_data:
+            information_form = MyPostEditInformationForm(initial={
+                'title': post_data.get('title'),
+                'title_tag': post_data.get('title_tag'),
+                'summary': post_data.get('summary'),
+                'category': post_data.get('category'),
+                'keywords': post_data.get('keywords')
+            })
+            body_form = MyPostEditBodyForm(initial={
+                'body': post_data.get('body')
+            })
+            
+        # Check if 'status' is missing and set it to the existing status from the post instance
+        elif 'status' not in post_data:
+            post_data['status'] = self.object.status
+
+        # Create the forms with the modified data
+        information_form = MyPostEditInformationForm(post_data, instance=self.object)
+        body_form = MyPostEditBodyForm(post_data, instance=self.object)
+
+        if information_form.is_valid() and body_form.is_valid():
+            post = information_form.save(commit=False)
+            post = body_form.save(commit=False)
+
+            post.save()  # Save the post once
+            update_change_reason(post, post_data.get('change_reason', 'Updated post'))  # Log version history
+            return redirect('my-posts')
+        else:
+            context = self.get_context_data()
+            context['information_form'] = information_form
+            context['body_form'] = body_form
+            return self.render_to_response(context)
 
 
 class MyPostDeleteView(DeleteView):
@@ -196,32 +258,42 @@ class MyPostDeleteView(DeleteView):
         return get_object_or_404(Post, pk=pk)
 
 
-class MyPostAddView(CreateView):
+class MyPostAddView(View):
     """
-    Vista para crear una nueva publicación.
-
-    Atributos:
-        model (Post): El modelo que se utilizará para crear la publicación.
-        form_class (MyPostAddForm): El formulario que se usará para crear la publicación.
-        template_name (str): La plantilla que se utilizará para renderizar la vista.
-        success_url (str): La URL de redirección después de crear la publicación.
+    Vista para agregar una nueva publicación.
+    Métodos:
+        get(request, *args, **kwargs):
+            Maneja las solicitudes GET. Renderiza el formulario para agregar información y cuerpo de la publicación.
+        post(request, *args, **kwargs):
+            Maneja las solicitudes POST. Valida y guarda la información de la publicación y el cuerpo si ambos formularios son válidos.
+            Redirige a la lista de publicaciones si la publicación se guarda correctamente, de lo contrario, vuelve a renderizar el formulario con errores.
     """
-    model = Post
-    form_class = MyPostAddForm
-    template_name = 'create/create.html'
-    success_url = reverse_lazy('my-posts')
+    def get(self, request, *args, **kwargs):
+        info_form = MyPostAddInformationForm()
+        body_form = MyPostAddBodyForm()
+        return render(request, 'create/create.html', {
+            'info_form': info_form,
+            'body_form': body_form
+        })
 
-    def get_form_kwargs(self):
-        """Añade el usuario autenticado a los argumentos del formulario."""
-        kwargs = super(MyPostAddView, self).get_form_kwargs()
-        kwargs['user'] = self.request.user
-        return kwargs
+    def post(self, request, *args, **kwargs):
+        info_form = MyPostAddInformationForm(request.POST)
+        body_form = MyPostAddBodyForm(request.POST, request.FILES)  # For media uploads
 
-    def form_valid(self, form):
-        """Asigna el usuario autenticado como autor de la publicación y valida el formulario."""
-        form.instance.author = self.request.user
-        return super(MyPostAddView, self).form_valid(form)
+        if info_form.is_valid() and body_form.is_valid():
+            # Create the post object but don't commit it to the database yet
+            post = info_form.save(commit=False)
+            post.body = body_form.cleaned_data.get('body')
+            post.status = 'draft'  # Set the status to 'draft'
+            post.author = request.user  # Assign the current user as the author
+            post.save()  # Now save the post
 
+            return redirect('my-posts')  # Redirect to the posts list
+        else:
+            return render(request, 'create/create.html', {
+                'info_form': info_form,
+                'body_form': body_form
+            })
 
 # views for editors
 
@@ -525,3 +597,33 @@ Retorno:
             return JsonResponse({'success': True})
         except Exception as e:
             return JsonResponse({'success': False, 'error': str(e)})
+        
+
+class HistoryView(DetailView):
+    """
+    Vista para mostrar el historial de un post específico.
+
+    Atributos:
+        model (Post): El modelo que se utilizará para obtener los datos del post.
+        template_name (str): La plantilla que se utilizará para renderizar la vista.
+    """
+    model = Post
+    template_name = 'history/history_detail.html'
+
+    def get_object(self):
+        post_pk = self.kwargs.get('pk')
+        history_id = self.kwargs.get('history_id')
+        post = get_object_or_404(Post, pk=post_pk)
+        
+        try:
+            history_instance = post.history.get(history_id=history_id)
+        except post.history.model.DoesNotExist:
+            raise Http404("No HistoricalPost matches the given query.")
+        
+        return history_instance
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['post'] = self.get_object()
+        context['post_pk'] = self.kwargs.get('pk')
+        return context

@@ -1,33 +1,220 @@
 {% extends "base.html" %}
 {% block content %}
 <main role="main" class="container py-4">
+  {% if messages %}
+  <ul class="messages">
+    {% for message in messages %}
+    <li class="alert alert-{{ message.tags }}">{{ message }}</li>
+    {% endfor %}
+  </ul>
+  {% endif %}
   <form method="post">
     {% csrf_token %}
+
     {% if post.status == 'draft' %}
-      <h1>Editar artículo</h1>
-      {{ form.media }}
-      {{ form.as_p }}
-      <button class="btn btn-primary" type="submit">Guardar</button>
-      <button class="btn btn-secondary" name="status" value="to_edit" type="submit">Mandar a edición</button>
-      <button class="btn btn-danger disabled" type="submit">Eliminar</button>
+    <h1>Editar artículo</h1>
+
+    <!-- Tabs de Bootstrap -->
+    <ul class="nav nav-tabs" id="myTab" role="tablist">
+      <li class="nav-item">
+        <a class="nav-link active" id="informacion-tab" data-bs-toggle="tab" href="#informacion" role="tab"
+          aria-controls="informacion" aria-selected="true">Información</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" id="cuerpo-tab" data-bs-toggle="tab" href="#cuerpo" role="tab" aria-controls="cuerpo"
+          aria-selected="false">Cuerpo</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" id="historial-tab" data-bs-toggle="tab" href="#historial" role="tab"
+          aria-controls="historial" aria-selected="false">Historial de versiones</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" id="observaciones-tab" data-bs-toggle="tab" href="#observaciones" role="tab"
+          aria-controls="observaciones" aria-selected="false">Observaciones de versiones</a>
+      </li>
+    </ul>
+
+    <!-- Contenido de las Tabs -->
+    <div class="tab-content" id="myTabContent">
+      <!-- Información Tab -->
+      <div class="tab-pane fade show active" id="informacion" role="tabpanel" aria-labelledby="informacion-tab">
+        <div class="py-3">
+          <div class="form-group">
+            <label for="id_title">Título</label>
+            {{ information_form.title }}
+          </div>
+          <div class="form-group">
+            <label for="id_title_tag">Etiqueta de título</label>
+            {{ information_form.title_tag }}
+          </div>
+          <div class="form-group">
+            <label for="id_summary">Resumen</label>
+            {{ information_form.summary }}
+          </div>
+          <div class="form-group">
+            <label for="id_category">Categoría</label>
+            {{ information_form.category }}
+          </div>
+          <div class="form-group">
+            <label for="id_keywords">Etiquetas</label>
+            {{ information_form.keywords }}
+          </div>
+        </div>
+        <!-- Botones de acción -->
+        <div class="py-3">
+          <button class="btn btn-primary" type="submit">Guardar</button>
+          <button class="btn btn-secondary" name="status" value="to_edit" type="submit">Mandar a edición</button>
+          <button class="btn btn-danger disabled" type="submit">Eliminar</button>
+        </div>
+      </div>
+
+      <!-- Cuerpo Tab -->
+      <div class="tab-pane fade" id="cuerpo" role="tabpanel" aria-labelledby="cuerpo-tab">
+        <div class="py-3">
+          <div class="form-group">
+            {{ form.media }}
+            {{ body_form.body }}
+          </div>
+        </div>
+        <!-- Botones de acción -->
+        <div class="py-1">
+          <button class="btn btn-primary" type="submit">Guardar</button>
+          <button class="btn btn-secondary" name="status" value="to_edit" type="submit">Mandar a edición</button>
+          <button class="btn btn-danger disabled" type="submit">Eliminar</button>
+        </div>
+      </div>
+
+      <!-- Historial de versiones Tab -->
+      <div class="tab-pane fade" id="historial" role="tabpanel" aria-labelledby="historial-tab">
+        <div class="py-3">
+          <h1>Historial de versiones</h1>
+          <table class="table table-dark table-hover">
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Tipo</th>
+                <th>Usuario</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for record in post_history_page %}
+              <tr>
+                <td>{{ record.history_date|date:"d M Y, H:i" }}</td>
+                <td>
+                  {% if record.history_type == '+' %}
+                  Creado
+                  {% elif record.history_type == '~' %}
+                  Actualizado
+                  {% elif record.history_type == '-' %}
+                  Eliminado
+                  {% endif %}
+                </td>
+                <td>{{ record.history_user }}</td>
+                <td><a href="{% url 'history' post.pk record.history_id %}">Ver detalles</a></td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+
+          <!-- Pagination Controls -->
+          <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-center" data-bs-theme="dark">
+              {% if post_history_page.has_previous %}
+              <li class="page-item">
+                <a class="page-link" href="?page={{ post_history_page.previous_page_number }}#historial"
+                  aria-label="Previous">
+                  <span aria-hidden="true">&laquo;</span>
+                </a>
+              </li>
+              {% endif %}
+              {% for num in post_history_page.paginator.page_range %}
+              <li class="page-item {% if post_history_page.number == num %}active{% endif %}">
+                <a class="page-link" href="?page={{ num }}#historial">{{ num }}</a>
+              </li>
+              {% endfor %}
+              {% if post_history_page.has_next %}
+              <li class="page-item">
+                <a class="page-link" href="?page={{ post_history_page.next_page_number }}#historial" aria-label="Next">
+                  <span aria-hidden="true">&raquo;</span>
+                </a>
+              </li>
+              {% endif %}
+            </ul>
+          </nav>
+        </div>
+      </div>
+
+      <!-- Observaciones de versiones Tab -->
+      <div class="tab-pane fade" id="observaciones" role="tabpanel" aria-labelledby="observaciones-tab">
+        <div class="container-fluid">
+          <h1>Observaciones de versiones</h1>
+        </div>
+      </div>
+    </div>
+
     {% else %}
-      <h1>{{post.title}}</h1>
-        <blockquote class="blockquote">
-          <small>{{post.summary}}</small>
-        </blockquote>
-        <hr>
-        <p>{{post.body|safe}}</p>
-        <small>Autor: {{post.author.first_name}} {{post.author.last_name}}</small></br>
-        <small>Categoria: {{post.category}}</small></br>
-        <small>Etiquetas: {{post.keywords}}</small></br>
-        {% if post.status == 'to_publish' %}
-          <small>Estado: A publicar</small></br>
-        {% elif post.status == 'to_edit' %}
-          <small>Estado: En edición</small></br>
-        {% endif %}
+    <!-- Si el post no está en estado "draft" -->
+    <h1>{{ post.title }}</h1>
+    <blockquote class="blockquote">
+      <small>{{ post.summary }}</small>
+    </blockquote>
+    <hr>
+    <p>{{ post.body|safe }}</p>
+    <small>Autor: {{ post.author.first_name }} {{ post.author.last_name }}</small><br>
+    <small>Categoría: {{ post.category }}</small><br>
+    <small>Etiquetas: {{ post.keywords }}</small><br>
+
+    {% if post.status == 'to_publish' %}
+    <small>Estado: A publicar</small><br>
+    {% elif post.status == 'to_edit' %}
+    <small>Estado: En edición</small><br>
     {% endif %}
-    </br>
-    <a href="{% url 'my-posts' %}" class="btn btn-secondary btn-light mt-3">Volver a mis artículos</a>
+    {% endif %}
+
+    <br>
+    <a href="{% url 'my-posts' %}" class="btn btn-secondary btn-light">Volver a mis artículos</a>
   </form>
 </main>
+
+<!-- Incluir JavaScript de Bootstrap solo si es "draft" -->
+{% if post.status == 'draft' %}
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    var triggerTabList = [].slice.call(document.querySelectorAll('#myTab a'))
+    triggerTabList.forEach(function (triggerEl) {
+      var tabTrigger = new bootstrap.Tab(triggerEl)
+
+      triggerEl.addEventListener('click', function (event) {
+        event.preventDefault()
+        tabTrigger.show()
+      })
+    })
+  });
+</script>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    // Check if there's a hash in the URL (e.g., #historial)
+    var hash = window.location.hash;
+
+    if (hash) {
+      // Find the tab with that hash and show it
+      var activeTab = document.querySelector('a[href="' + hash + '"]');
+      if (activeTab) {
+        var tab = new bootstrap.Tab(activeTab);
+        tab.show();
+      }
+    }
+
+    // Add event listeners to save the clicked tab in the URL hash
+    var tabLinks = document.querySelectorAll('a[data-bs-toggle="tab"]');
+    tabLinks.forEach(function (tabLink) {
+      tabLink.addEventListener('click', function (event) {
+        // Update the URL hash when a tab is clicked
+        window.location.hash = event.target.getAttribute('href');
+      });
+    });
+  });
+</script>
+{% endif %}
 {% endblock %}
