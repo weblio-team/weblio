@@ -157,9 +157,9 @@
     <div class="d-flex justify-content-between">
       <a href="{% url 'my-posts' %}" class="btn btn-secondary btn-light">Volver</a>
       <div>
-        <button class="btn btn-success my-0" type="submit">Guardar</button>
-        <button class="btn btn-primary my-0" name="status" value="to_edit" type="submit">Mandar a edición</button>
-        <button class="btn btn-danger disabled my-0" type="submit">Eliminar</button>
+        <button class="btn btn-primary my-0" type="submit">Guardar</button>
+        <button class="btn btn-secondary my-0" name="status" value="to_edit" type="submit">Mandar a edición</button>
+        <button type="button" class="btn btn-danger my-0" data-bs-toggle="modal" data-bs-target="#deleteModal">Eliminar</button>
       </div>
     </div>
   </form>
@@ -175,7 +175,10 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-          <a href="{% url 'delete-my-post' post.pk %}" class="btn btn-danger">Confirmar</a>
+          <form method="post" action="{% url 'delete-my-post' post.pk %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">Confirmar</button>
+          </form>
         </div>
       </div>
     </div>
