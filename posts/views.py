@@ -136,7 +136,7 @@ class MyPostsView(ListView):
         template_name (str): La plantilla que se utilizará para renderizar la vista.
         ordering (list): Lista que define el orden de los resultados.
     """
-    model = Post()
+    model = Post
     template_name = 'create/my_posts.html'
     ordering = ['-date_posted']
     
