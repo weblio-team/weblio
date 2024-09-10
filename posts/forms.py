@@ -1,4 +1,5 @@
 from django import forms
+from django.urls import reverse_lazy
 from django.utils.translation import gettext as _
 from .models import Category, Post, Post
 from ckeditor_uploader.widgets import CKEditorUploadingWidget
@@ -73,7 +74,7 @@ class CategoryEditForm(forms.ModelForm):
         return cleaned_data
     
 # forms for authors views
-class MyPostEditForm(forms.ModelForm):
+class MyPostEditInformationForm(forms.ModelForm):
     class Meta:
         model = Post
         fields = ['title', 'title_tag', 'summary', 'body', 'category', 'status', 'keywords', 'thumbnail', 'publish_start_date', 'publish_end_date']
@@ -92,28 +93,31 @@ class MyPostEditForm(forms.ModelForm):
         }
         widgets = {
             'title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Insertar título'}),
-            'category': forms.Select(attrs={'class': 'form-control'}),
             'title_tag': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Insertar etiqueta de título'}),
-            'summary': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Insertar resumen'}),
-            'body': CKEditorUploadingWidget(attrs={"class": "ckeditor"}),
-            'status': forms.HiddenInput(),
+            'summary': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Insertar resumen'}),
+            'category': forms.Select(attrs={'class': 'form-control'}),
             'keywords': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Insertar etiquetas'}),
             'thumbnail': forms.FileInput(attrs={'class': 'form-control'}),
             'publish_start_date': forms.DateTimeInput(attrs={'class': 'form-control', 'placeholder': 'Insertar fecha de inicio de vigencia'}),
             'publish_end_date': forms.DateTimeInput(attrs={'class': 'form-control', 'placeholder': 'Insertar fecha de fin de vigencia'}),
         }
 
-    def __init__(self, *args, **kwargs):
-        super(MyPostEditForm, self).__init__(*args, **kwargs)
-        if self.instance and self.instance.status != 'draft':
-            # Eliminar el campo `body` del formulario
-            self.fields.pop('body', None)
 
-            # Deshabilitar los otros campos
-            for field_name, field in self.fields.items():
-                field.widget.attrs['disabled'] = 'disabled'
+class MyPostEditBodyForm(forms.ModelForm):
+    class Meta:
+        model = Post
+        fields = ['body']
+        widgets = {
+            'body': CKEditorUploadingWidget(attrs={"class": "ckeditor", 'required': True}),
+        }
 
+    def clean_body(self):
+        body = self.cleaned_data.get('body')
+        if not body:
+            raise forms.ValidationError("Este campo es obligatorio.")
+        return body
         
+
 class ToEditPostForm(forms.ModelForm):
     class Meta:
         model = Post
@@ -122,59 +126,46 @@ class ToEditPostForm(forms.ModelForm):
             'title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Insertar titulo'}),
             'category': forms.Select(attrs={'class': 'form-control'}),
             'title_tag': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Insertar etiqueta de titulo'}),
-            'summary': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Insertar resumen'}),
+            'summary': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Insertar resumen'}),
             'body': CKEditorUploadingWidget(attrs={"class": "ckeditor"}),
             'author': forms.HiddenInput(),
             'status': forms.HiddenInput(),
         }
 
-class MyPostAddForm(forms.ModelForm):
+
+class MyPostAddInformationForm(forms.ModelForm):
     class Meta:
         model = Post
-        fields = ['title', 'title_tag', 'summary', 'body', 'author', 'category', 'keywords', 'thumbnail', 'publish_start_date', 'publish_end_date']
-        labels = {
-            'title': _('Título'),
-            'title_tag': _('Etiqueta del Título'),
-            'summary': _('Resumen'),
-            'body': _('Cuerpo'),
-            'category': _('Categoría'),
-            'author': _('Autor'),
-            'status': _('Estado'),
-            'keywords': _('Etiquetas'),
-            'thumbnail': _('Miniatura'),
-            'publish_start_date': _('Fecha de inicio de vigencia'),
-            'publish_end_date': _('Fecha de fin de vigencia'),
-        }
+        fields = ['title', 'title_tag', 'summary', 'category', 'keywords']  # Include the relevant fields
+
         widgets = {
-            'title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Insertar titulo'}),
+            'title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Insertar título'}),
+            'title_tag': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Insertar etiqueta de título'}),
+            'summary': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Insertar resumen'}),
             'category': forms.Select(attrs={'class': 'form-control'}),
-            'author': forms.HiddenInput(),
-            'title_tag': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Insertar etiqueta de titulo'}),
-            'summary': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Insertar resumen'}),
-            'body': CKEditorUploadingWidget(attrs={"class": "ckeditor"}),
             'keywords': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Insertar etiquetas'}),
             'thumbnail': forms.FileInput(attrs={'class': 'form-control'}),
             'publish_start_date': forms.DateTimeInput(attrs={'class': 'form-control', 'type': 'datetime-local'}),
             'publish_end_date': forms.DateTimeInput(attrs={'class': 'form-control', 'type': 'datetime-local'}),
         }
 
-    def __init__(self, *args, **kwargs):
-        user = kwargs.pop('user', None)
-        super(MyPostAddForm, self).__init__(*args, **kwargs)
-        print(user)
-        if user:
-            self.fields['author'].initial = user
 
-    def save(self, commit=True):
-        instance = super(MyPostAddForm, self).save(commit=False)
-        if self.initial.get('author'):
-            instance.author = self.initial['author']
-            print(instance.author)
-        if commit:
-            instance.save()
-        return instance
+class MyPostAddBodyForm(forms.ModelForm):
+    class Meta:
+        model = Post
+        fields = ['body']  # Include body, media, and status fields
+
+        widgets = {
+            'body': forms.Textarea(attrs={'class': 'form-control', 'required': True, 'placeholder': 'Insertar cuerpo'}),
+        }
+
+    def clean_body(self):
+        body = self.cleaned_data.get('body')
+        if not body:
+            raise forms.ValidationError("Este campo es obligatorio.")
+        return body
     
-    
+
 class KanbanBoardForm(forms.ModelForm):
     class Meta:
         model = Post

@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}{{ post.title_tag }}{% endblock %}
+{% block content %}
+<main role="main" class="container py-4">
+    <h1>{{ post.title }}</h1>
+    <blockquote class="blockquote">
+        <small>{{ post.summary }}</small>
+    </blockquote>
+    <p>{{ post.body|safe }}</p>
+    <small>Autor: {{ post.history_user.first_name }} {{ post.history_user.last_name }}</small><br>
+    <small>Categoria: {{ post.category }}</small><br>
+    <small>Etiquetas: {{ post.keywords }}</small><br>
+    
+    <!-- Flex container for button alignment -->
+    <div class="d-flex justify-content-between py-4">
+        <!-- Left aligned 'Volver' button -->
+        <a href="{% url 'edit-my-post' post_pk %}" class="btn btn-primary">Volver</a>
+        
+        <!-- Right aligned 'Restaurar esta versión' button -->
+        <form method="post" action="{% url 'edit-my-post' post_pk %}">
+            {% csrf_token %}
+            <input type="hidden" name="restore_version" value="true">
+            <input type="hidden" name="title" value="{{ post.title }}">
+            <input type="hidden" name="title_tag" value="{{ post.title_tag }}">
+            <input type="hidden" name="summary" value="{{ post.summary }}">
+            <input type="hidden" name="body" value="{{ post.body }}">
+            <input type="hidden" name="category" value="{{ post.category }}">
+            <input type="hidden" name="keywords" value="{{ post.keywords }}">
+            <button type="submit" class="btn btn-light">Restaurar esta versión</button>
+        </form>
+    </div>
+</main>
+{% endblock %}

@@ -4,6 +4,8 @@ from django.urls import reverse
 from django.utils.text import slugify
 from django.utils import lorem_ipsum
 from .models import Category, Post
+from .forms import MyPostAddInformationForm, MyPostAddBodyForm, MyPostEditInformationForm, MyPostEditBodyForm
+from .forms import MyPostAddInformationForm, MyPostAddBodyForm, MyPostEditInformationForm, MyPostEditBodyForm
 
 class CategoryModelTest(TestCase):
 
@@ -117,3 +119,214 @@ class PostModelTest(TestCase):
     def test_permissions(self):
         # Verificar que el modelo Post tiene el permiso personalizado 'can_publish'
         self.assertIn(('can_publish', 'Can publish post'), Post._meta.permissions)
+
+class MyPostAddInformationFormTest(TestCase):
+
+    def setUp(self):
+        self.valid_data = {
+            'title': 'Test Title',
+            'title_tag': 'Test Title Tag',
+            'summary': 'Test Summary',
+            'category': 1,  # Assuming category with ID 1 exists
+            'keywords': 'test, post'
+        }
+        self.invalid_data = {
+            'title': '',
+            'title_tag': '',
+            'summary': '',
+            'category': '',
+            'keywords': ''
+        }
+
+    def test_form_initialization(self):
+        form = MyPostAddInformationForm()
+        self.assertIsInstance(form, MyPostAddInformationForm, "El formulario debería ser una instancia de MyPostAddInformationForm")
+
+    def test_form_valid_data(self):
+        form = MyPostAddInformationForm(data=self.valid_data)
+        self.assertTrue(form.is_valid(), f"El formulario debería ser válido con datos correctos. Errores: {form.errors}")
+
+    def test_form_invalid_data(self):
+        form = MyPostAddInformationForm(data=self.invalid_data)
+        self.assertFalse(form.is_valid(), "El formulario debería ser inválido cuando faltan campos obligatorios")
+        self.assertIn('title', form.errors, "El campo de título debería tener errores si falta")
+        self.assertIn('category', form.errors, "El campo de categoría debería tener errores si falta")
+
+class MyPostAddBodyFormTest(TestCase):
+
+    def setUp(self):
+        self.valid_data = {
+            'body': 'Test Body'
+        }
+        self.invalid_data = {
+            'body': ''
+        }
+
+    def test_form_initialization(self):
+        form = MyPostAddBodyForm()
+        self.assertIsInstance(form, MyPostAddBodyForm, "El formulario debería ser una instancia de MyPostAddBodyForm")
+
+    def test_form_valid_data(self):
+        form = MyPostAddBodyForm(data=self.valid_data)
+        self.assertTrue(form.is_valid(), f"El formulario debería ser válido con datos correctos. Errores: {form.errors}")
+
+    def test_form_invalid_data(self):
+        form = MyPostAddBodyForm(data=self.invalid_data)
+        self.assertFalse(form.is_valid(), "El formulario debería ser inválido cuando faltan campos obligatorios")
+        self.assertIn('body', form.errors, "El campo de cuerpo debería tener errores si falta")
+
+class MyPostEditInformationFormTest(TestCase):
+
+    def setUp(self):
+        self.valid_data = {
+            'title': 'Test Title',
+            'title_tag': 'Test Title Tag',
+            'summary': 'Test Summary',
+            'category': 1,  # Assuming category with ID 1 exists
+            'keywords': 'test, post'
+        }
+        self.invalid_data = {
+            'title': '',
+            'title_tag': '',
+            'summary': '',
+            'category': '',
+            'keywords': ''
+        }
+
+    def test_form_initialization(self):
+        form = MyPostEditInformationForm()
+        self.assertIsInstance(form, MyPostEditInformationForm, "El formulario debería ser una instancia de MyPostEditInformationForm")
+
+    def test_form_valid_data(self):
+        form = MyPostEditInformationForm(data=self.valid_data)
+        self.assertTrue(form.is_valid(), f"El formulario debería ser válido con datos correctos. Errores: {form.errors}")
+
+    def test_form_invalid_data(self):
+        form = MyPostEditInformationForm(data=self.invalid_data)
+        self.assertFalse(form.is_valid(), "El formulario debería ser inválido cuando faltan campos obligatorios")
+        self.assertIn('title', form.errors, "El campo de título debería tener errores si falta")
+        self.assertIn('category', form.errors, "El campo de categoría debería tener errores si falta")
+
+class MyPostEditBodyFormTest(TestCase):
+
+    def setUp(self):
+        self.valid_data = {
+            'body': 'Test Body',
+            'status': 'draft'
+        }
+        self.invalid_data = {
+            'body': '',
+            'status': ''
+        }
+
+    def test_form_initialization(self):
+        form = MyPostEditBodyForm()
+        self.assertIsInstance(form, MyPostEditBodyForm, "El formulario debería ser una instancia de MyPostEditBodyForm")
+
+    def test_form_valid_data(self):
+        form = MyPostEditBodyForm(data=self.valid_data)
+        self.assertTrue(form.is_valid(), f"El formulario debería ser válido con datos correctos. Errores: {form.errors}")
+
+    def test_form_invalid_data(self):
+        form = MyPostEditBodyForm(data=self.invalid_data)
+        self.assertFalse(form.is_valid(), "El formulario debería ser inválido cuando faltan campos obligatorios")
+        self.assertIn('body', form.errors, "El campo de cuerpo debería tener errores si falta")
+
+class MyPostAddViewTest(TestCase):
+
+    def setUp(self):
+        self.user = Member.objects.create_user(username='testuser', password='12345', email='testuser@example.com', first_name='Test', last_name='User')
+        self.category = Category.objects.create(name='Test Category')
+        self.valid_data_info = {
+            'title': 'Test Title',
+            'title_tag': 'Test Title Tag',
+            'summary': 'Test Summary',
+            'category': self.category.id,
+            'keywords': 'test, post'
+        }
+        self.valid_data_body = {
+            'body': 'Test Body'
+        }
+        self.invalid_data_info = {
+            'title': '',
+            'title_tag': '',
+            'summary': '',
+            'category': '',
+            'keywords': ''
+        }
+        self.invalid_data_body = {
+            'body': ''
+        }
+
+    def test_get_add_post_view(self):
+        self.client.login(username='testuser', password='12345')
+        response = self.client.get(reverse('add-my-post'))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'create/create.html')
+
+    def test_post_add_post_view_valid_data(self):
+        self.client.login(username='testuser', password='12345')
+        response = self.client.post(reverse('add-my-post'), data={**self.valid_data_info, **self.valid_data_body})
+        self.assertEqual(response.status_code, 302)  # Redirect after successful post creation
+        self.assertTrue(Post.objects.filter(title='Test Title').exists())
+
+    def test_post_add_post_view_invalid_data(self):
+        self.client.login(username='testuser', password='12345')
+        response = self.client.post(reverse('add-my-post'), data={**self.invalid_data_info, **self.invalid_data_body})
+        self.assertEqual(response.status_code, 200)  # Form re-rendered with errors
+        self.assertFalse(Post.objects.filter(title='').exists())
+
+class MyPostEditViewTest(TestCase):
+
+    def setUp(self):
+        self.user = Member.objects.create_user(username='testuser', password='12345', email='testuser@example.com', first_name='Test', last_name='User')
+        self.category = Category.objects.create(name='Test Category')
+        self.post = Post.objects.create(
+            title='Original Title',
+            title_tag='Original Title Tag',
+            summary='Original Summary',
+            body='Original Body',
+            category=self.category,
+            keywords='original, post',
+            author=self.user
+        )
+        self.valid_data_info = {
+            'title': 'Updated Title',
+            'title_tag': 'Updated Title Tag',
+            'summary': 'Updated Summary',
+            'category': self.category.id,
+            'keywords': 'updated, post'
+        }
+        self.valid_data_body = {
+            'body': 'Updated Body'
+        }
+        self.invalid_data_info = {
+            'title': '',
+            'title_tag': '',
+            'summary': '',
+            'category': '',
+            'keywords': ''
+        }
+        self.invalid_data_body = {
+            'body': ''
+        }
+
+    def test_get_edit_post_view(self):
+        self.client.login(username='testuser', password='12345')
+        response = self.client.get(reverse('edit-my-post', kwargs={'pk': self.post.pk}))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'create/edit.html')
+
+    def test_post_edit_post_view_valid_data(self):
+        self.client.login(username='testuser', password='12345')
+        response = self.client.post(reverse('edit-my-post', kwargs={'pk': self.post.pk}), data={**self.valid_data_info, **self.valid_data_body})
+        self.assertEqual(response.status_code, 302)  # Redirect after successful post update
+        self.post.refresh_from_db()
+        self.assertEqual(self.post.title, 'Updated Title')
+
+    def test_post_edit_post_view_invalid_data(self):
+        self.client.login(username='testuser', password='12345')
+        response = self.client.post(reverse('edit-my-post', kwargs={'pk': self.post.pk}), data={**self.invalid_data_info, **self.invalid_data_body})
+        self.assertEqual(response.status_code, 200)  # Form re-rendered with errors
+        self.post.refresh_from_db()
+        self.assertEqual(self.post.title, 'Original Title')
