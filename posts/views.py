@@ -1,5 +1,4 @@
 import json
-import logging
 from pyexpat.errors import messages
 from django.http import Http404, HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -7,7 +6,6 @@ from django.urls import reverse_lazy
 from django.contrib.auth.mixins import PermissionRequiredMixin, LoginRequiredMixin
 from django.utils.decorators import method_decorator
 from django.views import View
-from requests import request
 from .models import Category, Post
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView, TemplateView
 from .forms import CategoryForm, CategoryEditForm, KanbanBoardForm, MyPostAddBodyForm, MyPostAddInformationForm, MyPostEditInformationForm, MyPostEditBodyForm, ToEditPostInformationForm, ToEditPostBodyForm
@@ -17,8 +15,6 @@ from django.contrib import messages
 from django.utils import timezone
 from simple_history.utils import update_change_reason
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-
-logger = logging.getLogger(__name__)
 
 # views for category administrators
 
@@ -370,6 +366,7 @@ class ToEditPostView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
     model = Post
     template_name = 'edit/edit.html'
     fields = ['title', 'title_tag', 'summary', 'body', 'category', 'keywords']    
+    permission_required = 'posts.change_post'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -437,6 +434,15 @@ class ToEditPostView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
             context['information_form'] = information_form
             context['body_form'] = body_form
             return self.render_to_response(context)
+        
+    def form_valid(self, form):
+        """Valida el formulario y actualiza el estado de la publicación según la entrada del usuario."""
+        form.instance.status = self.request.POST.get('status')
+        if form.instance.status == 'to_publish':
+            messages.success(self.request, 'La publicación se ha enviado para publicación.')
+        elif form.instance.status == 'draft':
+            messages.success(self.request, 'La publicación se ha guardado como borrador.')
+        return super().form_valid(form)
 
 
 # views for publishers

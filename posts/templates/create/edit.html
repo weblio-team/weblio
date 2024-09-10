@@ -1,13 +1,6 @@
 {% extends "base.html" %}
 {% block content %}
 <main role="main" class="container py-4">
-  {% if messages %}
-  <ul class="messages">
-    {% for message in messages %}
-    <li class="alert alert-{{ message.tags }}">{{ message }}</li>
-    {% endfor %}
-  </ul>
-  {% endif %}
   <form method="post">
     {% csrf_token %}
 
