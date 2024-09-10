@@ -96,11 +96,11 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 LANGUAGE_CODE = 'es'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'America/Asuncion'
 
 USE_I18N = True
 
-USE_TZ = True
+USE_TZ = False
 
 # Redirects
 LOGIN_REDIRECT_URL = 'posts'

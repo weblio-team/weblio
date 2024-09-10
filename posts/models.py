@@ -88,6 +88,9 @@ class Post(models.Model):
     status = models.CharField(max_length=20, choices=(('draft', 'Draft'), ('to_edit', 'To Edit'), ('to_publish', 'To Publish'), ('published', 'Published'),), default='draft')
     category = models.ForeignKey(Category, on_delete=models.SET_DEFAULT, default=get_default_category)
     keywords = models.CharField(max_length=100, blank=True, null=True)
+    thumbnail = models.ImageField(upload_to='thumbnails/', blank=True, null=True)
+    publish_start_date = models.DateTimeField(blank=True, null=True)
+    publish_end_date = models.DateTimeField(blank=True, null=True)
     
     class Meta:
         permissions = [

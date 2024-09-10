@@ -1,8 +1,6 @@
-from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, Group
+from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from django.db import models
-from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
-from django.core.exceptions import ObjectDoesNotExist
 from .managers import MemberManager
 
 class Member(AbstractBaseUser, PermissionsMixin):
@@ -37,6 +35,7 @@ class Member(AbstractBaseUser, PermissionsMixin):
     is_active = models.BooleanField(_('active'), default=True)
     is_staff = models.BooleanField(_('staff status'), default=False)
     date_joined = models.DateTimeField(_('date joined'), auto_now_add=True)
+    pfp = models.ImageField(upload_to='profile_pictures/', blank=True, null=True)
 
     USERNAME_FIELD = 'username'
     REQUIRED_FIELDS = ['email' ,'first_name', 'last_name']
@@ -59,3 +58,8 @@ class Member(AbstractBaseUser, PermissionsMixin):
             - str: El username del usuario.
         """
         return self.username
+    
+    def get_pfp_url(self):
+        if self.pfp:
+            return self.pfp.url
+        return 'https://picsum.photos/seed/picsum/1080'  # URL de imagen por defecto

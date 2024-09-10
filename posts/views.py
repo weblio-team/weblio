@@ -11,6 +11,7 @@ from .forms import CategoryForm, CategoryEditForm, KanbanBoardForm, MyPostEditFo
 from django.db.models import Q
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib import messages
+from django.utils import timezone
 
 # views for category administrators
 
@@ -387,8 +388,19 @@ class SuscriberPostsView(ListView):
     ordering = ['-date_posted']
     
     def get_queryset(self):
-        """Obtiene las publicaciones con estado 'published', ordenadas por fecha de publicación."""
-        return Post.objects.filter(status='published').order_by('-date_posted')
+        # Obtener la hora actual en UTC
+        now = timezone.now()
+        
+        # Condición 1: Si publish_start_date y publish_end_date no son nulos y la fecha actual está en el rango
+        programmed = Q(publish_start_date__lte=now, publish_end_date__gte=now, publish_start_date__isnull=False, publish_end_date__isnull=False)
+
+        # Condición 2: Si publish_start_date y publish_end_date son nulos
+        regular = Q(publish_start_date__isnull=True, publish_end_date__isnull=True)
+
+        # Filtrar los posts con status 'published' que cumplan cualquiera de las dos condiciones
+        return Post.objects.filter(
+            Q(status='published') & (programmed | regular)
+        ).order_by('-date_posted')
     
     def get_context_data(self, **kwargs):
         """Añade información adicional al contexto, como la lista de categorías."""

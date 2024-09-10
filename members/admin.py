@@ -12,7 +12,7 @@ class MemberAdmin(UserAdmin):
     list_display = ("email", "is_staff", "is_active",)
     list_filter = ("email", "is_staff", "is_active",)
     fieldsets = (
-        (None, {"fields": ("email", "password")}),
+        (None, {"fields": ("email", "password", "pfp")}),
         ("Permissions", {"fields": ("is_staff", "is_active", "groups", "user_permissions")}),
     )
     add_fieldsets = (
@@ -20,7 +20,7 @@ class MemberAdmin(UserAdmin):
             "classes": ("wide",),
             "fields": (
                 "email", "password1", "password2", "is_staff",
-                "is_active", "groups", "user_permissions"
+                "is_active", "groups", "user_permissions", "pfp"
             )}
         ),
     )

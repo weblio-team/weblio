@@ -76,7 +76,7 @@ class CategoryEditForm(forms.ModelForm):
 class MyPostEditForm(forms.ModelForm):
     class Meta:
         model = Post
-        fields = ['title', 'title_tag', 'summary', 'body', 'category', 'status', 'keywords']
+        fields = ['title', 'title_tag', 'summary', 'body', 'category', 'status', 'keywords', 'thumbnail', 'publish_start_date', 'publish_end_date']
         labels = {
             'title': _('Título'),
             'title_tag': _('Etiqueta del Título'),
@@ -85,6 +85,10 @@ class MyPostEditForm(forms.ModelForm):
             'category': _('Categoría'),
             'author': _('Autor'),
             'status': _('Estado'),
+            'keywords': _('Etiquetas'),
+            'thumbnail': _('Miniatura'),
+            'publish_start_date': _('Fecha de inicio de vigencia'),
+            'publish_end_date': _('Fecha de fin de vigencia'),
         }
         widgets = {
             'title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Insertar título'}),
@@ -94,6 +98,9 @@ class MyPostEditForm(forms.ModelForm):
             'body': CKEditorUploadingWidget(attrs={"class": "ckeditor"}),
             'status': forms.HiddenInput(),
             'keywords': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Insertar etiquetas'}),
+            'thumbnail': forms.FileInput(attrs={'class': 'form-control'}),
+            'publish_start_date': forms.DateTimeInput(attrs={'class': 'form-control', 'placeholder': 'Insertar fecha de inicio de vigencia'}),
+            'publish_end_date': forms.DateTimeInput(attrs={'class': 'form-control', 'placeholder': 'Insertar fecha de fin de vigencia'}),
         }
 
     def __init__(self, *args, **kwargs):
@@ -124,7 +131,7 @@ class ToEditPostForm(forms.ModelForm):
 class MyPostAddForm(forms.ModelForm):
     class Meta:
         model = Post
-        fields = ['title', 'title_tag', 'summary', 'body', 'author', 'category', 'keywords']
+        fields = ['title', 'title_tag', 'summary', 'body', 'author', 'category', 'keywords', 'thumbnail', 'publish_start_date', 'publish_end_date']
         labels = {
             'title': _('Título'),
             'title_tag': _('Etiqueta del Título'),
@@ -133,6 +140,10 @@ class MyPostAddForm(forms.ModelForm):
             'category': _('Categoría'),
             'author': _('Autor'),
             'status': _('Estado'),
+            'keywords': _('Etiquetas'),
+            'thumbnail': _('Miniatura'),
+            'publish_start_date': _('Fecha de inicio de vigencia'),
+            'publish_end_date': _('Fecha de fin de vigencia'),
         }
         widgets = {
             'title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Insertar titulo'}),
@@ -142,6 +153,9 @@ class MyPostAddForm(forms.ModelForm):
             'summary': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Insertar resumen'}),
             'body': CKEditorUploadingWidget(attrs={"class": "ckeditor"}),
             'keywords': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Insertar etiquetas'}),
+            'thumbnail': forms.FileInput(attrs={'class': 'form-control'}),
+            'publish_start_date': forms.DateTimeInput(attrs={'class': 'form-control', 'type': 'datetime-local'}),
+            'publish_end_date': forms.DateTimeInput(attrs={'class': 'form-control', 'type': 'datetime-local'}),
         }
 
     def __init__(self, *args, **kwargs):
