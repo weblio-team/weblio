@@ -12,7 +12,6 @@ from django.shortcuts import render, get_object_or_404, redirect
 from .forms import CreateGroupForm, MemberEditGroupForm, MemberEditPermissionForm, MemberStatusForm
 from .models import Member
 from .forms import MemberRegisterForm, MemberJoinForm, MemberLoginForm
-from .forms import RoleCreateForm
 from .forms import PasswordChangingForm
 from .forms import EditProfileForm
 from django.contrib import messages

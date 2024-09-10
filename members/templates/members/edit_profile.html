@@ -10,7 +10,11 @@
     <div class="form-group col-md-6">
         <div class="d-flex justify-content-center mb-4">
             <div class="profile-pic-container">
-                <img src="https://picsum.photos/seed/picsum/150" alt="Foto de perfil" class="img-fluid rounded-circle">
+                {% if user.pfp %}
+                    <img src="{{ user.pfp.url }}" alt="Foto de perfil" class="img-fluid rounded-circle" style="width: 150px; height: 150px; object-fit: cover;">
+                {% else %}
+                    <img src="https://picsum.photos/seed/picsum/150" alt="Foto de perfil" class="img-fluid rounded-circle" style="width: 150px; height: 150px; object-fit: cover;">
+                {% endif %}            
             </div>
         </div>
         <form method="POST">
