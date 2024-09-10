@@ -1,12 +1,6 @@
 from django.urls import path
-from .views import GroupListView, CreateGroupView, MemberEditGroupView, MemberEditPermissionView
-from .views import MemberListView, MemberJoinView, MemberRegisterView, MemberLoginView, MemberStatusView
-from .views import GroupListView, CreateGroupView
-from .views import MemberListView
-from .views import UserEditView, ProfileView, PasswordsChangeView
-from . import views
-
-from .views import MemberListView, MemberJoinView, MemberRegisterView, MemberLoginView
+from .views import MemberListView, MemberJoinView, MemberRegisterView, MemberLoginView, MemberStatusView, UserEditView, ProfileView, PasswordsChangeView
+from .views import GroupListView, CreateGroupView, GroupEditView, GroupDeleteView, CreateGroupView, MemberEditGroupView, MemberEditPermissionView
 from django.contrib.auth import views as auth_views
 
 urlpatterns = [
@@ -16,6 +10,8 @@ urlpatterns = [
     path('status/<int:pk>/', MemberStatusView.as_view(), name='member-status'),
     path('groups/', GroupListView.as_view(), name='group-list'),
     path('groups/create/', CreateGroupView.as_view(), name='group-create'),
+    path('groups/edit/<int:pk>', GroupEditView.as_view(), name='group-edit'),
+    path('groups/delete/<int:group_id>', GroupDeleteView.as_view(), name='group-delete'),
     
     path('join/', MemberJoinView.as_view(), name='member-join'),
     path('register/', MemberRegisterView.as_view(), name='member-register'),
@@ -29,5 +25,4 @@ urlpatterns = [
     path('password-reset-sent/', auth_views.PasswordResetDoneView.as_view(), name='password_reset_done'),
     path('password-reset/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
     path('password-reset-complete/', auth_views.PasswordResetCompleteView.as_view(), name='password_reset_complete'),
-
 ]

@@ -205,7 +205,8 @@ class MemberEditGroupView(LoginRequiredMixin, PermissionRequiredMixin, views.Vie
         """
         member = get_object_or_404(Member, pk=pk)
         form = MemberEditGroupForm(instance=member)
-        return render(request, 'members/edit_group.html', {'form': form, 'member': member})
+        next_url = request.GET.get('next', '')
+        return render(request, 'members/edit_group.html', {'form': form, 'member': member, 'next_url': next_url})
 
     def post(self, request, pk):
         """
@@ -274,10 +275,13 @@ class MemberEditPermissionView(LoginRequiredMixin, PermissionRequiredMixin, view
         member = get_object_or_404(Member, pk=pk)
         form = MemberEditPermissionForm(instance=member)
         user_permissions = member.user_permissions.all()
+        group_names = member.groups.values_list('name', flat = True)
+
         return render(request, 'members/edit_permission.html', {
             'form': form,
             'member': member,
-            'user_permissions': user_permissions
+            'user_permissions': user_permissions,
+            'group_names': group_names
         })
 
     def post(self, request, pk):
@@ -418,7 +422,7 @@ class MemberLoginView(LoginView):
         """
         Devuelve la URL a la que redirigir después de iniciar sesión.
         """
-        return reverse_lazy('posts')  
+        return reverse_lazy('posts')  # Ensure 'posts' matches the URL pattern name
     
 
 class MemberJoinView(CreateView):

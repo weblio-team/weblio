@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth.forms import AuthenticationForm
 from .models import Member
 from django import forms
+from django.db.models import Q
 from django.utils.translation import gettext as _
 
 
@@ -51,6 +52,50 @@ class MemberChangeForm(UserChangeForm):
             'email': _('Correo electrónico'),
         }
 
+class GroupEditForm(forms.ModelForm):
+    """
+    Formulario para editar un grupo y sus permisos.
+
+    Campos:
+        - permissions: Campo de selección múltiple para los permisos del grupo, representado como una lista de casillas de verificación.
+    
+    Meta:
+        - model: El modelo Group que se va a editar.
+        - fields: Los campos del modelo que se incluirán en el formulario.
+        - labels: Etiquetas personalizadas para los campos del formulario.
+    """
+    
+    permissions = forms.ModelMultipleChoiceField(
+        queryset=Permission.objects.all(), 
+        label="Permisos", 
+        required=False,
+        widget=forms.CheckboxSelectMultiple    
+    )
+    
+    class Meta:
+        model = Group
+        fields = ['name', 'permissions']  
+        
+        labels = {
+            'name': _('Nombre'),
+            'permissions': _('Permisos'),
+        }
+
+    def save(self, commit=True):
+        """
+        Guarda el grupo y sus permisos asociados.
+
+        Args:
+            commit: Booleano que indica si se debe guardar el grupo en la base de datos inmediatamente.
+
+        Returns:
+            El grupo guardado con sus permisos actualizados.
+        """
+        group = super().save(commit=False)
+        if commit:
+            group.save()
+            group.permissions.set(self.cleaned_data['permissions'])
+        return group
 
 class UserListForm(forms.Form):
     """
@@ -221,6 +266,12 @@ class MemberLoginForm(AuthenticationForm):
         }
         
 class MemberEditGroupForm(forms.ModelForm):
+    """
+    Formulario para editar los roles de un miembro.
+
+    Campos:
+        - groups: Campo de selección múltiple para los roles del miembro.
+    """
     groups = forms.ModelMultipleChoiceField(
         queryset=Group.objects.all(),
         widget=forms.CheckboxSelectMultiple,
@@ -233,26 +284,49 @@ class MemberEditGroupForm(forms.ModelForm):
         fields = ['groups']
     
 class MemberEditPermissionForm(forms.ModelForm):
-    permissions = forms.ModelMultipleChoiceField(
-        queryset=Permission.objects.none(),  # Inicialmente vacío
-        widget=forms.CheckboxSelectMultiple,
-        required=False,
-        label="Permisos"
-    )
-    is_active = forms.BooleanField(required=False, label="Activo")
+    """
+    Formulario para editar los permisos de un miembro.
 
-    class Meta:
-        model = Member
-        fields = ['permissions', 'is_active']
-
+    Campos:
+        - permissions: Campo de selección múltiple para los permisos.
+    
+    Métodos:
+        - __init__: Configura el formulario inicializando el queryset de permisos disponibles
+          basado en los grupos a los que el miembro pertenece. También establece los permisos
+          que el miembro ya tiene como valores iniciales seleccionados en el formulario.
+    """
     def __init__(self, *args, **kwargs):
         member = kwargs.get('instance')
         super(MemberEditPermissionForm, self).__init__(*args, **kwargs)
         if member:
-            self.fields['permissions'].queryset = Permission.objects.filter(group__user=member).distinct()
+            self.fields['permissions'].queryset = Permission.objects.filter(
+                Q(group__in=member.groups.all())
+            ).distinct()
+
+            self.fields['permissions'].initial = member.user_permissions.all()
+
+    permissions = forms.ModelMultipleChoiceField(
+        queryset=Permission.objects.all(),  # Inicialmente vacío
+        widget=forms.CheckboxSelectMultiple,
+        required=False,
+        label="Permisos"
+    )
+
+    class Meta:
+        model = Member
+        fields = ['permissions']  
 
 
 class MemberStatusForm(forms.ModelForm):
+    """
+    Formulario para editar el estado de activación de un miembro.
+
+    Campos:
+        - is_active: Campo de selección para activar o desactivar al miembro.
+    
+    Métodos:
+        - __init__: Personaliza el campo 'is_active' para que no tenga un sufijo en la etiqueta.
+    """
     class Meta:
         model = Member
         fields = ['is_active']

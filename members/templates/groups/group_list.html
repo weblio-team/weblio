@@ -3,9 +3,12 @@
 {% block content %}
 <main class="container py-4">
     <h1>Lista de Roles</h1>
-    <table class="table table-dark table-striped table-bordered">
+    <form method="post" action="{% url 'group-list' %}">
+        {% csrf_token %}
+        <table class="table table-dark table-striped table-bordered">
         <thead>
             <tr>
+                <th scope="col">Seleccionar</th>
                 <th scope="col">Rol</th>
                 <th scope="col">Permisos</th>
             </tr>
@@ -13,6 +16,9 @@
         <tbody>
             {% for group in groups %}
             <tr>
+                <td>
+                    <input type="radio" name="selected_group" value="{{ group.id }}" {% if forloop.first %}checked{% endif %}>
+                </td>
                 <td>{{ group.name }}</td>
                 <td>
                     {% if group.permissions.exists %}
@@ -28,7 +34,10 @@
             </tr>
             {% endfor %}
         </tbody>
-    </table>
+        </table>
+    <button type="submit" name="action" value="edit_group" class="btn btn-light">Editar Rol</button>
+    <button type="submit" name="action" value="delete_group" class="btn btn-light">Borrar Rol</button>
+    </form>
 </main>
 {% endblock %}
 
