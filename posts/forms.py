@@ -118,19 +118,28 @@ class MyPostEditBodyForm(forms.ModelForm):
         return body
         
 
-class ToEditPostForm(forms.ModelForm):
+class ToEditPostInformationForm(forms.ModelForm):
     class Meta:
         model = Post
-        fields = ['title', 'title_tag', 'summary', 'body', 'category', 'author', 'status']
+        fields = ['title', 'title_tag', 'summary', 'category', 'keywords']
         widgets = {
-            'title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Insertar titulo'}),
-            'category': forms.Select(attrs={'class': 'form-control'}),
-            'title_tag': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Insertar etiqueta de titulo'}),
-            'summary': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Insertar resumen'}),
-            'body': CKEditorUploadingWidget(attrs={"class": "ckeditor"}),
-            'author': forms.HiddenInput(),
-            'status': forms.HiddenInput(),
+                'title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Insertar título'}),
+                'title_tag': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Insertar etiqueta de título'}),
+                'summary': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Insertar resumen'}),
+                'category': forms.Select(attrs={'class': 'form-control'}),
+                'keywords': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Insertar etiquetas'}),
         }
+
+class ToEditPostBodyForm(forms.ModelForm):
+    class Meta:
+        model = Post
+        fields = ['body']
+        widgets = {
+            'body': CKEditorUploadingWidget(attrs={"class": "ckeditor", 'required': True}),
+        }
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['body'].required = True
 
 
 class MyPostAddInformationForm(forms.ModelForm):

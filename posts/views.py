@@ -10,7 +10,7 @@ from django.views import View
 from requests import request
 from .models import Category, Post
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView, TemplateView
-from .forms import CategoryForm, CategoryEditForm, KanbanBoardForm, MyPostAddBodyForm, MyPostAddInformationForm, MyPostEditInformationForm, MyPostEditBodyForm, ToEditPostForm
+from .forms import CategoryForm, CategoryEditForm, KanbanBoardForm, MyPostAddBodyForm, MyPostAddInformationForm, MyPostEditInformationForm, MyPostEditBodyForm, ToEditPostInformationForm, ToEditPostBodyForm
 from django.db.models import Q
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib import messages
@@ -351,37 +351,92 @@ class ToEditView(PermissionRequiredMixin, LoginRequiredMixin, ListView):
 
 class ToEditPostView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
     """
-    Vista para editar una publicación que está en proceso de edición.
-
+    Vista para editar una publicación existente.
+    Esta vista permite a los usuarios editar una publicación existente y ver el historial de versiones de la publicación. 
+    La vista utiliza paginación para mostrar el historial de versiones y maneja formularios separados para la información 
+    y el cuerpo de la publicación.
     Atributos:
-        model (Post): El modelo que se utilizará para editar la publicación.
-        form_class (ToEditPostForm): El formulario que se usará para editar la publicación.
+        model (Post): El modelo de la publicación que se va a editar.
         template_name (str): La plantilla que se utilizará para renderizar la vista.
-        success_url (str): La URL de redirección después de editar la publicación.
+        fields (list): Los campos del modelo que se mostrarán en el formulario de edición.
+    Métodos:
+        get_context_data(**kwargs):
+            Obtiene el contexto adicional para la plantilla, incluyendo el historial de versiones paginado y los formularios 
+            de edición.
+        post(request, *args, **kwargs):
+            Maneja la solicitud POST para actualizar la publicación. Si se proporciona una versión para restaurar, 
+            inicializa los formularios con los datos de esa versión. Si no, utiliza los datos proporcionados en la solicitud POST.
     """
     model = Post
-    form_class = ToEditPostForm
     template_name = 'edit/edit.html'
-    success_url = reverse_lazy('to-edit')
-    permission_required = 'posts.change_post'
+    fields = ['title', 'title_tag', 'summary', 'body', 'category', 'keywords']    
 
-    def get_object(self, queryset=None):
-        """Obtiene la publicación específica basada en 'pk'."""
-        if queryset is None:
-            queryset = self.get_queryset()
-        
-        post_id = self.kwargs.get('pk')
-        post = get_object_or_404(queryset, pk=post_id)
-        return post
-    
-    def form_valid(self, form):
-        """Valida el formulario y actualiza el estado de la publicación según la entrada del usuario."""
-        form.instance.status = self.request.POST.get('status')
-        if form.instance.status == 'to_publish':
-            messages.success(self.request, 'La publicación se ha enviado para publicación.')
-        elif form.instance.status == 'draft':
-            messages.success(self.request, 'La publicación se ha guardado como borrador.')
-        return super().form_valid(form)
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        post = self.get_object()
+
+        # Order version history by history_date in descending order
+        post_history = post.history.order_by('-history_date')
+
+        # Set up pagination (e.g., 5 items per page)
+        paginator = Paginator(post_history, 5)  # 5 versions per page
+        page = self.request.GET.get('page')
+
+        try:
+            post_history_page = paginator.page(page)
+        except PageNotAnInteger:
+            post_history_page = paginator.page(1)
+        except EmptyPage:
+            post_history_page = paginator.page(paginator.num_pages)
+
+        context['post_history_page'] = post_history_page
+
+        if self.request.POST:
+            context['information_form'] = ToEditPostInformationForm(self.request.POST, instance=self.object)
+            context['body_form'] = ToEditPostBodyForm(self.request.POST, instance=self.object)
+        else:
+            context['information_form'] = ToEditPostInformationForm(instance=self.object)
+            context['body_form'] = ToEditPostBodyForm(instance=self.object)
+
+        return context
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+
+        # Make a copy of POST data to modify
+        post_data = request.POST.copy()
+
+        if 'restore_version' in post_data:
+            information_form = ToEditPostInformationForm(initial={
+                'title': post_data.get('title'),
+                'title_tag': post_data.get('title_tag'),
+                'summary': post_data.get('summary'),
+                'category': post_data.get('category'),
+                'keywords': post_data.get('keywords')
+            })
+            body_form = ToEditPostBodyForm(initial={
+                'body': post_data.get('body')
+            })
+            
+        # Check if 'status' is missing and set it to the existing status from the post instance
+        elif 'status' not in post_data:
+            post_data['status'] = self.object.status
+
+        # Create the forms with the modified data
+        information_form = ToEditPostInformationForm(post_data, instance=self.object)
+        body_form = ToEditPostBodyForm(post_data, instance=self.object)
+
+        if information_form.is_valid() and body_form.is_valid():
+            post = information_form.save(commit=False)
+            post = body_form.save(commit=False)
+
+            post.save()  # Save the post once
+            return redirect('to-edit')
+        else:
+            context = self.get_context_data()
+            context['information_form'] = information_form
+            context['body_form'] = body_form
+            return self.render_to_response(context)
 
 
 # views for publishers

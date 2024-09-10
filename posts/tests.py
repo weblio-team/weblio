@@ -6,6 +6,7 @@ from django.utils import lorem_ipsum
 from .models import Category, Post
 from .forms import MyPostAddInformationForm, MyPostAddBodyForm, MyPostEditInformationForm, MyPostEditBodyForm
 from .forms import MyPostAddInformationForm, MyPostAddBodyForm, MyPostEditInformationForm, MyPostEditBodyForm
+from .forms import ToEditPostInformationForm, ToEditPostBodyForm
 
 class CategoryModelTest(TestCase):
 
@@ -326,6 +327,135 @@ class MyPostEditViewTest(TestCase):
 
     def test_post_edit_post_view_invalid_data(self):
         self.client.login(username='testuser', password='12345')
+        response = self.client.post(reverse('edit-my-post', kwargs={'pk': self.post.pk}), data={**self.invalid_data_info, **self.invalid_data_body})
+        self.assertEqual(response.status_code, 200)  # Form re-rendered with errors
+        self.post.refresh_from_db()
+        self.assertEqual(self.post.title, 'Original Title')
+
+class ToEditPostInformationFormTest(TestCase):
+
+    def setUp(self):
+        self.valid_data = {
+            'title': 'Valid Title',
+            'title_tag': 'Valid Tag',
+            'summary': 'Valid Summary',
+            'category': 1,  # Assuming you have a category with ID 1
+            'change_reason': 'Valid Reason'
+        }
+        self.invalid_data = {
+            'title': '',
+            'title_tag': '',
+            'summary': '',
+            'category': '',
+            'change_reason': ''
+        }
+
+    def test_form_initialization(self):
+        form = ToEditPostInformationForm()
+        self.assertIsInstance(form, ToEditPostInformationForm, "El formulario debería ser una instancia de ToEditPostInformationForm")
+
+    def test_form_valid_data(self):
+        form = ToEditPostInformationForm(data=self.valid_data)
+        self.assertTrue(form.is_valid(), f"El formulario debería ser válido con datos correctos. Errores: {form.errors}")
+
+    def test_form_invalid_data(self):
+        form = ToEditPostInformationForm(data=self.invalid_data)
+        self.assertFalse(form.is_valid(), "El formulario debería ser inválido cuando faltan campos obligatorios")
+        self.assertIn('title', form.errors, "El campo de título debería tener errores si el título falta")
+
+    def test_form_labels(self):
+        form = ToEditPostInformationForm()
+        self.assertEqual(form.fields['title'].label, 'Title', "La etiqueta del título debería ser 'Title'")
+
+class ToEditPostBodyFormTest(TestCase):
+
+    def setUp(self):
+        self.valid_data = {
+            'media': 'Valid Media',
+            'body': 'Valid Body'
+        }
+        self.invalid_data = {
+            'media': '',
+            'body': ''
+        }
+
+    def test_form_initialization(self):
+        form = ToEditPostBodyForm()
+        self.assertIsInstance(form, ToEditPostBodyForm, "El formulario debería ser una instancia de ToEditPostBodyForm")
+
+    def test_form_valid_data(self):
+        form = ToEditPostBodyForm(data=self.valid_data)
+        self.assertTrue(form.is_valid(), f"El formulario debería ser válido con datos correctos. Errores: {form.errors}")
+
+    def test_form_invalid_data(self):
+        form = ToEditPostBodyForm(data=self.invalid_data)
+        self.assertFalse(form.is_valid(), "El formulario debería ser inválido cuando faltan campos obligatorios")
+        self.assertIn('body', form.errors, "El campo de cuerpo debería tener errores si el cuerpo falta")
+
+    def test_form_labels(self):
+        form = ToEditPostBodyForm()
+        self.assertEqual(form.fields['body'].label, 'Text', "La etiqueta del cuerpo debería ser 'Text'")
+
+class ToEditPostViewTest(TestCase):
+
+    def setUp(self):
+        self.user_data = {
+            'username': 'testmember',
+            'password': '12345',
+            'email': 'testmember@example.com',
+            'first_name': 'Test',
+            'last_name': 'Member'
+        }
+        self.category = Category.objects.create(name='Test Category')
+        self.member = Member.objects.create_user(**self.user_data)
+        self.post_data = {
+            'title': 'Original Title',
+            'title_tag': 'Original Tag',
+            'summary': 'Original Summary',
+            'body': 'Original Body',
+            'category': self.category,
+            'author': self.member
+        }
+        self.valid_data_info = {
+            'title': 'Updated Title',
+            'title_tag': 'Updated Tag',
+            'summary': 'Updated Summary',
+            'category': self.category.id,
+            'change_reason': 'Updated Reason'
+        }
+        self.valid_data_body = {
+            'media': 'Updated Media',
+            'body': 'Updated Body'
+        }
+        self.invalid_data_info = {
+            'title': '',
+            'title_tag': '',
+            'summary': '',
+            'category': '',
+            'change_reason': ''
+        }
+        self.invalid_data_body = {
+            'media': '',
+            'body': ''
+        }
+        self.post = Post.objects.create(**self.post_data)
+
+    def test_get_edit_post_view(self):
+        self.client.login(username='testmember', password='12345')
+        response = self.client.get(reverse('edit-my-post', kwargs={'pk': self.post.pk}))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'create/edit.html')
+
+    def test_post_edit_post_view_valid_data(self):
+        self.client.login(username='testmember', password='12345')
+        response = self.client.post(reverse('edit-my-post', kwargs={'pk': self.post.pk}), data={**self.valid_data_info, **self.valid_data_body})
+        self.assertEqual(response.status_code, 302)  # Redirect after successful post update
+        self.post.refresh_from_db()
+        self.assertEqual(self.post.title, 'Updated Title')
+        # Assuming change_reason is handled by a separate mechanism, not directly on the Post model
+
+    def test_post_edit_post_view_invalid_data(self):
+        self.client.login(username='testmember', password='12345')
         response = self.client.post(reverse('edit-my-post', kwargs={'pk': self.post.pk}), data={**self.invalid_data_info, **self.invalid_data_body})
         self.assertEqual(response.status_code, 200)  # Form re-rendered with errors
         self.post.refresh_from_db()
