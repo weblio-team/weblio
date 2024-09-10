@@ -60,12 +60,6 @@
             {{ information_form.keywords }}
           </div>
         </div>
-        <!-- Botones de acción -->
-        <div class="py-3">
-          <button class="btn btn-primary" type="submit">Guardar</button>
-          <button class="btn btn-secondary" name="status" value="to_edit" type="submit">Mandar a edición</button>
-          <button class="btn btn-danger disabled" type="submit">Eliminar</button>
-        </div>
       </div>
 
       <!-- Cuerpo Tab -->
@@ -75,12 +69,6 @@
             {{ form.media }}
             {{ body_form.body }}
           </div>
-        </div>
-        <!-- Botones de acción -->
-        <div class="py-1">
-          <button class="btn btn-primary" type="submit">Guardar</button>
-          <button class="btn btn-secondary" name="status" value="to_edit" type="submit">Mandar a edición</button>
-          <button class="btn btn-danger disabled" type="submit">Eliminar</button>
         </div>
       </div>
 
@@ -173,25 +161,16 @@
     {% endif %}
 
     <br>
-    <a href="{% url 'my-posts' %}" class="btn btn-secondary btn-light">Volver a mis artículos</a>
+    <div class="d-flex justify-content-between">
+      <a href="{% url 'my-posts' %}" class="btn btn-secondary btn-light">Volver a mis artículos</a>
+      <div>
+        <button class="btn btn-primary my-0" type="submit">Guardar</button>
+        <button class="btn btn-secondary my-0" name="status" value="to_edit" type="submit">Mandar a edición</button>
+        <button class="btn btn-danger disabled my-0" type="submit">Eliminar</button>
+      </div>
+    </div>
   </form>
 </main>
-
-<!-- Incluir JavaScript de Bootstrap solo si es "draft" -->
-{% if post.status == 'draft' %}
-<script>
-  document.addEventListener("DOMContentLoaded", function () {
-    var triggerTabList = [].slice.call(document.querySelectorAll('#myTab a'))
-    triggerTabList.forEach(function (triggerEl) {
-      var tabTrigger = new bootstrap.Tab(triggerEl)
-
-      triggerEl.addEventListener('click', function (event) {
-        event.preventDefault()
-        tabTrigger.show()
-      })
-    })
-  });
-</script>
 <script>
   document.addEventListener("DOMContentLoaded", function () {
     // Check if there's a hash in the URL (e.g., #historial)
@@ -214,6 +193,21 @@
         window.location.hash = event.target.getAttribute('href');
       });
     });
+  });
+</script>
+<!-- Incluir JavaScript de Bootstrap solo si es "draft" -->
+{% if post.status == 'draft' %}
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    var triggerTabList = [].slice.call(document.querySelectorAll('#myTab a'))
+    triggerTabList.forEach(function (triggerEl) {
+      var tabTrigger = new bootstrap.Tab(triggerEl)
+
+      triggerEl.addEventListener('click', function (event) {
+        event.preventDefault()
+        tabTrigger.show()
+      })
+    })
   });
 </script>
 {% endif %}
