@@ -5,26 +5,19 @@
 
 <div class="py-4">
     <h1 class="text-center mb-4">Perfil de Usuario</h1>
-
-    <!-- Imagen de perfil centrada debajo del título con fondo gris -->
     <div class="container d-flex justify-content-center mb-4">
         <div class="profile-pic-container">
             <img src="https://picsum.photos/seed/picsum/150" alt="Foto de perfil" class="img-fluid rounded-circle" style="width: 150px; height: 150px; object-fit: cover;">
         </div>
     </div>
-
-    <!-- Contenedor centrado para los datos del usuario -->
     <div class="container d-flex justify-content-center">
         <div class="form-group col-md-8">
             <div class="row align-items-center">
-                <!-- Columna con los datos del usuario -->
                 <div class="col-md-12 text-center">
                     <h3> {{ user.username }} </h3>
                     <p><strong>Nombre:</strong> {{ user.first_name }}</p>
                     <p><strong>Apellido:</strong> {{ user.last_name }}</p>
                     <p><strong>Correo electrónico:</strong> {{ user.email }}</p>
-                    
-                    <!-- Badge que cambia de color dependiendo del grupo -->
                     <span class="badge
                         {% if not user.groups.exists %}
                             text-bg-secondary
@@ -42,8 +35,7 @@
                                     text-bg-light
                                 {% endif %}
                             {% endfor %}
-                        {% endif %}
-                    ">
+                        {% endif %}">
                         {% if user.groups.exists %}
                             {% for group in user.groups.all %}
                                 {{ group.name }}
@@ -54,13 +46,9 @@
                     </span>
                 </div>
             </div>
-            
-            <!-- Botones "Cambiar Contraseña" y "Editar Perfil" -->
             <div class="row mt-4">
                 <div class="col-md-12 d-flex justify-content-between">
-                    <!-- Botón "Cambiar Contraseña" a la izquierda -->
                     <a href="{% url 'password_change' %}" class="btn btn-primary">Cambiar Contraseña</a>
-                    <!-- Botón "Editar Perfil" a la derecha -->
                     <a href="{% url 'edit_profile' %}" class="btn btn-primary">Editar Perfil</a>
                 </div>
             </div>
@@ -70,18 +58,17 @@
 
 <!-- Estilos personalizados -->
 <style>
-    /* Fondo gris para cuando no hay imagen */
     .profile-pic-container {
         width: 150px;
         height: 150px;
-        background-color: #e0e0e0; /* Color de fondo gris claro */
+        background-color: #e0e0e0; 
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
     }
 
-    /* Ocultar la imagen si no está cargada */
+
     .profile-pic-container img {
         display: block;
         width: 100%;

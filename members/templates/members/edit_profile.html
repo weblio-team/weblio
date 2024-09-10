@@ -8,39 +8,33 @@
 
 <div class="container d-flex justify-content-center">
     <div class="form-group col-md-6">
-        <!-- Imagen de perfil redonda con fondo gris -->
         <div class="d-flex justify-content-center mb-4">
             <div class="profile-pic-container">
                 <img src="https://picsum.photos/seed/picsum/150" alt="Foto de perfil" class="img-fluid rounded-circle">
             </div>
         </div>
-        <!-- Formulario para editar el perfil -->
         <form method="POST">
             {% csrf_token %}
             {{ form.as_p }}
-            <!-- Enlace para restablecer contraseña (sin fondo, alineado a la izquierda) -->
-            <div class="mb-3">
-                <a href="{% url 'password_change' %}" class="reset-link">Restablecer Contraseña</a>
+            <div class="d-flex justify-content-between py-4">
+                <button class="btn btn-primary me-2 w-50">Guardar Cambios</button>
+                <a href="{% url 'profile' %}" class="btn btn-secondary w-50">Cancelar</a>
             </div>
-            <!-- Botón para modificar perfil con el mismo estilo -->
-            <button class="btn btn-primary w-100">Guardar Cambios</button>
         </form>
     </div>
 </div>
 
 <style>
-    /* Fondo gris para cuando no hay imagen */
     .profile-pic-container {
         width: 150px;
         height: 150px;
-        background-color: #e0e0e0; /* Color de fondo gris claro */
+        background-color: #e0e0e0; 
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
     }
 
-    /* Ocultar la imagen si no está cargada */
     .profile-pic-container img {
         display: block;
         width: 100%;
@@ -49,7 +43,6 @@
         border-radius: 50%;
     }
 
-    /* Estilo para el enlace de "Restablecer Contraseña" */
     .reset-link {
         text-decoration: none;
         color: #007bff;

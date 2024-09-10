@@ -1,6 +1,8 @@
 from django.test import TestCase
 from .models import Member
 from members.forms import MemberCreationForm
+from django.contrib.auth.forms import PasswordChangeForm
+from members.forms import PasswordChangingForm
 
 class MemberModelTests(TestCase):
 
@@ -75,3 +77,46 @@ class MemberCreationFormTest(TestCase):
     def test_form_labels(self):
         form = MemberCreationForm()
         self.assertEqual(form.fields['email'].label, 'Correo electrónico', "La etiqueta del correo electrónico debería ser 'Correo electrónico'")
+
+class PasswordChangingFormTest(TestCase):
+
+    def setUp(self):
+        self.user = Member.objects.create_user(username='testuser', password='old_password')
+        self.form_data = {
+            'old_password': 'old_password',
+            'new_password1': 'new_password123',
+            'new_password2': 'new_password123'
+        }
+
+    def test_form_initialization(self):
+        form = PasswordChangingForm(user=self.user)
+        self.assertIsInstance(form, PasswordChangeForm)
+        self.assertFalse(form.is_bound)
+
+    def test_form_initialization_with_data(self):
+        form = PasswordChangingForm(user=self.user, data=self.form_data)
+        self.assertTrue(form.is_bound)
+        self.assertTrue(form.is_valid())
+
+    def test_form_validation_with_valid_data(self):
+        form = PasswordChangingForm(user=self.user, data=self.form_data)
+        self.assertTrue(form.is_valid())
+
+    def test_form_validation_with_invalid_data(self):
+        invalid_data = self.form_data.copy()
+        invalid_data['new_password2'] = 'different_password'
+        form = PasswordChangingForm(user=self.user, data=invalid_data)
+        self.assertFalse(form.is_valid())
+        self.assertIn('new_password2', form.errors)
+
+    def test_form_fields_labels(self):
+        form = PasswordChangingForm(user=self.user)
+        self.assertEqual(form.fields['old_password'].label, 'Contraseña actual')
+        self.assertEqual(form.fields['new_password1'].label, 'Nueva contraseña')
+        self.assertEqual(form.fields['new_password2'].label, 'Confirmar nueva contraseña')
+
+    def test_form_fields_widget_attributes(self):
+        form = PasswordChangingForm(user=self.user)
+        self.assertEqual(form.fields['old_password'].widget.attrs['class'], 'form-control')
+        self.assertEqual(form.fields['new_password1'].widget.attrs['class'], 'form-control')
+        self.assertEqual(form.fields['new_password2'].widget.attrs['class'], 'form-control')
