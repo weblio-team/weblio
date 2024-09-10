@@ -1,4 +1,4 @@
-from django.contrib.auth.forms import UserCreationForm, UserChangeForm
+from django.contrib.auth.forms import UserCreationForm, UserChangeForm, PasswordChangeForm
 from django.contrib.auth.models import Group, Permission
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import AuthenticationForm
@@ -274,3 +274,133 @@ class MemberListForm(forms.Form):
         - users: Campo de selección de un solo miembro.
     """
     users = forms.ModelChoiceField(queryset=Member.objects.all(), label="Miembros", required=True)
+
+class RoleListForm(forms.Form):
+    """
+    Formulario que lista todos los grupos junto con sus permisos.
+
+    Campos:
+        - group: Campo de selección de un grupo.
+        - permissions: Campo de selección múltiple de permisos.
+    """
+    group = forms.ModelChoiceField(queryset=Group.objects.all(), label="Grupos", required=True)
+    permissions = forms.ModelMultipleChoiceField(queryset=Permission.objects.all(), label="Permisos", required=False)
+
+class RoleCreateForm(forms.ModelForm):
+    """
+    Formulario para crear un nuevo grupo y asignarle permisos.
+
+    Campos:
+        - name: Nombre del grupo.
+        - permissions: Campo de selección múltiple de permisos.
+
+    Hereda de:
+        - forms.ModelForm: Formulario basado en un modelo estándar de Django.
+
+    Meta:
+        - model: El modelo `Group` al que está vinculado el formulario.
+        - fields: Campos que se utilizarán en el formulario.
+
+    Métodos:
+        - save(commit=True): Guarda el grupo y asigna los permisos seleccionados.
+    """
+    permissions = forms.ModelMultipleChoiceField(
+        queryset=Permission.objects.all().filter(content_type__app_label__in=['members', 'posts']),
+        label="Permisos",
+        required=False,
+        widget=forms.CheckboxSelectMultiple
+    )
+
+    class Meta:
+        model = Group
+        fields = ['name', 'permissions']
+        labels = {
+            'name': _('Nombre'),
+            'permissions': _('Permisos'),
+        }
+
+    def save(self, commit=True):
+        """
+        Guarda el grupo y asigna los permisos seleccionados.
+
+        Parámetros:
+            - commit (bool): Booleano que indica si se debe guardar el grupo inmediatamente.
+
+        Retorna:
+            - Group: El objeto grupo creado o actualizado.
+        """
+        group = super().save(commit=False)
+        if commit:
+            group.save()
+            group.permissions.set(self.cleaned_data['permissions'])
+        return group
+
+class EditProfileForm(UserChangeForm):
+    """
+    Formulario para editar el perfil de un usuario.
+
+    Campos:
+        email: Campo de correo electrónico con un widget de entrada de correo electrónico.
+        first_name: Campo de nombre con un widget de entrada de texto.
+        last_name: Campo de apellido con un widget de entrada de texto.
+        username: Campo de nombre de usuario con un widget de entrada de texto.
+        password: Campo de contraseña oculto, no requerido.
+
+    Meta:
+        model: Modelo asociado al formulario (Member).
+        fields: Campos que se incluirán en el formulario.
+    """
+    email = forms.EmailField(
+        widget=forms.EmailInput(attrs={'class': 'form-control'}),
+        label='Correo electrónico'
+    )
+    first_name = forms.CharField(
+        max_length=100,
+        widget=forms.TextInput(attrs={'class': 'form-control'}),
+        label='Nombre'
+    )
+    last_name = forms.CharField(
+        max_length=100,
+        widget=forms.TextInput(attrs={'class': 'form-control'}),
+        label='Apellido'
+    )
+    username = forms.CharField(
+        max_length=100,
+        widget=forms.TextInput(attrs={'class': 'form-control'}),
+        label='Usuario'
+    )
+    password = forms.CharField(widget=forms.HiddenInput(), required=False)
+
+    class Meta:
+        model = Member
+        fields = ( 'username', 'first_name', 'last_name', 'email', 'password')
+
+class PasswordChangingForm(PasswordChangeForm):
+    """
+    Formulario personalizado para cambiar la contraseña del usuario.
+
+    Atributos:
+        old_password: Campo para ingresar la contraseña actual del usuario.
+        new_password1: Campo para ingresar la nueva contraseña del usuario.
+        new_password2: Campo para confirmar la nueva contraseña del usuario.
+
+    Meta:
+        model: El modelo asociado con este formulario (Member).
+        fields: Los campos que se incluirán en el formulario ('old_password', 'new_password1', 'new_password2').
+    """
+    old_password = forms.CharField(
+        widget=forms.PasswordInput(attrs={'class': 'form-control', 'type': 'password'}),
+        label='Contraseña actual'
+    )
+    new_password1 = forms.CharField(
+        widget=forms.PasswordInput(attrs={'class': 'form-control', 'type': 'password'}),
+        label='Nueva contraseña'
+    )
+    new_password2 = forms.CharField(
+        widget=forms.PasswordInput(attrs={'class': 'form-control', 'type': 'password'}),
+        label='Confirmar nueva contraseña'
+    )
+
+    class Meta:
+        model = Member
+        fields = ('old_password', 'new_password1', 'new_password2')

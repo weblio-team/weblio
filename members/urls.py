@@ -3,6 +3,8 @@ from .views import GroupListView, CreateGroupView, MemberEditGroupView, MemberEd
 from .views import MemberListView, MemberJoinView, MemberRegisterView, MemberLoginView, MemberStatusView
 from .views import GroupListView, CreateGroupView
 from .views import MemberListView
+from .views import UserEditView, ProfileView, PasswordsChangeView
+from . import views
 
 from .views import MemberListView, MemberJoinView, MemberRegisterView, MemberLoginView
 from django.contrib.auth import views as auth_views
@@ -19,6 +21,9 @@ urlpatterns = [
     path('register/', MemberRegisterView.as_view(), name='member-register'),
     path('login/', MemberLoginView.as_view(), name='member-login'),
     path('logout/', auth_views.LogoutView.as_view(), name='logout'),
+    path('profile/', ProfileView.as_view(), name='profile'),
+    path('edit-profile/', UserEditView.as_view(), name='edit_profile'),
+    path('password/', PasswordsChangeView.as_view(template_name='members/change-password.html'), name='password_change'),
     
     path('password-reset/', auth_views.PasswordResetView.as_view(), name='reset_password'),
     path('password-reset-sent/', auth_views.PasswordResetDoneView.as_view(), name='password_reset_done'),

@@ -9,7 +9,7 @@
       {{ form.as_p }}
       <button class="btn btn-primary" type="submit">Guardar</button>
       <button class="btn btn-secondary" name="status" value="to_edit" type="submit">Mandar a edición</button>
-      <button class="btn btn-danger disabled" type="submit">Eliminar</button>
+      <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">Eliminar</button>
     {% else %}
       <h1>{{post.title}}</h1>
         <blockquote class="blockquote">
@@ -29,5 +29,22 @@
     </br>
     <a href="{% url 'my-posts' %}" class="btn btn-secondary btn-light mt-3">Volver a mis artículos</a>
   </form>
+  <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="deleteModalLabel">Confirmar eliminación</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body text-black">
+          ¿Estás seguro de que quieres eliminar este artículo?
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <a href="{% url 'delete-my-post' post.pk %}" class="btn btn-danger">Confirmar</a>
+        </div>
+      </div>
+    </div>
+  </div>
 </main>
 {% endblock %}

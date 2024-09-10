@@ -1,9 +1,9 @@
 from pyexpat.errors import messages
-from django.views.generic import FormView, TemplateView,  CreateView
+from django.views.generic import FormView, TemplateView,  CreateView, UpdateView
 from django.urls import reverse_lazy
 
 from django.contrib.auth.models import Group
-from django.contrib.auth.views import LoginView
+from django.contrib.auth.views import LoginView, PasswordChangeView
 from .models import Member
 from django import forms, views
 from django.views.generic import CreateView
@@ -12,6 +12,9 @@ from django.shortcuts import render, get_object_or_404, redirect
 from .forms import CreateGroupForm, MemberEditGroupForm, MemberEditPermissionForm, MemberStatusForm
 from .models import Member
 from .forms import MemberRegisterForm, MemberJoinForm, MemberLoginForm
+from .forms import RoleCreateForm
+from .forms import PasswordChangingForm
+from .forms import EditProfileForm
 from django.contrib import messages
 from django.http import HttpResponseRedirect 
 from django.contrib.auth import authenticate
@@ -492,3 +495,65 @@ class Error500View(TemplateView):
         context['error_message'] = 'Error interno del servidor'
         context['error_description'] = 'Ocurrió un problema con el servidor. Estamos trabajando para resolverlo.'
         return context
+    
+class UserEditView(UpdateView):
+    """
+    Vista basada en clases para la edición del perfil de usuario.
+
+    Atributos:
+        form_class: El formulario que se utilizará para editar el perfil del usuario.
+        template_name: La plantilla que se utilizará para renderizar la vista.
+        success_url: La URL a la que se redirigirá después de que el formulario se haya enviado con éxito.
+
+    Métodos:
+        get_object: Obtiene el objeto que se va a editar (el usuario actual).
+    """
+    form_class = EditProfileForm
+    template_name = 'members/edit_profile.html'
+    success_url = reverse_lazy('profile')
+
+    def get_object(self):
+        """
+        Obtiene el objeto que se va a editar.
+
+        Returns:
+            User: El usuario actual que está autenticado.
+        """
+        return self.request.user
+
+class ProfileView(LoginRequiredMixin, TemplateView):
+    """
+    Vista basada en clases para mostrar el perfil del usuario.
+
+    Atributos:
+        template_name: La plantilla que se utilizará para renderizar la vista.
+
+    Métodos:
+        get_context_data: Agrega datos adicionales al contexto de la plantilla.
+    """
+    template_name = 'members/profile.html'
+    
+    def get_context_data(self, **kwargs):
+        """
+        Agrega datos adicionales al contexto de la plantilla.
+
+        Args:
+            **kwargs: Argumentos adicionales que se pasan al método.
+
+        Returns:
+            dict: El contexto actualizado con los datos adicionales.
+        """
+        context = super().get_context_data(**kwargs)
+        context['user'] = self.request.user
+        return context
+    
+class PasswordsChangeView(PasswordChangeView):
+    """
+    Vista basada en clases para el cambio de contraseña del usuario.
+
+    Atributos:
+        form_class: El formulario que se utilizará para cambiar la contraseña del usuario.
+        success_url: La URL a la que se redirigirá después de que la contraseña se haya cambiado con éxito.
+    """
+    form_class = PasswordChangingForm
+    success_url = reverse_lazy('profile')
