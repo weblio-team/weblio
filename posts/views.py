@@ -1,6 +1,4 @@
 import json
-import logging
-from pyexpat.errors import messages
 from django.http import Http404, HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
@@ -16,8 +14,6 @@ from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.mixins import LoginRequiredMixin
 from simple_history.utils import update_change_reason
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-
-logger = logging.getLogger(__name__)
 
 # views for category administrators
 
