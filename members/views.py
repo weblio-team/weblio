@@ -5,11 +5,11 @@ from django.urls import reverse_lazy
 from django.contrib.auth.models import Group
 from django.contrib.auth.views import LoginView, PasswordChangeView
 from .models import Member
-from django import forms, views
-from django.views.generic import CreateView
+from django import views
+from django.views.generic import CreateView, DeleteView
 from django.shortcuts import render, get_object_or_404, redirect
 
-from .forms import CreateGroupForm, MemberEditGroupForm, MemberEditPermissionForm, MemberStatusForm
+from .forms import CreateGroupForm, MemberEditGroupForm, MemberEditPermissionForm, MemberStatusForm, GroupEditForm
 from .models import Member
 from .forms import MemberRegisterForm, MemberJoinForm, MemberLoginForm
 from .forms import PasswordChangingForm
@@ -19,6 +19,7 @@ from django.http import HttpResponseRedirect
 from django.contrib.auth import authenticate
 from django.contrib.auth.mixins import PermissionRequiredMixin, LoginRequiredMixin
 from django.utils.translation import gettext_lazy as _
+from django.db.models import Count
 
 
 class HomeView(TemplateView):
@@ -90,7 +91,145 @@ class GroupListView(LoginRequiredMixin, PermissionRequiredMixin, TemplateView):
         """
         context = self.get_context_data(form=form, permissions=None)
         return self.render_to_response(context)
+    
+    def post(self, request, *args, **kwargs):
+        selected_group_id = request.POST.get('selected_group')
+        action = request.POST.get('action')
+        if selected_group_id:
+            if action == 'edit_group':
+                return redirect('group-edit', pk=selected_group_id)
+            if action == 'delete_group':
+                return redirect('group-delete', group_id=selected_group_id)
+        return self.get(request, *args, **kwargs)
 
+class GroupEditView(FormView):
+    """
+    Vista para editar un grupo.
+
+    Métodos:
+        - get: Recupera el grupo especificado por pk y muestra un formulario para editar sus permisos.
+        - post: Procesa el formulario enviado para actualizar los permisos del grupo.
+    """
+    
+    template_name = 'groups/group_edit.html'
+    
+    def get(self, request, pk):
+        """
+        Recupera el grupo especificado por pk y muestra un formulario para editar sus permisos.
+
+        Args:
+            request: La solicitud HTTP.
+            pk: El identificador del grupo a editar.
+
+        Returns:
+            Renderiza la plantilla 'groups/group_edit.html' con el formulario y los datos del grupo.
+        """
+        group = get_object_or_404(Group, pk=pk)
+        permissions = group.permissions.all() if group else []
+        form = GroupEditForm(instance=group)
+        context = {
+            'form': form,
+            'group': group,
+            'permissions': permissions,
+        }
+        return render(request, self.template_name, context)
+    
+    def post(self, request, pk):
+        """
+        Procesa el formulario enviado para actualizar los permisos del grupo.
+
+        Args:
+            request: La solicitud HTTP que contiene los datos del formulario.
+            pk: El identificador del grupo a actualizar.
+
+        Returns:
+            Redirige a la lista de grupos si el formulario es válido, o renderiza el formulario con errores.
+        """
+        group = get_object_or_404(Group, pk=pk)
+        form = GroupEditForm(request.POST, instance=group)
+        if form.is_valid():
+            form.save()
+            return redirect('group-list')  # Redirige a la lista de grupos u otra página
+        context = {
+            'form': form, 
+            'group': group
+        }
+        return render(request, 'groups/group_edit.html', context)
+
+
+class GroupDeleteView(DeleteView):
+    """
+    Vista para eliminar un grupo.
+
+    Métodos:
+        - get: Recupera el grupo especificado por group_id y muestra una página de confirmación de eliminación.
+        - post: Procesa la solicitud de eliminación del grupo, verificando que no deje a ningún miembro sin grupo.
+    """
+    
+    model = Group
+    template_name = 'groups/group_delete.html'
+    success_url = reverse_lazy('group-list')
+
+    def get(self, request, group_id, *args, **kwargs):
+        """
+        Recupera el grupo especificado por group_id y muestra una página de confirmación de eliminación.
+
+        Args:
+            request: La solicitud HTTP.
+            group_id: El identificador del grupo a eliminar.
+
+        Returns:
+            Renderiza la plantilla 'groups/group_delete.html' con el grupo y los miembros asociados.
+        """
+        group = get_object_or_404(Group, id=group_id)
+        members = Member.objects.annotate(group_count=Count('groups'))
+        members = members.filter(groups=group).order_by('group_count')
+        members_with_single_group = [member for member in members if member.group_count == 1]
+
+        if members_with_single_group:
+            return render(request, self.template_name, {
+                'group': group, 
+                'members': members,
+                'members_with_single_group': members_with_single_group,
+                'error': 'No se puede eliminar. Existen usuarios que se quedarían sin rol.'
+            })
+        
+        return render(request, self.template_name, {
+                'group': group, 
+                'members': members
+            })
+
+    def post(self, request, group_id, *args, **kwargs):
+        """
+        Procesa la solicitud de eliminación del grupo.
+
+        Args:
+            request: La solicitud HTTP que contiene los datos del formulario.
+            group_id: El identificador del grupo a eliminar.
+
+        Returns:
+            Redirige a la vista de edición de grupo si se selecciona 'edit_group', o elimina el grupo y redirige a la lista de grupos si se confirma la eliminación.
+        """
+        action = request.POST.get('action')
+        if action == 'edit_group':
+            selected_member = request.POST.get('selected_member')
+            return redirect(f'{reverse_lazy("member-edit-group", kwargs={"pk": selected_member})}?next={self.request.path}')
+        elif action == 'confirm':
+            group = get_object_or_404(Group, id=group_id)
+            members = Member.objects.annotate(group_count=Count('groups'))
+            members = members.filter(groups=group).order_by('group_count')
+            members_with_single_group = [member for member in members if member.group_count == 1]
+
+            if members_with_single_group:
+                return render(request, self.template_name, {
+                    'group': group, 
+                    'members': members,
+                    'members_with_single_group': members_with_single_group,
+                    'error': 'No se puede eliminar. Existen usuarios que se quedarían sin rol.'
+                })
+
+            group.delete()
+            return redirect(self.success_url)
 
 class CreateGroupView(LoginRequiredMixin, PermissionRequiredMixin, FormView):
     """
@@ -210,13 +349,14 @@ class MemberEditGroupView(LoginRequiredMixin, PermissionRequiredMixin, views.Vie
 
     def post(self, request, pk):
         """
-        Actualiza los grupos de un miembro y sus permisos asociados.
-        Parámetros:
-        - request: La solicitud HTTP recibida.
-        - pk: El ID del miembro a editar.
-        Retorna:
-        - Una respuesta HTTP redirigiendo a la lista de miembros si la actualización es exitosa,
-          o una respuesta HTTP con el formulario de edición de grupos y el miembro en caso contrario.
+        Procesa el formulario enviado para actualizar los roles del miembro.
+
+        Args:
+            request: La solicitud HTTP que contiene los datos del formulario.
+            pk: El identificador del miembro cuyo rol se va a actualizar.
+
+        Returns:
+            Redirige al formulario padre si es especificado o a la lista de miembros si el formulario es válido; en caso contrario, vuelve a mostrar el formulario con errores.
         """
         member = get_object_or_404(Member, pk=pk)
         form = MemberEditGroupForm(request.POST, instance=member)
@@ -237,14 +377,12 @@ class MemberEditGroupView(LoginRequiredMixin, PermissionRequiredMixin, views.Vie
             for group in removed_groups:
                 member.user_permissions.remove(*group.permissions.all())
             
-            # Asignar permisos de los nuevos grupos
-            for group in new_groups:
-                member.user_permissions.add(*group.permissions.all())
-            
+            next_url = request.GET.get('next')
             messages.success(self.request, "Los grupos del miembro han sido actualizados.")
-            return redirect('member-list')
+            if next_url:
+                return redirect(next_url)
+            return redirect('member-list')  # Por defecto, redirigir a la lista de miembros
         return render(request, 'members/edit_group.html', {'form': form, 'member': member})
-    
 
 class MemberEditPermissionView(LoginRequiredMixin, PermissionRequiredMixin, views.View):
     """
