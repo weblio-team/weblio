@@ -45,7 +45,7 @@ class CategoryAddView(PermissionRequiredMixin, LoginRequiredMixin, CreateView):
     model = Category
     form_class = CategoryForm
     template_name = 'categories/category_add.html'
-    permission_required = 'catalog.add_category'
+    permission_required = 'posts.add_category'
 
     def form_valid(self, form):
         """Valida el formulario y guarda la nueva categoría en la base de datos."""
@@ -97,7 +97,7 @@ class CategoryEditView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
     model = Category
     form_class = CategoryEditForm
     template_name = 'categories/category_edit.html'
-    permission_required = 'catalog.change_category'
+    permission_required = 'posts.change_category'
     
     def get_object(self):
         """Obtiene la categoría específica basada en 'pk' y 'name'."""
@@ -124,7 +124,7 @@ class CategoryDeleteView(PermissionRequiredMixin, LoginRequiredMixin, DeleteView
     model = Category
     template_name = 'categories/category_delete.html'
     success_url = reverse_lazy('categories')
-    permission_required = 'catalog.delete_category'
+    permission_required = 'posts.delete_category'
 
     def get_object(self):
         """Obtiene la categoría específica basada en 'pk' y 'name'."""
@@ -665,10 +665,6 @@ class KanbanBoardView(PermissionRequiredMixin, LoginRequiredMixin, TemplateView)
     formulario y los datos de contexto existentes.
     """
     template_name = 'kanban/kanban_board.html'
-    permission_required = ['posts.add_post', 
-                           'posts.change_post', 
-                           'posts.can_publish',
-        ]
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -741,10 +737,7 @@ class UpdatePostsStatusView(PermissionRequiredMixin, LoginRequiredMixin, View):
     Retorno:
         - JsonResponse: Respuesta JSON indicando si la actualización fue exitosa o no.
     """
-    permission_required = ['posts.add_post',
-                            'posts.change_post',
-                            'posts.can_publish',
-        ]
+
     def post(self, request, *args, **kwargs):
         try:
             data = json.loads(request.body)
