@@ -637,6 +637,30 @@ class Error500View(TemplateView):
         context['error_description'] = 'Ocurrió un problema con el servidor. Estamos trabajando para resolverlo.'
         return context
     
+class Error403View(TemplateView):
+    """
+    Vista para manejar errores internos del servidor.
+    Atributos:
+    - template_name (str): El nombre de la plantilla a utilizar para mostrar el error.
+    Métodos:
+    - get_context_data(**kwargs): Retorna un diccionario con los datos del contexto para la plantilla.
+    """
+    template_name = 'error.html'
+
+    def get_context_data(self, **kwargs):
+        """
+        Retorna un diccionario con los datos del contexto para la plantilla.
+        Parámetros:
+        - kwargs (dict): Argumentos clave adicionales.
+        Retorna:
+        - context (dict): Un diccionario con los datos del contexto.
+        """
+        context = super().get_context_data(**kwargs)
+        context['error_code'] = 403
+        context['error_message'] = 'No tienes permiso para acceder a esta página'
+        context['error_description'] = 'No tienes permiso para acceder a esta página. Por favor, contacta al administrador.'
+        return context
+    
 class UserEditView(UpdateView):
     """
     Vista basada en clases para la edición del perfil de usuario.

@@ -4,7 +4,7 @@ from members.views import HomeView
 from django.conf import settings
 from django.conf.urls.static import static
 from ckeditor_uploader.views import ImageUploadView
-from members.views import Error404View, Error500View
+from members.views import Error404View, Error500View, Error403View
 
 
 # Se configuran las URL de la aplicacion
@@ -28,3 +28,4 @@ else:
 # Se configuran las vistas de error
 handler404 = Error404View.as_view()
 handler500 = Error500View.as_view()
+handler403 = Error403View.as_view()

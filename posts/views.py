@@ -14,6 +14,7 @@ from django.contrib import messages
 from django.utils import timezone
 from simple_history.utils import update_change_reason
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.core.exceptions import PermissionDenied
 
 # views for category administrators
 
@@ -384,7 +385,7 @@ class ToEditPostView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
     def dispatch(self, request, *args, **kwargs):
         post = get_object_or_404(Post, pk=self.kwargs['pk'])
         if post.author == request.user:
-            return HttpResponseForbidden("You are the author of this post, and cannot edit it here.")
+            raise PermissionDenied
         return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
