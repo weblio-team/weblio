@@ -665,6 +665,7 @@ class KanbanBoardView(PermissionRequiredMixin, LoginRequiredMixin, TemplateView)
     formulario y los datos de contexto existentes.
     """
     template_name = 'kanban/kanban_board.html'
+    permission_required = []
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -737,6 +738,8 @@ class UpdatePostsStatusView(PermissionRequiredMixin, LoginRequiredMixin, View):
     Retorno:
         - JsonResponse: Respuesta JSON indicando si la actualización fue exitosa o no.
     """
+    
+    permission_required = []
 
     def post(self, request, *args, **kwargs):
         try:
