@@ -14,10 +14,14 @@
     <!-- Flex container for button alignment -->
     <div class="d-flex justify-content-between py-4">
         <!-- Left aligned 'Volver' button -->
-        <a href="{% url 'edit-my-post' post_pk %}" class="btn btn-primary">Volver</a>
+        {% if user == post.author %}
+        <a href="{% url 'edit-my-post' post_pk %}" class="btn btn-light">Volver</a>
+        {% else %}
+        <a href="{% url 'edit-a-post' post_pk %}" class="btn btn-light">Volver</a>
+        {% endif %}
         
         <!-- Right aligned 'Restaurar esta versión' button -->
-        <form method="post" action="{% url 'edit-my-post' post_pk %}">
+        <form method="post" action="{% if user == post.author %}{% url 'edit-my-post' post_pk %}{% else %}{% url 'edit-a-post' post_pk %}{% endif %}">
             {% csrf_token %}
             <input type="hidden" name="restore_version" value="true">
             <input type="hidden" name="title" value="{{ post.title }}">
@@ -26,7 +30,7 @@
             <input type="hidden" name="body" value="{{ post.body }}">
             <input type="hidden" name="category" value="{{ post.category }}">
             <input type="hidden" name="keywords" value="{{ post.keywords }}">
-            <button type="submit" class="btn btn-light">Restaurar esta versión</button>
+            <button type="submit" class="btn btn-primary" value="restore">Restaurar esta versión</button>
         </form>
     </div>
 </main>

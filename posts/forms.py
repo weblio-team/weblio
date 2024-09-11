@@ -100,6 +100,7 @@ class MyPostEditInformationForm(forms.ModelForm):
             'thumbnail': forms.FileInput(attrs={'class': 'form-control'}),
             'publish_start_date': forms.DateTimeInput(attrs={'class': 'form-control', 'placeholder': 'Insertar fecha de inicio de vigencia'}),
             'publish_end_date': forms.DateTimeInput(attrs={'class': 'form-control', 'placeholder': 'Insertar fecha de fin de vigencia'}),
+            'status': forms.HiddenInput(),
         }
 
 
@@ -121,13 +122,14 @@ class MyPostEditBodyForm(forms.ModelForm):
 class ToEditPostInformationForm(forms.ModelForm):
     class Meta:
         model = Post
-        fields = ['title', 'title_tag', 'summary', 'category', 'keywords']
+        fields = ['title', 'title_tag', 'summary', 'category', 'keywords', 'status']
         widgets = {
                 'title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Insertar título'}),
                 'title_tag': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Insertar etiqueta de título'}),
                 'summary': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Insertar resumen'}),
                 'category': forms.Select(attrs={'class': 'form-control'}),
                 'keywords': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Insertar etiquetas'}),
+                'status': forms.HiddenInput(),
         }
 
 class ToEditPostBodyForm(forms.ModelForm):

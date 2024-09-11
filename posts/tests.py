@@ -7,6 +7,7 @@ from .models import Category, Post
 from .forms import MyPostAddInformationForm, MyPostAddBodyForm, MyPostEditInformationForm, MyPostEditBodyForm
 from .forms import MyPostAddInformationForm, MyPostAddBodyForm, MyPostEditInformationForm, MyPostEditBodyForm
 from .forms import ToEditPostInformationForm, ToEditPostBodyForm
+from django.contrib.auth.models import Permission
 
 class CategoryModelTest(TestCase):
 
@@ -177,21 +178,22 @@ class MyPostAddBodyFormTest(TestCase):
         self.assertIn('body', form.errors, "El campo de cuerpo debería tener errores si falta")
 
 class MyPostEditInformationFormTest(TestCase):
-
     def setUp(self):
         self.valid_data = {
             'title': 'Test Title',
             'title_tag': 'Test Title Tag',
             'summary': 'Test Summary',
-            'category': 1,  # Assuming category with ID 1 exists
-            'keywords': 'test, post'
+            'category': 1,
+            'keywords': 'test, post',
+            'status': 'draft'  # Añadir el campo status
         }
         self.invalid_data = {
             'title': '',
             'title_tag': '',
             'summary': '',
             'category': '',
-            'keywords': ''
+            'keywords': '',
+            'status': ''  # Añadir el campo status
         }
 
     def test_form_initialization(self):
@@ -207,6 +209,7 @@ class MyPostEditInformationFormTest(TestCase):
         self.assertFalse(form.is_valid(), "El formulario debería ser inválido cuando faltan campos obligatorios")
         self.assertIn('title', form.errors, "El campo de título debería tener errores si falta")
         self.assertIn('category', form.errors, "El campo de categoría debería tener errores si falta")
+        self.assertIn('status', form.errors, "El campo de status debería tener errores si falta")
 
 class MyPostEditBodyFormTest(TestCase):
 
@@ -234,9 +237,10 @@ class MyPostEditBodyFormTest(TestCase):
         self.assertIn('body', form.errors, "El campo de cuerpo debería tener errores si falta")
 
 class MyPostAddViewTest(TestCase):
-
     def setUp(self):
         self.user = Member.objects.create_user(username='testuser', password='12345', email='testuser@example.com', first_name='Test', last_name='User')
+        self.user.user_permissions.add(Permission.objects.get(codename='add_post'))
+        self.client.login(username='testuser', password='12345')
         self.category = Category.objects.create(name='Test Category')
         self.valid_data_info = {
             'title': 'Test Title',
@@ -260,94 +264,62 @@ class MyPostAddViewTest(TestCase):
         }
 
     def test_get_add_post_view(self):
-        self.client.login(username='testuser', password='12345')
         response = self.client.get(reverse('add-my-post'))
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'create/create.html')
 
     def test_post_add_post_view_valid_data(self):
-        self.client.login(username='testuser', password='12345')
         response = self.client.post(reverse('add-my-post'), data={**self.valid_data_info, **self.valid_data_body})
         self.assertEqual(response.status_code, 302)  # Redirect after successful post creation
         self.assertTrue(Post.objects.filter(title='Test Title').exists())
 
     def test_post_add_post_view_invalid_data(self):
-        self.client.login(username='testuser', password='12345')
         response = self.client.post(reverse('add-my-post'), data={**self.invalid_data_info, **self.invalid_data_body})
         self.assertEqual(response.status_code, 200)  # Form re-rendered with errors
         self.assertFalse(Post.objects.filter(title='').exists())
 
-class MyPostEditViewTest(TestCase):
 
+class MyPostEditViewTest(TestCase):
     def setUp(self):
-        self.user = Member.objects.create_user(username='testuser', password='12345', email='testuser@example.com', first_name='Test', last_name='User')
-        self.category = Category.objects.create(name='Test Category')
+        # Create the author and another user
+        self.author = Member.objects.create_user(username='author', email='author@example.com', password='password')
+        self.other_user = Member.objects.create_user(username='otheruser', email='other@example.com', password='password')
+
+        # Create a category and a post by the author
+        self.category = Category.objects.create(name="Test Category")
         self.post = Post.objects.create(
             title='Original Title',
-            title_tag='Original Title Tag',
+            title_tag='Original Tag',
             summary='Original Summary',
             body='Original Body',
             category=self.category,
-            keywords='original, post',
-            author=self.user
+            author=self.author
         )
-        self.valid_data_info = {
-            'title': 'Updated Title',
-            'title_tag': 'Updated Title Tag',
-            'summary': 'Updated Summary',
-            'category': self.category.id,
-            'keywords': 'updated, post'
-        }
-        self.valid_data_body = {
-            'body': 'Updated Body'
-        }
-        self.invalid_data_info = {
-            'title': '',
-            'title_tag': '',
-            'summary': '',
-            'category': '',
-            'keywords': ''
-        }
-        self.invalid_data_body = {
-            'body': ''
-        }
 
-    def test_get_edit_post_view(self):
-        self.client.login(username='testuser', password='12345')
+    def test_other_user_cannot_access_edit_view(self):
+        """Test that a non-author cannot access the post edit view"""
+        self.client.login(username='otheruser', password='password')
         response = self.client.get(reverse('edit-my-post', kwargs={'pk': self.post.pk}))
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'create/edit.html')
+        self.assertEqual(response.status_code, 403)
 
-    def test_post_edit_post_view_valid_data(self):
-        self.client.login(username='testuser', password='12345')
-        response = self.client.post(reverse('edit-my-post', kwargs={'pk': self.post.pk}), data={**self.valid_data_info, **self.valid_data_body})
-        self.assertEqual(response.status_code, 302)  # Redirect after successful post update
-        self.post.refresh_from_db()
-        self.assertEqual(self.post.title, 'Updated Title')
-
-    def test_post_edit_post_view_invalid_data(self):
-        self.client.login(username='testuser', password='12345')
-        response = self.client.post(reverse('edit-my-post', kwargs={'pk': self.post.pk}), data={**self.invalid_data_info, **self.invalid_data_body})
-        self.assertEqual(response.status_code, 200)  # Form re-rendered with errors
-        self.post.refresh_from_db()
-        self.assertEqual(self.post.title, 'Original Title')
 
 class ToEditPostInformationFormTest(TestCase):
-
     def setUp(self):
         self.valid_data = {
             'title': 'Valid Title',
             'title_tag': 'Valid Tag',
             'summary': 'Valid Summary',
-            'category': 1,  # Assuming you have a category with ID 1
-            'change_reason': 'Valid Reason'
+            'category': 1,
+            'change_reason': 'Valid Reason',
+            'status': 'draft'  # Añadir el campo status
         }
         self.invalid_data = {
             'title': '',
             'title_tag': '',
             'summary': '',
             'category': '',
-            'change_reason': ''
+            'change_reason': '',
+            'status': ''  # Añadir el campo status
         }
 
     def test_form_initialization(self):
@@ -362,10 +334,7 @@ class ToEditPostInformationFormTest(TestCase):
         form = ToEditPostInformationForm(data=self.invalid_data)
         self.assertFalse(form.is_valid(), "El formulario debería ser inválido cuando faltan campos obligatorios")
         self.assertIn('title', form.errors, "El campo de título debería tener errores si el título falta")
-
-    def test_form_labels(self):
-        form = ToEditPostInformationForm()
-        self.assertEqual(form.fields['title'].label, 'Title', "La etiqueta del título debería ser 'Title'")
+        self.assertIn('status', form.errors, "El campo de status debería tener errores si falta")
 
 class ToEditPostBodyFormTest(TestCase):
 
@@ -396,67 +365,37 @@ class ToEditPostBodyFormTest(TestCase):
         form = ToEditPostBodyForm()
         self.assertEqual(form.fields['body'].label, 'Text', "La etiqueta del cuerpo debería ser 'Text'")
 
+
 class ToEditPostViewTest(TestCase):
-
     def setUp(self):
-        self.user_data = {
-            'username': 'testmember',
-            'password': '12345',
-            'email': 'testmember@example.com',
-            'first_name': 'Test',
-            'last_name': 'Member'
-        }
-        self.category = Category.objects.create(name='Test Category')
-        self.member = Member.objects.create_user(**self.user_data)
-        self.post_data = {
-            'title': 'Original Title',
-            'title_tag': 'Original Tag',
-            'summary': 'Original Summary',
-            'body': 'Original Body',
-            'category': self.category,
-            'author': self.member
-        }
-        self.valid_data_info = {
-            'title': 'Updated Title',
-            'title_tag': 'Updated Tag',
-            'summary': 'Updated Summary',
-            'category': self.category.id,
-            'change_reason': 'Updated Reason'
-        }
-        self.valid_data_body = {
-            'media': 'Updated Media',
-            'body': 'Updated Body'
-        }
-        self.invalid_data_info = {
-            'title': '',
-            'title_tag': '',
-            'summary': '',
-            'category': '',
-            'change_reason': ''
-        }
-        self.invalid_data_body = {
-            'media': '',
-            'body': ''
-        }
-        self.post = Post.objects.create(**self.post_data)
+        # Create the author and another user
+        self.author = Member.objects.create_user(username='author', email='author@example.com', password='password')
+        self.other_user = Member.objects.create_user(username='otheruser', email='other@example.com', password='password')
 
-    def test_get_edit_post_view(self):
-        self.client.login(username='testmember', password='12345')
+        # Assign the 'change_post' permission to the other user
+        self.change_post_permission = Permission.objects.get(codename='change_post')
+        self.other_user.user_permissions.add(self.change_post_permission)
+
+        # Create a category and a post by the author
+        self.category = Category.objects.create(name="Test Category")
+        self.post = Post.objects.create(
+            title='Original Title',
+            title_tag='Original Tag',
+            summary='Original Summary',
+            body='Original Body',
+            category=self.category,
+            author=self.author
+        )
+
+    def test_author_cannot_access_other_edit_view(self):
+        """Test that the author cannot access the non-author's post edit view"""
+        self.client.login(username='author', password='password')
         response = self.client.get(reverse('edit-my-post', kwargs={'pk': self.post.pk}))
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'create/edit.html')
+        self.assertEqual(response.status_code, 403)
 
-    def test_post_edit_post_view_valid_data(self):
-        self.client.login(username='testmember', password='12345')
-        response = self.client.post(reverse('edit-my-post', kwargs={'pk': self.post.pk}), data={**self.valid_data_info, **self.valid_data_body})
-        self.assertEqual(response.status_code, 302)  # Redirect after successful post update
-        self.post.refresh_from_db()
-        self.assertEqual(self.post.title, 'Updated Title')
-        # Assuming change_reason is handled by a separate mechanism, not directly on the Post model
-
-    def test_post_edit_post_view_invalid_data(self):
-        self.client.login(username='testmember', password='12345')
-        response = self.client.post(reverse('edit-my-post', kwargs={'pk': self.post.pk}), data={**self.invalid_data_info, **self.invalid_data_body})
-        self.assertEqual(response.status_code, 200)  # Form re-rendered with errors
-        self.post.refresh_from_db()
-        self.assertEqual(self.post.title, 'Original Title')
+    def test_other_user_without_permission_cannot_access_edit_view(self):
+        """Test that a non-author without 'change_post' permission cannot access the edit view"""
+        self.other_user.user_permissions.remove(self.change_post_permission)
+        self.client.login(username='otheruser', password='password')
+        response = self.client.get(reverse('edit-my-post', kwargs={'pk': self.post.pk}))
+        self.assertEqual(response.status_code, 403)

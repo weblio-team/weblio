@@ -1,5 +1,5 @@
 import json
-from django.http import Http404, HttpResponseRedirect, JsonResponse
+from django.http import Http404, HttpResponseForbidden, HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
 from django.contrib.auth.mixins import PermissionRequiredMixin, LoginRequiredMixin
@@ -184,6 +184,12 @@ class MyPostEditView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
     permission_required = 'posts.add_post'
     fields = ['title', 'title_tag', 'summary', 'body', 'category', 'keywords']    
 
+    def dispatch(self, request, *args, **kwargs):
+        post = get_object_or_404(Post, pk=self.kwargs['pk'])
+        if post.author != request.user:
+            return HttpResponseForbidden("You are not the author of this post.")
+        return super().dispatch(request, *args, **kwargs)
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         post = self.get_object()
@@ -245,12 +251,20 @@ class MyPostEditView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
 
             post.save()  # Save the post once
             update_change_reason(post, post_data.get('change_reason', 'Updated post'))  # Log version history
+
+            # Set status and add messages
+            post.status = post_data.get('status')
+            if post.status == 'to_publish':
+                messages.success(self.request, 'La publicación se ha enviado para publicación.')
+            elif post.status == 'draft':
+                messages.success(self.request, 'La publicación se ha guardado como borrador.')
+
             return redirect('my-posts')
         else:
             context = self.get_context_data()
             context['information_form'] = information_form
             context['body_form'] = body_form
-            messages.success(self.request, 'La publicación se ha guardado como borrador.')
+            messages.success(self.request, 'La publicación se ha restaurado como borrador.')
         return self.render_to_response(context)
 
 
@@ -334,8 +348,8 @@ class ToEditView(PermissionRequiredMixin, LoginRequiredMixin, ListView):
     permission_required = 'posts.change_post'
     
     def get_queryset(self):
-        """Obtiene las publicaciones con estado 'to_edit', ordenadas por fecha de publicación."""
-        return Post.objects.filter(status='to_edit').order_by('-date_posted')
+        """Obtiene las publicaciones con estado 'to_edit', cuyo autor no sea el usuario logueado, ordenadas por fecha de publicación."""
+        return Post.objects.filter(status='to_edit').exclude(author=self.request.user).order_by('-date_posted')
     
     def get_context_data(self, **kwargs):
         """Añade información adicional al contexto, como la lista de publicaciones."""
@@ -366,6 +380,12 @@ class ToEditPostView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
     template_name = 'edit/edit.html'
     fields = ['title', 'title_tag', 'summary', 'body', 'category', 'keywords']    
     permission_required = 'posts.change_post'
+
+    def dispatch(self, request, *args, **kwargs):
+        post = get_object_or_404(Post, pk=self.kwargs['pk'])
+        if post.author == request.user:
+            return HttpResponseForbidden("You are the author of this post, and cannot edit it here.")
+        return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -461,8 +481,8 @@ class ToPublishView(PermissionRequiredMixin, LoginRequiredMixin, ListView):
     permission_required = 'posts.can_publish'
     
     def get_queryset(self):
-        """Obtiene las publicaciones con estado 'to_publish', ordenadas por fecha de publicación."""
-        return Post.objects.filter(status='to_publish').order_by('-date_posted')
+        """Obtiene las publicaciones con estado 'to_publish', cuyo autor no sea el usuario logueado, ordenadas por fecha de publicación."""
+        return Post.objects.filter(status='to_publish').exclude(author=self.request.user).order_by('-date_posted')
     
     def get_context_data(self, **kwargs):
         """Añade información adicional al contexto, como la lista de publicaciones."""

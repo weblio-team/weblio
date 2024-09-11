@@ -128,8 +128,8 @@
     <a href="{% url 'to-edit' %}" class="btn btn-secondary btn-light">Volver</a>
     <div>
       <button class="btn btn-success my-0" type="submit">Guardar</button>
-      <button class="btn btn-primary my-0" name="status" value="to_edit" type="submit">Mandar a edición</button>
-      <button class="btn btn-danger disabled my-0" type="submit">Eliminar</button>
+      <button class="btn btn-secondary" type="submit" name="status" value="draft">Mandar a borrador</button>
+      <button class="btn btn-primary" type="submit" name="status" value="to_publish">Mandar a publicar</button>
     </div>
   </div>
   </form>

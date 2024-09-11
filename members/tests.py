@@ -81,7 +81,8 @@ class MemberCreationFormTest(TestCase):
 class PasswordChangingFormTest(TestCase):
 
     def setUp(self):
-        self.user = Member.objects.create_user(username='testuser', password='old_password')
+        self.user = Member.objects.create_user(username='testuser', email='testuser@example.com', password='old_password')
+        self.client.login(username='testuser', password='old_password')
         self.form_data = {
             'old_password': 'old_password',
             'new_password1': 'new_password123',
