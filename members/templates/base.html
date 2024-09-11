@@ -91,7 +91,7 @@
                         </li>
 
                         <!-- Modulo de gestion de contenido -->
-                        {% if perms.posts.add_post or perms.posts.change_post or perms.posts.publish_post %}
+                        {% if perms.posts.add_post or perms.posts.change_post or perms.posts.can_publish %}
                             <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                     Gestión de Contenido
@@ -105,7 +105,7 @@
                                     <li><hr class="dropdown-divider"></li>
                                     <li><a class="dropdown-item" href="{% url 'to-edit' %}">Articulos a editar</a></li>
                                     {% endif %}
-                                    {% if perms.posts.publish_post %}
+                                    {% if perms.posts.can_publish %}
                                     <li><hr class="dropdown-divider"></li>
                                     <li><a class="dropdown-item" href="{% url 'to-publish' %}">Articulos a publicar</a></li>
                                     {% endif %}
