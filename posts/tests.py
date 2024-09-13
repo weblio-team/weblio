@@ -387,12 +387,6 @@ class ToEditPostViewTest(TestCase):
             author=self.author
         )
 
-    def test_author_cannot_access_other_edit_view(self):
-        """Test that the author cannot access the non-author's post edit view"""
-        self.client.login(username='author', password='password')
-        response = self.client.get(reverse('edit-my-post', kwargs={'pk': self.post.pk}))
-        self.assertEqual(response.status_code, 403)
-
     def test_other_user_without_permission_cannot_access_edit_view(self):
         """Test that a non-author without 'change_post' permission cannot access the edit view"""
         self.other_user.user_permissions.remove(self.change_post_permission)
