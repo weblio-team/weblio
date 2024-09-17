@@ -11,10 +11,86 @@
 		<small>Autor: {{post.author.first_name}} {{post.author.last_name}} - {{post.date_posted}}</small></br>
 		<small>Categoria: {{post.category}}</small></br>
 		<small>Etiquetas: {{post.keywords}}</small></br>
-		<hr>
-		<small>Seccion de reacciones TBD</small>
-		<hr>
-		<small>Seccion de comentarios TBD</small>
+		<div class="container mb-4 py-4">
+			<div class="row text-center align-items-center mb-4">
+				<div class="col-md-6 mb-3">
+					<div class="views-counter">
+						<p class="lead mb-1">Vistas</p>
+						<span id="view-count"></span>
+					</div>
+				</div>
+				<div class="col-md-6 mb-3">
+					<p class="lead mb-1">Promedio de estrellas</p>
+					<div 
+						data-lyket-type="rate" 
+						data-lyket-id="{{ post.id }}" 
+						data-lyket-show-rating="average"
+						data-lyket-namespace="blog"
+						data-lyket-color-primary="yellow"   
+						data-lyket-color-secondary="grey"   
+						data-lyket-color-background="transparent"
+						data-lyket-color-text="white"
+					></div>
+				</div>
+			</div>
+
+			<div class="row text-center align-items-center">
+				<div class="col-md-6 mb-3">
+					<p class="lead mb-1">¿Te gustó?</p>
+					<div
+						data-lyket-type="updown"
+						data-lyket-id="{{ post.id }}"
+						data-lyket-namespace="blog"
+						data-lyket-color-primary="green"
+						data-lyket-color-secondary="red"
+						data-lyket-color-text="white"
+						data-lyket-color-icon="dark"
+						data-lyket-color-background="white"
+					></div>
+				</div>
+				<div class="col-md-6 mb-3">
+					<p class="lead mb-1">Tu calificación</p>
+					<div 
+						data-lyket-type="rate" 
+						data-lyket-id="{{ post.id }}" 
+						data-lyket-show-rating="user"
+						data-lyket-namespace="blog"
+						data-lyket-color-primary="yellow"   
+						data-lyket-color-secondary="grey"   
+						data-lyket-color-background="transparent"
+						data-lyket-color-text="white"
+					></div>
+				</div>
+			</div>
+		</div>
+		<script>
+			document.addEventListener("DOMContentLoaded", function() {
+			  const counterUrl = "https://api.lyket.dev/v1/clap-buttons/visits/blog/press";
+			  const apiKey = "pt_3dfda96e132cbc507a6cad39de1826";
+		  
+			  const options = {
+				method: "PUT",
+				headers: {
+				  "Content-Type": "application/json",
+				  "Authorization": `Bearer ${apiKey}`
+				}
+			  };
+		  
+			  fetch(counterUrl, options)
+				.then(response => response.json())
+				.then(({ data }) => {
+				  const totalClaps = data.attributes.total_claps;
+		  
+				  // Mostrar el valor en el elemento con id 'view-count'
+				  const viewCountElement = document.getElementById("view-count");
+				  viewCountElement.innerHTML = `${totalClaps}`;
+				})
+				.catch(error => {
+				  console.error("Error:", error);
+				});
+			});
+		</script>
+		<script src="https://unpkg.com/@lyket/widget@latest/dist/lyket.js?apiKey=pt_3dfda96e132cbc507a6cad39de1826"></script>
 		<div class="commentbox"></div>
 		<script src="https://unpkg.com/commentbox.io/dist/commentBox.min.js"></script>
 		<script>
@@ -26,7 +102,6 @@
 				darkMode: true  		// Activar el modo oscuro
 			});
 		</script>
-		<hr>
 		<a href="{% url 'posts' %}" class="btn btn-primary">Volver</a>
 	</main>
 {% endblock %}
