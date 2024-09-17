@@ -15,6 +15,17 @@
 		<small>Seccion de reacciones TBD</small>
 		<hr>
 		<small>Seccion de comentarios TBD</small>
+		<div class="commentbox"></div>
+		<script src="https://unpkg.com/commentbox.io/dist/commentBox.min.js"></script>
+		<script>
+			commentBox('5656563893141504-proj', {
+				backgroundColor: null,  // Para usar el color de fondo de tu página
+				textColor: '#fff',  	// Para que el texto sea blanco en modo oscuro
+				subtextColor: '#ccc',  	// Subtexto en modo oscuro
+				buttonColor: '#28a745',	// Color del botón
+				darkMode: true  		// Activar el modo oscuro
+			});
+		</script>
 		<hr>
 		<a href="{% url 'posts' %}" class="btn btn-primary">Volver</a>
 	</main>
