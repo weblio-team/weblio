@@ -495,13 +495,49 @@ class MemberStatusView(LoginRequiredMixin, PermissionRequiredMixin, views.View):
     
 
 class MemberRegisterView(CreateView):
+    """
+    Vista para registrar nuevos miembros.
+
+    Esta vista permite registrar nuevos miembros utilizando el formulario `MemberRegisterForm`.
+    Si el formulario es válido, redirige al usuario a la página de inicio de sesión.
+    Si el formulario es inválido, muestra mensajes de advertencia específicos para los errores
+    de nombre de usuario y correo electrónico.
+
+    Atributos:
+    ----------
+    form_class : class
+        La clase del formulario que se utilizará para registrar nuevos miembros.
+    template_name : str
+        El nombre de la plantilla que se utilizará para renderizar la vista.
+    success_url : str
+        La URL a la que se redirigirá al usuario si el formulario es válido.
+
+    Métodos:
+    --------
+    form_invalid(form):
+        Maneja el caso en que el formulario es inválido, mostrando mensajes de advertencia
+        específicos para los errores de nombre de usuario y correo electrónico.
+    """
     form_class = MemberRegisterForm
     template_name = 'members/member_register.html'
     success_url = reverse_lazy('member-login')
 
     def form_invalid(self, form):
         """
-        Método que se llama tras el POST del form con datos inválidos.
+        Maneja el caso en que el formulario es inválido.
+
+        Si el formulario contiene errores de nombre de usuario o correo electrónico,
+        muestra mensajes de advertencia específicos. También muestra los errores de Django.
+
+        Parameters:
+        -----------
+        form : Form
+            El formulario que contiene los datos inválidos.
+
+        Returns:
+        --------
+        HttpResponse
+            La respuesta HTTP con el formulario inválido renderizado.
         """
         # Validar si el usuario ya está registrado
         if 'username' in form.errors:
@@ -516,10 +552,21 @@ class MemberRegisterView(CreateView):
                     messages.warning(self.request, f"{field}: {error}")
         return super().form_invalid(form)
 
-
     def form_valid(self, form):
         """
-        Método que se llama cuando el formulario es válido.
+        Maneja el caso en que el formulario es válido.
+
+        Muestra un mensaje de éxito y redirige al usuario a la página de inicio de sesión.
+
+        Parameters:
+        -----------
+        form : Form
+            El formulario que contiene los datos válidos.
+
+        Returns:
+        --------
+        HttpResponse
+            La respuesta HTTP con el formulario válido renderizado.
         """
         response = super().form_valid(form)
         messages.success(self.request, "La cuenta ha sido creada. Por favor, inicie sesión.")
@@ -528,14 +575,48 @@ class MemberRegisterView(CreateView):
 
 class MemberLoginView(LoginView):
     """
-    Vista para manejar el formulario de inicio de sesión.
+    Vista para el inicio de sesión de miembros.
+
+    Esta vista permite a los miembros iniciar sesión utilizando el formulario `MemberLoginForm`.
+    Si el formulario es válido, muestra un mensaje de bienvenida y redirige al usuario a la URL de éxito.
+    Si el formulario es inválido, muestra mensajes de advertencia específicos para los errores de inicio de sesión.
+
+    Atributos:
+    ----------
+    form_class : class
+        La clase del formulario que se utilizará para el inicio de sesión.
+    template_name : str
+        El nombre de la plantilla que se utilizará para renderizar la vista.
+
+    Métodos:
+    --------
+    form_valid(form):
+        Maneja el caso en que el formulario es válido, mostrando un mensaje de bienvenida
+        y redirigiendo al usuario a la URL de éxito.
+    form_invalid(form):
+        Maneja el caso en que el formulario es inválido, mostrando mensajes de advertencia
+        específicos para los errores de inicio de sesión.
+    get_success_url():
+        Devuelve la URL a la que se redirigirá al usuario si el formulario es válido.
     """
     form_class = MemberLoginForm
     template_name = 'members/member_login.html'
 
     def form_valid(self, form):
         """
-        Método que se llama tras el POST del form con datos válidos.
+        Maneja el caso en que el formulario es válido.
+
+        Muestra un mensaje de bienvenida y redirige al usuario a la URL de éxito.
+
+        Parameters:
+        -----------
+        form : Form
+            El formulario que contiene los datos válidos.
+
+        Returns:
+        --------
+        HttpResponse
+            La respuesta HTTP con el formulario válido renderizado.
         """
         response = super().form_valid(form)
         messages.success(self.request, "Bienvenido de vuelta " + self.request.user.username)
@@ -543,7 +624,20 @@ class MemberLoginView(LoginView):
 
     def form_invalid(self, form):
         """
-        Metodo que se llama tras el POST del form con datos invalidos.
+        Maneja el caso en que el formulario es inválido.
+
+        Si el formulario contiene errores de nombre de usuario o contraseña, muestra mensajes de advertencia específicos.
+        También verifica si la cuenta del usuario está inactiva.
+
+        Parameters:
+        -----------
+        form : Form
+            El formulario que contiene los datos inválidos.
+
+        Returns:
+        --------
+        HttpResponse
+            La respuesta HTTP con el formulario inválido renderizado.
         """
         username = form.cleaned_data.get('username')
         password = form.cleaned_data.get('password')
@@ -558,15 +652,40 @@ class MemberLoginView(LoginView):
     
     def get_success_url(self):
         """
-        Devuelve la URL a la que redirigir después de iniciar sesión.
+        Devuelve la URL a la que se redirigirá al usuario si el formulario es válido.
+
+        Returns:
+        --------
+        str
+            La URL de éxito.
         """
-        return reverse_lazy('posts')  # Ensure 'posts' matches the URL pattern name
+        return reverse_lazy('posts')
     
 
 class MemberJoinView(CreateView):
     """
-    Vista para manejar el formulario de unirse al sistema. El usuario selecciona un rol 
-    (grupo de Django) y la cuenta se crea desactivada inicialmente.
+    Vista para que los miembros se unan.
+
+    Esta vista permite a los nuevos miembros registrarse utilizando el formulario `MemberJoinForm`.
+    Si el formulario es válido, redirige al usuario a la página de inicio y muestra un mensaje de éxito.
+    Si el formulario es inválido, muestra los errores correspondientes.
+
+    Atributos:
+    ----------
+    form_class : class
+        La clase del formulario que se utilizará para registrar nuevos miembros.
+    template_name : str
+        El nombre de la plantilla que se utilizará para renderizar la vista.
+    success_url : str
+        La URL a la que se redirigirá al usuario si el formulario es válido.
+
+    Métodos:
+    --------
+    get_context_data(**kwargs):
+        Añade los roles disponibles al contexto de la plantilla.
+    form_valid(form):
+        Maneja el caso en que el formulario es válido, mostrando un mensaje de éxito
+        y redirigiendo al usuario a la página de inicio.
     """
     form_class = MemberJoinForm
     template_name = 'members/member_join.html'
@@ -574,7 +693,17 @@ class MemberJoinView(CreateView):
 
     def get_context_data(self, **kwargs):
         """
-        Agrega los roles al contexto, excluyendo el rol 'suscriptor'.
+        Añade los roles disponibles al contexto de la plantilla.
+
+        Parameters:
+        -----------
+        **kwargs : dict
+            Argumentos adicionales de palabras clave.
+
+        Returns:
+        --------
+        dict
+            El contexto actualizado con los roles disponibles.
         """
         context = super().get_context_data(**kwargs)
         roles = Group.objects.exclude(name='suscriptor')
@@ -583,7 +712,19 @@ class MemberJoinView(CreateView):
 
     def form_valid(self, form):
         """
-        Muestra un mensaje de éxito cuando el formulario es válido y la cuenta ha sido creada.
+        Maneja el caso en que el formulario es válido.
+
+        Muestra un mensaje de éxito y redirige al usuario a la página de inicio.
+
+        Parameters:
+        -----------
+        form : Form
+            El formulario que contiene los datos válidos.
+
+        Returns:
+        --------
+        HttpResponse
+            La respuesta HTTP con el formulario válido renderizado.
         """
         response = super().form_valid(form)
         messages.success(self.request, "La cuenta ha sido creada pero no será activada hasta que un administrador apruebe el login.")

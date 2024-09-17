@@ -28,7 +28,28 @@ class MemberCreationForm(UserCreationForm):
         }
         
 class MemberEditForm(UserChangeForm):
+    """
+    Formulario para editar miembros.
+
+    Este formulario permite editar la información de un miembro existente.
+    Hereda de `UserChangeForm` y utiliza el modelo `Member`.
+
+    Atributos:
+    ----------
+    Meta : class
+        Clase interna que define el modelo y los campos del formulario.
+    """
     class Meta:
+        """
+        Metadatos del formulario.
+
+        Atributos:
+        ----------
+        model : Model
+            El modelo que se utilizará para el formulario.
+        fields : list
+            Lista de campos que se incluirán en el formulario.
+        """
         model = Member
         fields = ['email', 'password', 'is_staff', 'is_active', 'groups', 'user_permissions']
 
@@ -178,10 +199,43 @@ class CreateGroupForm(forms.ModelForm):
         return group
 
 class MemberRegisterForm(forms.ModelForm):
+    """
+    Formulario para registrar nuevos miembros.
+
+    Este formulario permite registrar nuevos miembros solicitando un nombre de usuario,
+    nombre, apellido, correo electrónico y contraseña. Verifica que las contraseñas coincidan
+    y asigna al nuevo usuario al grupo 'suscriptor'.
+
+    Atributos:
+    ----------
+    password1 : forms.CharField
+        Campo para la contraseña.
+    password2 : forms.CharField
+        Campo para confirmar la contraseña.
+
+    Métodos:
+    --------
+    clean_password2():
+        Verifica que las contraseñas coincidan.
+    save(commit=True):
+        Guarda el nuevo usuario y lo asigna al grupo 'suscriptor'.
+    """
     password1 = forms.CharField(label='Password', widget=forms.PasswordInput)
     password2 = forms.CharField(label='Confirm Password', widget=forms.PasswordInput)
 
     class Meta:
+        """
+        Metadatos del formulario.
+
+        Atributos:
+        ----------
+        model : Model
+            El modelo que se utilizará para el formulario.
+        fields : tuple
+            Campos que se incluirán en el formulario.
+        labels : dict
+            Etiquetas personalizadas para los campos del formulario.
+        """
         model = Member
         fields = ('username', 'first_name', 'last_name', 'email')
         labels = {
@@ -192,6 +246,16 @@ class MemberRegisterForm(forms.ModelForm):
         }
 
     def clean_password2(self):
+        """
+        Verifica que las contraseñas coincidan.
+
+        Lanza una excepción de validación si las contraseñas no coinciden.
+
+        Returns:
+        --------
+        str
+            La segunda contraseña validada.
+        """
         password1 = self.cleaned_data.get('password1')
         password2 = self.cleaned_data.get('password2')
         if password1 and password2 and password1 != password2:
@@ -199,6 +263,22 @@ class MemberRegisterForm(forms.ModelForm):
         return password2
 
     def save(self, commit=True):
+        """
+        Guarda el nuevo usuario y lo asigna al grupo 'suscriptor'.
+
+        Si `commit` es True, guarda el usuario en la base de datos y le asigna
+        todos los permisos del grupo 'suscriptor'.
+
+        Parameters:
+        -----------
+        commit : bool, optional
+            Si es True, guarda el usuario en la base de datos (por defecto es True).
+
+        Returns:
+        --------
+        Member
+            El nuevo usuario registrado.
+        """
         user = super().save(commit=False)
         user.set_password(self.cleaned_data["password1"])
         user.is_active = True  # Activar al usuario
@@ -212,10 +292,45 @@ class MemberRegisterForm(forms.ModelForm):
         return user
     
 class MemberJoinForm(UserCreationForm):
+    """
+    Formulario para registrar nuevos miembros.
+
+    Este formulario permite registrar nuevos miembros solicitando un nombre de usuario,
+    nombre, apellido, correo electrónico y contraseña. Verifica que las contraseñas coincidan
+    y asigna al nuevo usuario a un rol específico.
+
+    Atributos:
+    ----------
+    password1 : forms.CharField
+        Campo para la contraseña.
+    password2 : forms.CharField
+        Campo para confirmar la contraseña.
+
+    Métodos:
+    --------
+    __init__(*args, **kwargs):
+        Inicializa el formulario y añade el campo de rol.
+    clean_password2():
+        Verifica que las contraseñas coincidan.
+    save(commit=True):
+        Guarda el nuevo usuario y lo asigna al rol seleccionado.
+    """
     password1 = forms.CharField(label='Password', widget=forms.PasswordInput)
     password2 = forms.CharField(label='Confirm Password', widget=forms.PasswordInput)
 
     class Meta:
+        """
+        Metadatos del formulario.
+
+        Atributos:
+        ----------
+        model : Model
+            El modelo que se utilizará para el formulario.
+        fields : tuple
+            Campos que se incluirán en el formulario.
+        labels : dict
+            Etiquetas personalizadas para los campos del formulario.
+        """
         model = Member
         fields = ('username', 'first_name', 'last_name', 'email')
         labels = {
@@ -226,6 +341,16 @@ class MemberJoinForm(UserCreationForm):
         }
 
     def __init__(self, *args, **kwargs):
+        """
+        Inicializa el formulario y añade el campo de rol.
+
+        Parameters:
+        -----------
+        *args : list
+            Argumentos posicionales.
+        **kwargs : dict
+            Argumentos de palabras clave.
+        """
         super(MemberJoinForm, self).__init__(*args, **kwargs)
         self.fields['role'] = forms.ModelChoiceField(
             queryset=Group.objects.exclude(name='suscriptor'),
@@ -234,6 +359,16 @@ class MemberJoinForm(UserCreationForm):
         )
 
     def clean_password2(self):
+        """
+        Verifica que las contraseñas coincidan.
+
+        Lanza una excepción de validación si las contraseñas no coinciden.
+
+        Returns:
+        --------
+        str
+            La segunda contraseña validada.
+        """
         password1 = self.cleaned_data.get('password1')
         password2 = self.cleaned_data.get('password2')
         if password1 and password2 and password1 != password2:
@@ -241,6 +376,22 @@ class MemberJoinForm(UserCreationForm):
         return password2
 
     def save(self, commit=True):
+        """
+        Guarda el nuevo usuario y lo asigna al rol seleccionado.
+
+        Si `commit` es True, guarda el usuario en la base de datos y le asigna
+        todos los permisos del rol seleccionado.
+
+        Parameters:
+        -----------
+        commit : bool, optional
+            Si es True, guarda el usuario en la base de datos (por defecto es True).
+
+        Returns:
+        --------
+        Member
+            El nuevo usuario registrado.
+        """
         user = super().save(commit=False)
         user.set_password(self.cleaned_data["password1"])
         user.is_active = False  # Usuario inactivo por defecto
@@ -255,9 +406,29 @@ class MemberJoinForm(UserCreationForm):
 
 class MemberLoginForm(AuthenticationForm):
     """
-    Formulario de autenticación para iniciar sesión en el sistema.
+    Formulario de inicio de sesión para miembros.
+
+    Este formulario permite a los miembros iniciar sesión utilizando su nombre de usuario
+    y contraseña. Hereda de `AuthenticationForm` y utiliza el modelo `Member`.
+
+    Atributos:
+    ----------
+    Meta : class
+        Clase interna que define el modelo y los campos del formulario.
     """
     class Meta:
+        """
+        Metadatos del formulario.
+
+        Atributos:
+        ----------
+        model : Model
+            El modelo que se utilizará para el formulario.
+        fields : list
+            Lista de campos que se incluirán en el formulario.
+        labels : dict
+            Etiquetas personalizadas para los campos del formulario.
+        """
         model = Member
         fields = ['username', 'password']
         labels = {
@@ -267,10 +438,22 @@ class MemberLoginForm(AuthenticationForm):
         
 class MemberEditGroupForm(forms.ModelForm):
     """
-    Formulario para editar los roles de un miembro.
+    Formulario para editar los grupos (roles) de un miembro.
 
-    Campos:
-        - groups: Campo de selección múltiple para los roles del miembro.
+    Este formulario permite asignar o modificar los grupos (roles) de un miembro existente.
+    Utiliza un campo de selección múltiple con casillas de verificación para elegir los grupos.
+
+    Atributos:
+    ----------
+    groups : forms.ModelMultipleChoiceField
+        Campo para seleccionar múltiples grupos (roles) utilizando casillas de verificación.
+
+    Meta:
+    -----
+    model : Model
+        El modelo que se utilizará para el formulario.
+    fields : list
+        Lista de campos que se incluirán en el formulario.
     """
     groups = forms.ModelMultipleChoiceField(
         queryset=Group.objects.all(),
@@ -280,6 +463,16 @@ class MemberEditGroupForm(forms.ModelForm):
     )
 
     class Meta:
+        """
+        Metadatos del formulario.
+
+        Atributos:
+        ----------
+        model : Model
+            El modelo que se utilizará para el formulario.
+        fields : list
+            Lista de campos que se incluirán en el formulario.
+        """
         model = Member
         fields = ['groups']
     
@@ -287,15 +480,32 @@ class MemberEditPermissionForm(forms.ModelForm):
     """
     Formulario para editar los permisos de un miembro.
 
-    Campos:
-        - permissions: Campo de selección múltiple para los permisos.
-    
+    Este formulario permite asignar o modificar los permisos de un miembro existente.
+    Utiliza un campo de selección múltiple con casillas de verificación para elegir los permisos.
+
+    Atributos:
+    ----------
+    permissions : forms.ModelMultipleChoiceField
+        Campo para seleccionar múltiples permisos utilizando casillas de verificación.
+
     Métodos:
-        - __init__: Configura el formulario inicializando el queryset de permisos disponibles
-          basado en los grupos a los que el miembro pertenece. También establece los permisos
-          que el miembro ya tiene como valores iniciales seleccionados en el formulario.
+    --------
+    __init__(*args, **kwargs):
+        Inicializa el formulario y ajusta el queryset y los permisos iniciales
+        basados en los grupos del miembro.
     """
     def __init__(self, *args, **kwargs):
+        """
+        Inicializa el formulario y ajusta el queryset y los permisos iniciales
+        basados en los grupos del miembro.
+
+        Parameters:
+        -----------
+        *args : list
+            Argumentos posicionales.
+        **kwargs : dict
+            Argumentos de palabras clave.
+        """
         member = kwargs.get('instance')
         super(MemberEditPermissionForm, self).__init__(*args, **kwargs)
         if member:
@@ -313,21 +523,51 @@ class MemberEditPermissionForm(forms.ModelForm):
     )
 
     class Meta:
+        """
+        Metadatos del formulario.
+
+        Atributos:
+        ----------
+        model : Model
+            El modelo que se utilizará para el formulario.
+        fields : list
+            Lista de campos que se incluirán en el formulario.
+        """
         model = Member
         fields = ['permissions']  
 
 
 class MemberStatusForm(forms.ModelForm):
     """
-    Formulario para editar el estado de activación de un miembro.
+    Formulario para editar el estado de actividad de un miembro.
 
-    Campos:
-        - is_active: Campo de selección para activar o desactivar al miembro.
-    
+    Este formulario permite activar o desactivar a un miembro utilizando un campo de casilla de verificación.
+
+    Atributos:
+    ----------
+    Meta : class
+        Clase interna que define el modelo, los campos, los widgets y las etiquetas del formulario.
+
     Métodos:
-        - __init__: Personaliza el campo 'is_active' para que no tenga un sufijo en la etiqueta.
+    --------
+    __init__(*args, **kwargs):
+        Inicializa el formulario y ajusta el sufijo de la etiqueta del campo 'is_active'.
     """
     class Meta:
+        """
+        Metadatos del formulario.
+
+        Atributos:
+        ----------
+        model : Model
+            El modelo que se utilizará para el formulario.
+        fields : list
+            Lista de campos que se incluirán en el formulario.
+        widgets : dict
+            Widgets personalizados para los campos del formulario.
+        labels : dict
+            Etiquetas personalizadas para los campos del formulario.
+        """
         model = Member
         fields = ['is_active']
         widgets = {
@@ -337,6 +577,16 @@ class MemberStatusForm(forms.ModelForm):
             'is_active': 'Activo',
         }
     def __init__(self, *args, **kwargs):
+        """
+        Inicializa el formulario y ajusta el sufijo de la etiqueta del campo 'is_active'.
+
+        Parameters:
+        -----------
+        *args : list
+            Argumentos posicionales.
+        **kwargs : dict
+            Argumentos de palabras clave.
+        """
         super(MemberStatusForm, self).__init__(*args, **kwargs)
         self.fields['is_active'].label_suffix = ''
 
