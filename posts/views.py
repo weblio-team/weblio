@@ -15,6 +15,7 @@ from django.utils import timezone
 from simple_history.utils import update_change_reason
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.core.exceptions import PermissionDenied
+from django.conf import settings
 
 # views for category administrators
 
@@ -647,6 +648,12 @@ class SuscriberPostDetailView(DetailView):
             date_posted__year=year, 
             title__iexact=title.replace('-', ' ')
         )
+        
+    def get_context_data(self, **kwargs):
+        """Agrega datos adicionales al contexto de la plantilla."""
+        context = super().get_context_data(**kwargs)
+        context['LYKET_API_KEY'] = settings.LYKET_API_KEY
+        return context
     
 
 

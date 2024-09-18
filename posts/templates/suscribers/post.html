@@ -65,32 +65,30 @@
 		</div>
 		<script>
 			document.addEventListener("DOMContentLoaded", function() {
-			  const counterUrl = "https://api.lyket.dev/v1/clap-buttons/visits/blog/press";
-			  const apiKey = "pt_3dfda96e132cbc507a6cad39de1826";
-		  
-			  const options = {
-				method: "PUT",
-				headers: {
-				  "Content-Type": "application/json",
-				  "Authorization": `Bearer ${apiKey}`
-				}
-			  };
-		  
-			  fetch(counterUrl, options)
-				.then(response => response.json())
-				.then(({ data }) => {
-				  const totalClaps = data.attributes.total_claps;
-		  
-				  // Mostrar el valor en el elemento con id 'view-count'
-				  const viewCountElement = document.getElementById("view-count");
-				  viewCountElement.innerHTML = `${totalClaps}`;
-				})
-				.catch(error => {
-				  console.error("Error:", error);
+				const postID = document.querySelector('[data-lyket-id]').getAttribute('data-lyket-id');
+				const counterUrl = "https://api.lyket.dev/v1/clap-buttons/visits/" + postID + "/press";
+			  	const apiKey = "{{ LYKET_API_KEY }}";
+		
+			  	const options = {
+					method: "PUT",
+					headers: {
+				  		"Content-Type": "application/json",
+				  		"Authorization": `Bearer ${apiKey}`
+					}
+			  	};
+		
+			  	fetch(counterUrl, options)
+					.then(response => response.json())
+					.then(({ data }) => {
+				  			const resultContainer = document.getElementById("view-count");
+				  			resultContainer.innerHTML = `${JSON.stringify( data.attributes.total_claps,)}`;
+					})
+					.catch(error => {
+				  		console.error("Error:", error);
+					});
 				});
-			});
 		</script>
-		<script src="https://unpkg.com/@lyket/widget@latest/dist/lyket.js?apiKey=pt_3dfda96e132cbc507a6cad39de1826"></script>
+		<script src="https://unpkg.com/@lyket/widget@latest/dist/lyket.js?apiKey={{ LYKET_API_KEY }}"></script>
 		<div class="commentbox"></div>
 		<script src="https://unpkg.com/commentbox.io/dist/commentBox.min.js"></script>
 		<script>

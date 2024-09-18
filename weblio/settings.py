@@ -169,3 +169,6 @@ CKEDITOR_CONFIGS = {
         ),
     },
 }
+
+# Lyket settings
+LYKET_API_KEY = "pt_3dfda96e132cbc507a6cad39de1826"
