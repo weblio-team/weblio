@@ -69,7 +69,7 @@ WSGI_APPLICATION = 'weblio.wsgi.application'
 # Database
 DATABASES = {
     'default': dj_database_url.config(
-        default='postgresql://postgres.bnrtxzlxyqufgeubptmv:cincoenIS2*@aws-0-sa-east-1.pooler.supabase.com:6543/postgres'
+        default='postgresql://postgres.eghyyeuzfvyadfurnzji:cincoenIS2*@aws-0-us-east-1.pooler.supabase.com:6543/postgres'
     )
 } if not DEBUG else {
     'default': {
@@ -172,3 +172,6 @@ CKEDITOR_CONFIGS = {
 
 # Lyket settings
 LYKET_API_KEY = "pt_3dfda96e132cbc507a6cad39de1826"
+
+# Commentbox settings
+COMMENTBOX_API_KEY = "5656563893141504-proj"

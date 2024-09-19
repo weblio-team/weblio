@@ -653,6 +653,8 @@ class SuscriberPostDetailView(DetailView):
         """Agrega datos adicionales al contexto de la plantilla."""
         context = super().get_context_data(**kwargs)
         context['LYKET_API_KEY'] = settings.LYKET_API_KEY
+        context['COMMENTBOX_API_KEY'] = settings.COMMENTBOX_API_KEY
+        context['DEBUG'] = settings.DEBUG	
         return context
     
 

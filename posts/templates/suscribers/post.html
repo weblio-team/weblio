@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% block title %}{{post.title_tag}}{% endblock  %}
 {% block content %}
+	<p id="DEBUG" style="display: none;">{{ DEBUG }}</p>
 	<main role="main" class="container py-4">
 		<h1>{{post.title}}</h1>
 		<blockquote class="blockquote">
@@ -12,59 +13,70 @@
 		<small>Categoria: {{post.category}}</small></br>
 		<small>Etiquetas: {{post.keywords}}</small></br>
 		<div class="container mb-4 py-4">
-			<div class="row text-center align-items-center mb-4">
-				<div class="col-md-6 mb-3">
-					<div class="views-counter">
-						<p class="lead mb-1">Vistas</p>
-						<span id="view-count"></span>
+			{% if DEBUG %}
+				<div class="alert alert-warning d-flex align-items-center" role="alert">
+					<i class="fas fa-exclamation-triangle flex-shrink-0 me-2" aria-label="Warning:"></i>
+					<p>Interacción y comentarios solo están disponibles en producción. Actualmente está en desarrollo!</p>
+				</div>
+			{% else %}			
+				<div class="row text-center align-items-center mb-4">
+					<div class="col-md-6 mb-3">
+						<div class="views-counter">
+							<p class="lead mb-1">Vistas</p>
+							<span id="view-count"></span>
+						</div>
+					</div>
+					<div class="col-md-6 mb-3">
+						<p class="lead mb-1">Promedio de estrellas</p>
+						<div 
+							data-lyket-type="rate" 
+							data-lyket-id="{{ post.id }}" 
+							data-lyket-show-rating="average"
+							data-lyket-namespace="blog"
+							data-lyket-color-primary="yellow"   
+							data-lyket-color-secondary="grey"   
+							data-lyket-color-background="transparent"
+							data-lyket-color-text="white"
+						></div>
 					</div>
 				</div>
-				<div class="col-md-6 mb-3">
-					<p class="lead mb-1">Promedio de estrellas</p>
-					<div 
-						data-lyket-type="rate" 
-						data-lyket-id="{{ post.id }}" 
-						data-lyket-show-rating="average"
-						data-lyket-namespace="blog"
-						data-lyket-color-primary="yellow"   
-						data-lyket-color-secondary="grey"   
-						data-lyket-color-background="transparent"
-						data-lyket-color-text="white"
-					></div>
-				</div>
-			</div>
 
-			<div class="row text-center align-items-center">
-				<div class="col-md-6 mb-3">
-					<p class="lead mb-1">¿Te gustó?</p>
-					<div
-						data-lyket-type="updown"
-						data-lyket-id="{{ post.id }}"
-						data-lyket-namespace="blog"
-						data-lyket-color-primary="green"
-						data-lyket-color-secondary="red"
-						data-lyket-color-text="white"
-						data-lyket-color-icon="dark"
-						data-lyket-color-background="white"
-					></div>
+				<div class="row text-center align-items-center">
+					<div class="col-md-6 mb-3">
+						<p class="lead mb-1">¿Te gustó?</p>
+						<div
+							data-lyket-type="updown"
+							data-lyket-id="{{ post.id }}"
+							data-lyket-namespace="blog"
+							data-lyket-color-primary="green"
+							data-lyket-color-secondary="red"
+							data-lyket-color-text="white"
+							data-lyket-color-icon="dark"
+							data-lyket-color-background="white"
+						></div>
+					</div>
+					<div class="col-md-6 mb-3">
+						<p class="lead mb-1">Tu calificación</p>
+						<div 
+							data-lyket-type="rate" 
+							data-lyket-id="{{ post.id }}" 
+							data-lyket-show-rating="user"
+							data-lyket-namespace="blog"
+							data-lyket-color-primary="yellow"   
+							data-lyket-color-secondary="grey"   
+							data-lyket-color-background="transparent"
+							data-lyket-color-text="white"
+						></div>
+					</div>
 				</div>
-				<div class="col-md-6 mb-3">
-					<p class="lead mb-1">Tu calificación</p>
-					<div 
-						data-lyket-type="rate" 
-						data-lyket-id="{{ post.id }}" 
-						data-lyket-show-rating="user"
-						data-lyket-namespace="blog"
-						data-lyket-color-primary="yellow"   
-						data-lyket-color-secondary="grey"   
-						data-lyket-color-background="transparent"
-						data-lyket-color-text="white"
-					></div>
-				</div>
-			</div>
+			{% endif %}
 		</div>
 		<script>
 			document.addEventListener("DOMContentLoaded", function() {
+				const debugElement = document.getElementById("DEBUG");
+				const isDebug = debugElement.innerText.trim().toLowerCase() === 'true';
+				if (isDebug) {return;}
+				
 				const postID = document.querySelector('[data-lyket-id]').getAttribute('data-lyket-id');
 				const counterUrl = "https://api.lyket.dev/v1/clap-buttons/visits/" + postID + "/press";
 			  	const apiKey = "{{ LYKET_API_KEY }}";
@@ -88,11 +100,11 @@
 					});
 				});
 		</script>
-		<script src="https://unpkg.com/@lyket/widget@latest/dist/lyket.js?apiKey={{ LYKET_API_KEY }}"></script>
-		<div class="commentbox"></div>
+		<script src="{% if DEBUG %} {% else %} https://unpkg.com/@lyket/widget@latest/dist/lyket.js?apiKey={{ LYKET_API_KEY }} {% endif %}"></script>
+		{% if not DEBUG %} <div class="commentbox"></div> {% endif %}
 		<script src="https://unpkg.com/commentbox.io/dist/commentBox.min.js"></script>
 		<script>
-			commentBox('5656563893141504-proj', {
+			commentBox('{{ COMMENTBOX_API_KEY }}', {
 				backgroundColor: null,  // Para usar el color de fondo de tu página
 				textColor: '#fff',  	// Para que el texto sea blanco en modo oscuro
 				subtextColor: '#ccc',  	// Subtexto en modo oscuro
