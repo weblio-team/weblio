@@ -22,7 +22,7 @@ if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 else:
-    urlpatterns += path("ckeditor/", include('services.urls')),
+    urlpatterns += path("services/", include('services.urls')),
 
 
 # Se configuran las vistas de error

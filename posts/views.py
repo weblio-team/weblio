@@ -82,6 +82,7 @@ class CategoryDetailView(DetailView):
         context = super().get_context_data(**kwargs)
         context['category_count'] = Category.objects.count()
         context['posts'] = Post.objects.filter(category=self.get_object(), status='published')
+        context['DEBUG'] = settings.DEBUG
         return context
 
 

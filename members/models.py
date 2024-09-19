@@ -36,6 +36,8 @@ class Member(AbstractBaseUser, PermissionsMixin):
     is_staff = models.BooleanField(_('staff status'), default=False)
     date_joined = models.DateTimeField(_('date joined'), auto_now_add=True)
     pfp = models.ImageField(upload_to='profile_pictures/', blank=True, null=True)
+    purchased_categories = models.ManyToManyField('posts.Category', related_name='purchased_members', blank=True)
+
 
     USERNAME_FIELD = 'username'
     REQUIRED_FIELDS = ['email' ,'first_name', 'last_name']
