@@ -75,14 +75,15 @@ class CategoryEditForm(forms.ModelForm):
     
 # forms for authors views
 class MyPostEditInformationForm(forms.ModelForm):
+    change_reason = forms.CharField(widget=forms.HiddenInput(), required=False)
+
     class Meta:
         model = Post
-        fields = ['title', 'title_tag', 'summary', 'body', 'category', 'status', 'keywords', 'thumbnail', 'publish_start_date', 'publish_end_date']
+        fields = ['title', 'title_tag', 'summary', 'category', 'status', 'keywords', 'thumbnail', 'publish_start_date', 'publish_end_date']
         labels = {
             'title': _('Título'),
             'title_tag': _('Etiqueta del Título'),
             'summary': _('Resumen'),
-            'body': _('Cuerpo'),
             'category': _('Categoría'),
             'author': _('Autor'),
             'status': _('Estado'),

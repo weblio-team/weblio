@@ -1,7 +1,7 @@
 import json
 from django.http import Http404, HttpResponseForbidden, HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
-from django.urls import reverse_lazy
+from django.urls import reverse, reverse_lazy
 from django.contrib.auth.mixins import PermissionRequiredMixin, LoginRequiredMixin
 from django.utils.decorators import method_decorator
 from django.views import View
@@ -183,7 +183,7 @@ class MyPostEditView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
     model = Post
     template_name = 'create/edit.html'
     permission_required = 'posts.add_post'
-    fields = ['title', 'title_tag', 'summary', 'body', 'category', 'keywords']    
+    fields = ['title', 'title_tag', 'summary', 'body', 'category', 'keywords']
 
     def dispatch(self, request, *args, **kwargs):
         post = get_object_or_404(Post, pk=self.kwargs['pk'])
@@ -237,37 +237,39 @@ class MyPostEditView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
             body_form = MyPostEditBodyForm(initial={
                 'body': post_data.get('body')
             })
-            
-        # Check if 'status' is missing and set it to the existing status from the post instance
-        elif 'status' not in post_data:
-            post_data['status'] = self.object.status
+        else:
+            # Check if 'status' is missing and set it to the existing status from the post instance
+            if 'status' not in post_data:
+                post_data['status'] = self.object.status
 
-        # Create the forms with the modified data
-        information_form = MyPostEditInformationForm(post_data, instance=self.object)
-        body_form = MyPostEditBodyForm(post_data, instance=self.object)
+            # Create the forms with the modified data
+            information_form = MyPostEditInformationForm(post_data, instance=self.object)
+            body_form = MyPostEditBodyForm(post_data, instance=self.object)
 
         if information_form.is_valid() and body_form.is_valid():
             post = information_form.save(commit=False)
-            post = body_form.save(commit=False)
+            post.body = body_form.cleaned_data['body']
 
-            post.save()  # Save the post once
-            update_change_reason(post, post_data.get('change_reason', 'Updated post'))  # Log version history
+            # Check if the status has changed
+            if post_data['status'] != self.object.status:
+                post.status = post_data['status']
+                post.change_reason = post_data.get('change_reason', 'Updated post')
+            else:
+                post.change_reason = post_data.get('change_reason', None)
 
-            # Set status and add messages
-            post.status = post_data.get('status')
-            if post.status == 'to_publish':
-                messages.success(self.request, 'La publicación se ha enviado para publicación.')
-            elif post.status == 'draft':
-                messages.success(self.request, 'La publicación se ha guardado como borrador.')
+            post.save()
 
+            # Update the change reason in the version history
+            update_change_reason(post, post.change_reason)
+
+            messages.success(self.request, "Post saved successfully.")
             return redirect('my-posts')
         else:
             context = self.get_context_data()
             context['information_form'] = information_form
             context['body_form'] = body_form
-            messages.success(self.request, 'La publicación se ha restaurado como borrador.')
-        return self.render_to_response(context)
-
+            messages.error(self.request, 'Error al actualizar la publicación.')
+            return self.render_to_response(context)
 
 class MyPostDeleteView(PermissionRequiredMixin, LoginRequiredMixin, DeleteView):
     """
