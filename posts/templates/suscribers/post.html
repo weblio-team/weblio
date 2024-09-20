@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load social_share %}
 {% block title %}{{post.title_tag}}{% endblock  %}
 {% block content %}
 	<p id="DEBUG" style="display: none;">{{ DEBUG }}</p>
@@ -69,6 +70,86 @@
 						></div>
 					</div>
 				</div>
+				<!-- Bloque de botones para compartir en redes sociales -->
+				<div id="social-share-section" class="container text-center mb-5">
+					<h2 class="text-light mb-4">Compartir en redes sociales</h2>
+					<div class="d-flex justify-content-center align-items-center flex-wrap">
+						<!-- Facebook -->
+						<div class="social-item mx-2">
+							{% post_to_facebook object_or_url "Facebook" %}
+							<i class="fab fa-facebook-f"></i>
+						</div>
+						
+						<!-- Twitter -->
+						<div class="social-item mx-2">
+							{% post_to_twitter "📄 ¡Nuevo artículo! {{post.title}} - Descubre más aquí 👇" object_or_url "Twitter" %}
+							<i class="fab fa-twitter"></i>
+						</div>
+						
+						<!-- Email -->
+						<div class="social-item mx-2">
+							{% send_email post.title "📄 ¡Tienes que leer este artículo! {{post.title}} - Haz clic aquí para más detalles 📩" object_or_url "Email" %}
+							<i class="fas fa-envelope"></i>
+						</div>
+						
+						<!-- WhatsApp -->
+						<div class="social-item mx-2">
+							{% post_to_whatsapp object_or_url "WhatsApp"%}
+							<i class="fab fa-whatsapp"></i>
+						</div>
+					</div>
+				</div>
+				<style>
+					/* Estilo general para la sección de compartir */
+					#social-share-section {
+						padding: 20px;
+						background-color: #2c2f33;
+						border-radius: 8px;
+						box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+					}
+				
+					#social-share-section h2 {
+						font-family: 'Helvetica Neue', sans-serif;
+						font-weight: 300;
+						color: #f1f1f1;
+						font-size: 1.5rem;
+						margin-bottom: 1.5rem;
+					}
+				
+					/* Estilos para los íconos sociales y el texto */
+					.social-item {
+						display: flex;
+						align-items: center;
+						color: #aaa;
+						font-size: 1.1rem;
+						transition: color 0.3s ease, transform 0.3s ease;
+					}
+				
+					.social-item i {
+						margin-left: 8px;
+						font-size: 1.5rem;
+					}
+				
+					.social-item:hover {
+						color: #fff;
+						transform: scale(1.05);  /* Efecto de aumento suave al pasar el mouse */
+					}
+				
+					.social-item a {
+						text-decoration: none; /* Eliminar el subrayado de los enlaces */
+						color: inherit; /* Heredar el color de la clase social-item */
+					}
+				
+					.social-item:hover a {
+						color: inherit;
+					}
+				
+					/* Ajuste del espacio entre los íconos */
+					.mx-2 {
+						margin-left: 10px;
+						margin-right: 10px;
+					}
+				</style>
 			{% endif %}
 		</div>
 		<script>
