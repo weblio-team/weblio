@@ -254,12 +254,13 @@
                 // Attach click event to all anchor tags
                 document.querySelectorAll('a').forEach(function(link) {
                     link.addEventListener('click', function(event) {
-                        // Check if the clicked link is inside the navbar and is not a dropdown-item
-                        if (link.closest('.navbar') && !link.classList.contains('dropdown-item')) {
-                            // Do nothing for normal navbar links
+                        // Exclude links inside the navbar (not dropdown-items) and social-item
+                        if ((link.closest('.navbar') && !link.classList.contains('dropdown-item')) || 
+                            link.classList.contains('social-item')) {
+                            // Do nothing for normal navbar links or social-item
                             return;
                         } else {
-                            // Show spinner for dropdown items or any link outside the navbar
+                            // Show spinner for dropdown items or any other link
                             showSpinner();
                         }
                     });
