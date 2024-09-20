@@ -76,25 +76,25 @@
 					<div class="d-flex justify-content-center align-items-center flex-wrap">
 						<!-- Facebook -->
 						<div class="social-item mx-2">
-							{% post_to_facebook object_or_url "Facebook" %}
+							{% post_to_facebook object_or_url "Facebook" "social-item mx-2"%}
 							<i class="fab fa-facebook-f"></i>
 						</div>
 						
 						<!-- Twitter -->
 						<div class="social-item mx-2">
-							{% post_to_twitter "📄 ¡Nuevo artículo! {{post.title}} - Descubre más aquí 👇" object_or_url "Twitter" %}
+							{% post_to_twitter "📄 ¡Nuevo artículo! {{post.title}} - Descubre más aquí 👇" object_or_url "Twitter" "social-item mx-2"%}
 							<i class="fab fa-twitter"></i>
 						</div>
 						
 						<!-- Email -->
 						<div class="social-item mx-2">
-							{% send_email post.title "📄 ¡Tienes que leer este artículo! {{post.title}} - Haz clic aquí para más detalles 📩" object_or_url "Email" %}
+							{% send_email post.title "📄 ¡Tienes que leer este artículo! {{post.title}} - Haz clic aquí para más detalles 📩" object_or_url "Email" "social-item mx-2"%}
 							<i class="fas fa-envelope"></i>
 						</div>
 						
 						<!-- WhatsApp -->
 						<div class="social-item mx-2">
-							{% post_to_whatsapp object_or_url "WhatsApp"%}
+							{% post_to_whatsapp object_or_url "WhatsApp" "social-item mx-2"%}
 							<i class="fab fa-whatsapp"></i>
 						</div>
 					</div>
