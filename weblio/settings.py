@@ -10,7 +10,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-upbpz=nvj$stnporclt2p*#7f2v_#&p=gjmjyu_jnt6cyqwi2t'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False if 'DYNO' in os.environ else True
+DEBUG = False
 
 ALLOWED_HOSTS = ['.blog', '.herokuapp.com', 'localhost', '127.0.0.1'] if not DEBUG else []
 

@@ -1,0 +1,121 @@
+<nav class="navbar navbar-expand-lg bg-body-tertiary sticky-top" data-bs-theme="dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="/">Weblio</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                <!-- Artículos -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        Artículos
+                    </a>
+                    <ul class="dropdown-menu">
+                        {% if user.is_authenticated %}
+                            <li><a class="dropdown-item" href="{% url 'posts' %}">Mis artículos</a></li>
+                        {% endif %}
+                        <li><a class="dropdown-item" href="{% url 'posts' %}">Explorar artículos</a></li>
+                    </ul>
+                </li>
+
+                <!-- Categorías -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        Categorías
+                    </a>
+                    <ul class="dropdown-menu">
+                        {% if perms.posts.view_post %}
+                            <li><a class="dropdown-item" href="#">Mis categorías</a></li>
+                        {% endif %}
+                        <li><a class="dropdown-item" href="{% url 'categories' %}">Explorar categorías</a></li>
+                        {% if perms.posts.add_category %}
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{% url 'category_add' %}">Nueva Categoría</a></li>
+                        {% endif %}
+                    </ul>
+                </li>
+
+                <!-- Gestión de contenido -->
+                {% if perms.posts.add_post or perms.posts.change_post or perms.posts.can_publish %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            Gestión de Contenido
+                        </a>
+                        <ul class="dropdown-menu">
+                            {% if perms.posts.add_post %}
+                                <li><a class="dropdown-item" href="{% url 'my-posts' %}">Mis Artículos</a></li>
+                                <li><a class="dropdown-item" href="{% url 'add-my-post' %}">Crear un artículo</a></li>
+                            {% endif %}
+                            {% if perms.posts.change_post %}
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="{% url 'to-edit' %}">Artículos a editar</a></li>
+                            {% endif %}
+                            {% if perms.posts.can_publish %}
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="{% url 'to-publish' %}">Artículos a publicar</a></li>
+                            {% endif %}
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{% url 'kanban-board' %}">Tablero Kanban</a></li>
+                        </ul>
+                    </li>
+                {% endif %}
+
+                <!-- Gestión de usuarios -->
+                {% if perms.auth.change_member %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            Gestión de usuarios
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{% url 'member-list' %}">Mostrar usuarios</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{% url 'group-list' %}">Mostrar roles</a></li>
+                            <li><a class="dropdown-item" href="{% url 'group-create' %}">Crear rol</a></li>
+                        </ul>
+                    </li>
+                {% endif %}
+            </ul>
+
+            <!-- Barra de búsqueda -->
+            {% if request.path == '/posts/all/' or request.path == '/posts/search/' %}
+                <form method="GET" action="{% url 'post_search' %}" class="d-flex flex-grow-1 me-4" role="search">
+                    <input class="form-control bg-dark text-white me-2" type="search" placeholder="Search" aria-label="Search" name="q">
+                    <button class="btn btn-outline-success text-white" type="submit">Search</button>
+                </form>
+            {% endif %}
+
+            <!-- Botones de inicio de sesión / perfil -->
+            <div class="d-flex align-items-center ms-lg-3 mt-2 mt-lg-0">
+                {% if not user.is_authenticated %}
+                    <a class="btn btn-primary px-3 me-2" href="{% url 'member-login' %}">Iniciar Sesión</a>
+                    <a class="btn btn-outline-secondary px-3" href="{% url 'member-register' %}">Registrarse</a>
+                {% else %}
+                    <div class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            {% if user.pfp %}
+                                <img src="{{ user.pfp.url }}" height="40px" width="40px" alt="User Image" class="rounded-circle me-2">
+                            {% else %}
+                                <img src="https://picsum.photos/seed/picsum/1080" height="40px" width="40px" alt="Default User Image" class="rounded-circle me-2">
+                            {% endif %}
+                            {{ user.first_name }} {{ user.last_name }}
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="{% url 'profile' %}">Perfil</a></li>
+                            <li><a class="dropdown-item" href="{% url 'edit_profile' %}">Editar Perfil</a></li>
+                            <li><a class="dropdown-item" href="#">Configuración</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <form method="POST" action="{% url 'logout' %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="dropdown-item">Cerrar Sesión</button>
+                                </form>
+                            </li>
+                        </ul>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</nav>

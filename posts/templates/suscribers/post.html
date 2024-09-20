@@ -3,6 +3,7 @@
 {% block title %}{{post.title_tag}}{% endblock  %}
 {% block content %}
 	<p id="DEBUG" style="display: none;">{{ DEBUG }}</p>
+	<p id="AUTH" style="display: none;">{{ user.is_authenticated }}</p>	
 	<main role="main" class="container py-4">
 		<h1>{{post.title}}</h1>
 		<blockquote class="blockquote">
@@ -14,12 +15,12 @@
 		<small>Categoria: {{post.category}}</small></br>
 		<small>Etiquetas: {{post.keywords}}</small></br>
 		<div class="container mb-4 py-4">
-			{% if DEBUG %}
+			{% if DEBUG and user.is_authenticated %}
 				<div class="alert alert-warning d-flex align-items-center" role="alert" style="font-size: 1.25rem;">
 					<i class="fas fa-exclamation-triangle flex-shrink-0 me-2" aria-label="Warning:" style="font-size: 1-25rem;"></i>
 					<p class="mb-0">Interacción y comentarios solo están disponibles en producción. Actualmente está en desarrollo!</p>
 				</div>
-			{% else %}			
+			{% elif not DEBUG and user.is_authenticated %}			
 				<div class="row text-center align-items-center mb-4">
 					<div class="col-md-6 mb-3">
 						<div class="views-counter">
@@ -150,13 +151,24 @@
 						margin-right: 10px;
 					}
 				</style>
+			{% elif not DEBUG and not user.is_authenticated %}
+			<div class="alert alert-warning d-flex align-items-center" role="alert" style="font-size: 1.25rem;">
+				<i class="fas fa-exclamation-triangle flex-shrink-0 me-2" aria-label="Warning:" style="font-size: 1-25rem;"></i>
+				<p class="mb-0">La interacción y los comentarios solo están disponibles para los suscriptores. 
+				<a href="{% url 'member-login' %}" class="alert-link">Inicia sesión</a> o 
+				<a href="{% url 'member-register' %}" class="alert-link">regístrate</a>.</p>
+			</div>
 			{% endif %}
 		</div>
 		<script>
 			document.addEventListener("DOMContentLoaded", function() {
 				const debugElement = document.getElementById("DEBUG");
 				const isDebug = debugElement.innerText.trim().toLowerCase() === 'true';
-				if (isDebug) {return;}
+
+				const authElement = document.getElementById("AUTH");
+				const isAuth = authElement.innerText.trim().toLowerCase() === 'true';
+
+				if (isDebug || (!isDebug && !isAuth)) { return; }
 				
 				const postID = document.querySelector('[data-lyket-id]').getAttribute('data-lyket-id');
 				const counterUrl = "https://api.lyket.dev/v1/clap-buttons/visits/" + postID + "/press";
@@ -181,8 +193,8 @@
 					});
 				});
 		</script>
-		<script src="{% if DEBUG %} {% else %} https://unpkg.com/@lyket/widget@latest/dist/lyket.js?apiKey={{ LYKET_API_KEY }} {% endif %}"></script>
-		{% if not DEBUG %} <div class="commentbox"></div> {% endif %}
+		<script src="{% if DEBUG or not user.is_authenticated %} {% else %} https://unpkg.com/@lyket/widget@latest/dist/lyket.js?apiKey={{ LYKET_API_KEY }} {% endif %}"></script>
+		{% if not DEBUG and user.is_authenticated%} <div class="commentbox"></div> {% endif %}
 		<script src="https://unpkg.com/commentbox.io/dist/commentBox.min.js"></script>
 		<script>
 			commentBox('{{ COMMENTBOX_API_KEY }}', {

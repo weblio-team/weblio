@@ -3,67 +3,82 @@
 {% block content %}
 <main class="container-fluid p-0 m-0 vh-100">
     <div class="row h-100 m-0">
-        <div class="col-md-6 p-0">
+        <!-- Imagen solo visible en pantallas grandes -->
+        <div class="col-lg-6 p-0 d-none d-lg-block">
             <img src="https://picsum.photos/seed/picsum/1080" alt="Placeholder Image" class="img-fluid w-100 h-100 object-fit-cover">
         </div>
-        <div class="col-md-6 d-flex flex-column align-items-center justify-content-center p-4 position-relative">
-            <form method="POST" action="{% url 'member-join' %}" class="w-75 mt-5">
+
+        <!-- Formulario de registro -->
+        <div class="col-12 col-lg-6 d-flex flex-column align-items-center justify-content-center p-4">
+            <form method="POST" action="{% url 'member-join' %}" class="w-100 px-4" style="max-width: 500px;">
                 {% csrf_token %}
-                <h2 class="text-start mb-4">Unirse</h2>
-                <div class="w-100">
-                    {% if form.errors %}
-                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                            {% for field in form %}
-                                {% for error in field.errors %}
-                                    <p>{{ error }}</p>
-                                {% endfor %}
+                <h2 class="text-center mb-4">Unirse</h2>
+                
+                <!-- Mensajes de error -->
+                {% if form.errors %}
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        {% for field in form %}
+                            {% for error in field.errors %}
+                                <p>{{ error }}</p>
                             {% endfor %}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                        </div>
-                    {% endif %}
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="id_first_name" class="form-label">Nombre</label>
-                            <input type="text" name="first_name" id="id_first_name" class="form-control">
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label for="id_last_name" class="form-label">Apellido</label>
-                            <input type="text" name="last_name" id="id_last_name" class="form-control">
-                        </div>
+                        {% endfor %}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>
-                    <div class="row">
-                        <div class="col-md-12 mb-3">
-                            <label for="id_username" class="form-label">Usuario</label>
-                            <input type="text" name="username" id="id_username" class="form-control">
-                        </div>
-                        <div class="col-md-12 mb-3">
-                            <label for="id_email" class="form-label">Correo</label>
-                            <input type="email" name="email" id="id_email" class="form-control">
-                        </div>
-                        <div class="col-md-12 mb-3">
-                            <label for="id_role" class="form-label">Rol</label>
-                            <select name="role" id="id_role" class="form-select">
-                                {% for role in roles %}
-                                    <option value="{{ role.id }}">{{ role.name }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
+                {% endif %}
+                
+                <!-- Campos Nombre y Apellido -->
+                <div class="row">
+                    <div class="col-12 col-md-6 mb-3">
+                        <label for="id_first_name" class="form-label">Nombre</label>
+                        <input type="text" name="first_name" id="id_first_name" class="form-control" placeholder="Ingrese su nombre">
                     </div>
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="id_password1" class="form-label">Contraseña</label>
-                            <input type="password" name="password1" id="id_password1" class="form-control">
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label for="id_password2" class="form-label">Confirmar Contraseña</label>
-                            <input type="password" name="password2" id="id_password2" class="form-control">
-                        </div>
+                    <div class="col-12 col-md-6 mb-3">
+                        <label for="id_last_name" class="form-label">Apellido</label>
+                        <input type="text" name="last_name" id="id_last_name" class="form-control" placeholder="Ingrese su apellido">
                     </div>
-                    <button type="submit" class="btn btn-primary w-100">Registrarse</button>
-                    <div class="d-flex justify-content-between mt-3">
-                        <p class="mb-0">¿Ya tienes una cuenta? <a href="{% url 'member-login' %}">Inicia sesión</a></p>
-                        <p class="mb-0"><a href="#">¡Trabaja con nosotros!</a></p>
+                </div>
+
+                <!-- Campo Usuario -->
+                <div class="mb-3">
+                    <label for="id_username" class="form-label">Usuario</label>
+                    <input type="text" name="username" id="id_username" class="form-control" placeholder="Ingrese su nombre de usuario">
+                </div>
+
+                <!-- Campo Correo -->
+                <div class="mb-3">
+                    <label for="id_email" class="form-label">Correo</label>
+                    <input type="email" name="email" id="id_email" class="form-control" placeholder="Ingrese su correo">
+                </div>
+
+                <!-- Campo Rol -->
+                <div class="mb-3">
+                    <label for="id_role" class="form-label">Rol</label>
+                    <select name="role" id="id_role" class="form-select">
+                        {% for role in roles %}
+                            <option value="{{ role.id }}">{{ role.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Campos Contraseña y Confirmar Contraseña -->
+                <div class="row">
+                    <div class="col-12 col-md-6 mb-3">
+                        <label for="id_password1" class="form-label">Contraseña</label>
+                        <input type="password" name="password1" id="id_password1" class="form-control" placeholder="Ingrese su contraseña">
                     </div>
+                    <div class="col-12 col-md-6 mb-3">
+                        <label for="id_password2" class="form-label">Confirmar Contraseña</label>
+                        <input type="password" name="password2" id="id_password2" class="form-control" placeholder="Confirme su contraseña">
+                    </div>
+                </div>
+
+                <!-- Botón de Registro -->
+                <button type="submit" class="btn btn-primary w-100 mb-3">Registrarse</button>
+
+                <!-- Links de ayuda -->
+                <div class="d-flex justify-content-between">
+                    <p class="mb-0">¿Ya tienes una cuenta? <a href="{% url 'member-login' %}">Inicia sesión</a></p>
+                    <p class="mb-0"><a href="{% url 'member-register' %}">Registrarse</a></p>
                 </div>
             </form>
         </div>

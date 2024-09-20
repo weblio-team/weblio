@@ -1,0 +1,69 @@
+<style>
+    html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        overflow-x: hidden; /* Prevent horizontal overscroll */
+    }
+    body {
+        background-color: #343a40; /* Dark background */
+        color: white; /* White text */
+        display: flex;
+        flex-direction: column;
+    }
+    main {
+        flex: 1; /* Ensure main content takes up remaining space */
+    }
+    footer {
+        background-color: #212529;
+        color: #adb5bd;
+        padding: 20px 0;
+    }
+    footer p {
+        margin: 0;
+        font-size: 1.1rem;
+        text-align: center;
+    }
+    footer .container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+    }
+    footer .heart, footer .coffee {
+        color: #e25555;
+        margin: 0 5px;
+    }
+    footer .coffee {
+        color: #6f4e37; /* Coffee color */
+    }
+    .django-ckeditor-widget {
+        width: 100%;
+    }
+    /* Custom styles for alert messages */
+    .alert-fixed {
+        position: fixed;
+        top: 56px; /* Below navbar */
+        right: 20px;
+        z-index: 1050;
+        min-width: 300px;
+        max-width: 500px;
+        border-radius: 0.5rem;
+    }
+     /* Spinner and overlay styles */
+     #spinner-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.8); /* Dark grey background */
+        z-index: 2000;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    #spinner-overlay.hidden {
+        display: none; /* Hide when the page is fully loaded */
+    }
+</style>
