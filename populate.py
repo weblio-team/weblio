@@ -2,119 +2,131 @@ import os
 import sys
 import platform
 import subprocess
-from unidecode import unidecode
-import re  # Para eliminar caracteres no alfabéticos
+import json
+import re
+import chardet
 
+# Diccionario de reemplazo de caracteres acentuados y especiales
+replacements = {
+    'á': 'a', 'à': 'a', 'ä': 'a', 'â': 'a', 'ã': 'a', 'å': 'a', 'æ': 'ae',
+    'é': 'e', 'è': 'e', 'ë': 'e', 'ê': 'e',
+    'í': 'i', 'ì': 'i', 'ï': 'i', 'î': 'i',
+    'ó': 'o', 'ò': 'o', 'ö': 'o', 'ô': 'o', 'õ': 'o', 'ø': 'o',
+    'ú': 'u', 'ù': 'u', 'ü': 'u', 'û': 'u',
+    'ý': 'y', 'ÿ': 'y',
+    'ñ': 'n', 'ç': 'c', 'ß': 'ss',
 
-def find_and_replace_non_utf8_characters(content):
+    'Á': 'A', 'À': 'A', 'Ä': 'A', 'Â': 'A', 'Ã': 'A', 'Å': 'A', 'Æ': 'AE',
+    'É': 'E', 'È': 'E', 'Ë': 'E', 'Ê': 'E',
+    'Í': 'I', 'Ì': 'I', 'Ï': 'I', 'Î': 'I',
+    'Ó': 'O', 'Ò': 'O', 'Ö': 'O', 'Ô': 'O', 'Õ': 'O', 'Ø': 'O',
+    'Ú': 'U', 'Ù': 'U', 'Ü': 'U', 'Û': 'U',
+    'Ý': 'Y',
+    'Ñ': 'N', 'Ç': 'C',
+
+    'Œ': 'OE', 'œ': 'oe', 'Š': 'S', 'š': 's', 'Ž': 'Z', 'ž': 'z', 'Ð': 'D', 'ð': 'd',
+    'Þ': 'TH', 'þ': 'th'
+}
+
+# Función para reemplazar caracteres acentuados por su equivalente sin acento
+def replace_accented_characters(text):
+    for accented_char, replacement in replacements.items():
+        text = text.replace(accented_char, replacement)
+    return text
+
+# Función para limpiar caracteres especiales de los campos
+def clean_special_characters(text):
+    text = replace_accented_characters(text)        # Reemplazar los caracteres acentuados primero
+    return re.sub(r'[^A-Za-z0-9 ]+', '', text)      # Mantener solo letras, números y espacios
+
+# Función para procesar el campo 'body', solo aplicando replacements sin eliminar otros caracteres
+def process_body_field(text):
+    return replace_accented_characters(text)  # Solo reemplazar caracteres del diccionario
+
+def process_json_content(json_data):
     """
-    Función para reemplazar caracteres no UTF-8 y eliminar todo carácter que no sea alfabético.
+    Procesa el contenido JSON:
+    - Para 'posts.category', reemplaza caracteres acentuados en 'name', 'description' y 'alias'.
+    - Para 'posts.historicalpost' y 'posts.post', reemplaza caracteres acentuados en 'title', 'title_tag', 'keywords', y aplica solo replacements al 'body'.
     """
-    fixed_content = bytearray()
-    i = 0
-    while i < len(content):
-        try:
-            # Intentar decodificar el byte siguiente como UTF-8
-            content[i:i + 1].decode('utf-8')
-            char = chr(content[i])
+    if isinstance(json_data, list):
+        for item in json_data:
+            model = item.get('model')
+            if 'fields' in item:
+                fields = item['fields']
+                # Procesar campos de 'posts.category'
+                if model == 'posts.category':
+                    if 'name' in fields:
+                        fields['name'] = clean_special_characters(fields['name'])
+                    if 'description' in fields:
+                        fields['description'] = clean_special_characters(fields['description'])
+                    if 'alias' in fields:
+                        fields['alias'] = clean_special_characters(fields['alias'])
+                # Procesar campos de 'posts.historicalpost' o 'posts.post'
+                elif model in ['posts.historicalpost', 'posts.post']:
+                    if 'title' in fields:
+                        fields['title'] = clean_special_characters(fields['title'])
+                    if 'title_tag' in fields:
+                        fields['title_tag'] = clean_special_characters(fields['title_tag'])
+                    if 'keywords' in fields:
+                        fields['keywords'] = clean_special_characters(fields['keywords'])
+                    if 'body' in fields:
+                        # Solo reemplazar acentos en 'body' sin eliminar otros caracteres especiales
+                        fields['body'] = process_body_field(fields['body'])
+    return json_data
 
-            # Reemplazar caracteres no alfabéticos por vacío
-            if not re.match(r'[A-Za-z]', char):  # Mantener solo letras
-                fixed_content.extend(b'')
-            else:
-                fixed_content.append(content[i])
-
-            i += 1
-        except UnicodeDecodeError:
-            problematic_byte = content[i]
-            print(f"Byte problemático en la posición {i}: {problematic_byte} (carácter: {chr(problematic_byte)})")
-            # Reemplazar el byte problemático usando unidecode
-            replacement = unidecode(chr(problematic_byte))
-            fixed_content.extend(replacement.encode('utf-8'))
-            i += 1
-
-    return fixed_content
-
-
-def read_json_file(file_path):
+def read_and_process_json_file(file_path):
     """
-    Leer archivo JSON como contenido binario.
-    Validaciones:
-        - Verificar que el archivo existe.
-        - Asegurar que el archivo no esté vacío.
-        - Detectar problemas de codificación UTF-8.
+    Leer un archivo JSON detectando su codificación automáticamente con chardet,
+    procesarlo para reemplazar caracteres especiales, y devolver el contenido procesado.
     """
     if not os.path.exists(file_path):
         raise FileNotFoundError(f"El archivo {file_path} no existe.")
+    
+    # Detectar la codificación automáticamente
+    with open(file_path, 'rb') as file:
+        raw_data = file.read()
+        result = chardet.detect(raw_data)
+        encoding = result['encoding']
+        #print(f"Codificación detectada: {encoding}")
 
-    if os.path.getsize(file_path) == 0:
-        raise ValueError(f"El archivo {file_path} está vacío.")
+    # Leer el archivo con la codificación detectada
+    with open(file_path, 'r', encoding=encoding, errors='replace') as file:
+        try:
+            content = json.load(file)
+        except json.JSONDecodeError as e:
+            raise ValueError(f"Error al decodificar JSON en {file_path}: {e}")
+    
+    # Procesar el contenido del JSON
+    processed_content = process_json_content(content)
+    
+    return processed_content
 
-    try:
-        with open(file_path, 'rb') as file:
-            content = file.read()
-    except Exception as e:
-        raise IOError(f"Error al leer el archivo {file_path}: {e}")
-
-    try:
-        # Verificar si el contenido es decodificable como UTF-8
-        content.decode('utf-8')
-    except UnicodeDecodeError:
-        raise ValueError(f"El archivo {file_path} contiene caracteres no válidos en UTF-8.")
-
-    return content
-
+def save_processed_json(file_path, content):
+    """
+    Guardar el contenido JSON procesado de nuevo en el archivo.
+    """
+    with open(file_path, 'w', encoding='utf-8') as file:
+        json.dump(content, file, ensure_ascii=False, indent=4)
+        print(f"Contenido procesado guardado en {file_path}")
 
 def process_files_for_encoding():
     """
-    Procesar los archivos JSON en 'populate' para eliminar caracteres no UTF-8 y no alfabéticos.
-    Validaciones:
-        - Verificación de existencia de archivos.
-        - Verificación de contenido no vacío.
-        - Manejo de caracteres no válidos.
+    Procesar los archivos JSON en 'populate' para eliminar caracteres acentuados y especiales.
     """
     base_dir = os.path.join(os.path.dirname(__file__), 'populate')
     files = ['groups.json', 'members.json', 'posts.json']
-
-    combined_content = bytearray()
-    file_contents = {}
 
     for file_name in files:
         file_path = os.path.join(base_dir, file_name)
 
         try:
-            # Leer y combinar contenido de todos los archivos
-            content = read_json_file(file_path)
-            file_contents[file_name] = content
-            combined_content.extend(content)
+            # Leer, procesar y guardar contenido de cada archivo
+            content = read_and_process_json_file(file_path)
+            save_processed_json(file_path, content)
         except (FileNotFoundError, ValueError, IOError) as e:
             print(f"Error procesando {file_name}: {e}")
             sys.exit(1)
-
-    # Procesar el contenido combinado para limpiar caracteres
-    try:
-        fixed_combined_content = find_and_replace_non_utf8_characters(combined_content)
-    except Exception as e:
-        print(f"Error procesando caracteres en los archivos combinados: {e}")
-        sys.exit(1)
-
-    # Dividir y guardar el contenido limpio de nuevo en los archivos originales
-    start = 0
-    for file_name in files:
-        original_content = file_contents[file_name]
-        end = start + len(original_content)
-        fixed_content = fixed_combined_content[start:end]
-        start = end
-
-        output_path = os.path.join(base_dir, file_name)
-        try:
-            with open(output_path, 'wb') as output_file:
-                output_file.write(fixed_content)
-            print(f"Procesado {file_name} y guardado contenido limpio en {output_path}")
-        except IOError as e:
-            print(f"Error al escribir en el archivo {output_path}: {e}")
-            sys.exit(1)
-
 
 def import_data():
     """
