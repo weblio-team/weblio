@@ -184,3 +184,13 @@ class KanbanBoardForm(forms.ModelForm):
     class Meta:
         model = Post
         fields = ['title', 'status', 'author', 'category']
+
+class ToPublishPostForm(forms.ModelForm):
+    change_reason = forms.CharField(widget=forms.HiddenInput(), required=False)
+
+    class Meta:
+        model = Post
+        fields = ['status']
+        widgets = {
+            'status': forms.HiddenInput(),
+        }

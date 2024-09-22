@@ -7,7 +7,7 @@ from django.utils.decorators import method_decorator
 from django.views import View
 from .models import Category, Post
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView, TemplateView
-from .forms import CategoryForm, CategoryEditForm, KanbanBoardForm, MyPostAddBodyForm, MyPostAddInformationForm, MyPostEditInformationForm, MyPostEditBodyForm, ToEditPostInformationForm, ToEditPostBodyForm
+from .forms import CategoryForm, CategoryEditForm, KanbanBoardForm, MyPostAddBodyForm, MyPostAddInformationForm, MyPostEditInformationForm, MyPostEditBodyForm, ToEditPostInformationForm, ToEditPostBodyForm, ToPublishPostForm
 from django.db.models import Q
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib import messages
@@ -557,23 +557,9 @@ class ToPublishPostView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView)
     """
     model = Post
     template_name = 'publish/publish.html'
-    fields = '__all__'
     success_url = reverse_lazy('to-publish')
     permission_required = 'posts.can_publish'
-
-    def post(self, request, pk, *args, **kwargs):
-        """Actualiza el estado de la publicación según la entrada del usuario y la guarda."""
-        post = get_object_or_404(Post, pk=pk)
-        status = request.POST.get('status')
-        
-        if status == 'published':
-            messages.success(request, 'La publicación se ha publicado correctamente.')
-        elif status == 'to_edit':
-            messages.success(request, 'La publicación se ha enviado para edición.')
-
-        post.status = status
-        post.save()
-        return HttpResponseRedirect(self.success_url)
+    form_class = ToPublishPostForm
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -604,6 +590,47 @@ class ToPublishPostView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView)
         context['state_mapping'] = state_mapping
         return context
 
+    def post(self, request, *args, **kwargs):
+        """Actualiza el estado de la publicación según la entrada del usuario y la guarda."""
+        self.object = self.get_object()
+        post_data = request.POST.copy()
+
+        form = ToPublishPostForm(post_data, instance=self.object)
+
+        if form.is_valid():
+            post = form.save(commit=False)
+
+            # Obtener la razón de cambio y el estado
+            change_reason = post_data.get('change_reason', '')
+            status = post_data.get('status', '')
+
+            if post_data['status'] != self.object.status:
+                post.status = post_data['status']
+                post.change_reason = post_data.get('change_reason', 'Updated post')
+            else:
+                post.change_reason = post_data.get('change_reason', '')
+
+            post.save()
+
+            return redirect('to-publish')
+        else:
+            context = self.get_context_data(form=form)
+            return self.render_to_response(context)
+        
+    def form_valid(self, form):
+        """Valida el formulario y actualiza el estado de la publicación según la entrada del usuario."""
+        form = ToPublishPostForm(self.request.POST, instance=self.object)
+
+        self.object = form.save(commit=False)
+        change_reason = self.request.POST.get('change_reason', '')
+        status = self.request.POST.get('status', '')
+        if change_reason:
+            update_change_reason(self.object, change_reason)
+        if status:
+            self.object.status = status
+        self.object.save()
+        form.save()
+        return HttpResponseRedirect(self.get_success_url())
 
 # views for subscribers
 
