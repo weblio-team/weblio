@@ -14,7 +14,7 @@ DEBUG = False if 'DYNO' in os.environ else True
 
 ALLOWED_HOSTS = ['.blog', '.herokuapp.com', 'localhost', '127.0.0.1'] if not DEBUG else []
 
-SILENCED_SYSTEM_CHECKS = ['ckeditor.W001']
+SILENCED_SYSTEM_CHECKS = ['ckeditor.W001', 'templates.W003']
 
 # Application definition
 INSTALLED_APPS = [
