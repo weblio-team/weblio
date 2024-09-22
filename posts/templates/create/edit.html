@@ -144,7 +144,7 @@
                 </tr>
               </thead>
               <tbody>
-                {% for record in post_history_page %}
+                {% for record in post_history_with_reason_page %}
                 <tr>
                   <td>{{ record.history_date|date:"d M Y, H:i" }}</td>
                   <td>{{ record.history_user }}</td>
@@ -166,22 +166,22 @@
             <!-- Pagination Controls -->
             <nav aria-label="Page navigation">
               <ul class="pagination justify-content-center" data-bs-theme="dark">
-                {% if post_history_page.has_previous %}
+                {% if post_history_with_reason_page.has_previous %}
                 <li class="page-item">
-                  <a class="page-link" href="?page={{ post_history_page.previous_page_number }}#observaciones"
+                  <a class="page-link" href="?page_with_reason={{ post_history_with_reason_page.previous_page_number }}#observaciones"
                     aria-label="Previous">
                     <span aria-hidden="true">&laquo;</span>
                   </a>
                 </li>
                 {% endif %}
-                {% for num in post_history_page.paginator.page_range %}
+                {% for num in post_history_with_reason_page.paginator.page_range %}
                 <li class="page-item {% if post_history_page.number == num %}active{% endif %}">
-                  <a class="page-link" href="?page={{ num }}#observaciones">{{ num }}</a>
+                  <a class="page-link" href="?page_with_reason={{ num }}#observaciones">{{ num }}</a>
                 </li>
                 {% endfor %}
-                {% if post_history_page.has_next %}
+                {% if post_history_with_reason_page.has_next %}
                 <li class="page-item">
-                  <a class="page-link" href="?page={{ post_history_page.next_page_number }}#observaciones"
+                  <a class="page-link" href="?page_with_reason={{ post_history_with_reason_page.next_page_number }}#observaciones"
                     aria-label="Next">
                     <span aria-hidden="true">&raquo;</span>
                   </a>
