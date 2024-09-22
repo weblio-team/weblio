@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% block content %}
+{% load custom_filters %}
 <main role="main" class="container py-4">
   <form id="post-form" method="post">
     {% csrf_token %}
@@ -69,7 +70,7 @@
       <!-- Historial de versiones Tab -->
       <div class="tab-pane fade" id="historial" role="tabpanel" aria-labelledby="historial-tab">
         <div class="py-3">
-          <h1>Historial de versiones</h1>
+          <h2>Historial de versiones</h2>
           <table class="table table-dark table-hover">
             <thead>
               <tr>
@@ -130,81 +131,97 @@
       <!-- Observaciones de versiones Tab -->
       <div class="tab-pane fade" id="observaciones" role="tabpanel" aria-labelledby="observaciones-tab">
         <div class="container-fluid">
-          <h1>Observaciones de versiones</h1>
-          <table class="table table-dark table-hover">
-            <thead>
-              <tr>
-                <th>Fecha</th>
-                <th>Usuario</th>
-                <th>Razón del Cambio</th>
-              </tr>
+          <div class="py-3">
+            <h2>Observaciones de versiones</h2>
+            <table class="table table-dark table-hover">
+              <thead>
+                <tr>
+                  <th>Fecha</th>
+                  <th>Usuario</th>
+                  <th>Estado Anterior</th>
+                  <th>Estado Nuevo</th>
+                  <th>Razón del Cambio</th>
+                </tr>
               </thead>
               <tbody>
                 {% for record in post_history_page %}
                 <tr>
                   <td>{{ record.history_date|date:"d M Y, H:i" }}</td>
                   <td>{{ record.history_user }}</td>
+                  <td>
+                    {% if record.prev_record %}
+                    {{ state_mapping|dict_get:record.prev_record.status }}
+                    {% else %}
+                    Sin estado anterior
+                    {% endif %}
+                  </td>
+                  <td>
+                    {{ state_mapping|dict_get:record.status }}
+                  </td>
                   <td>{{ record.change_reason }}</td>
                 </tr>
                 {% endfor %}
               </tbody>
-              </table>
-          <!-- Pagination Controls -->
-          <nav aria-label="Page navigation">
-            <ul class="pagination justify-content-center" data-bs-theme="dark">
-              {% if post_history_page.has_previous %}
-              <li class="page-item">
-                <a class="page-link" href="?page={{ post_history_page.previous_page_number }}#observaciones"
-                  aria-label="Previous">
-                  <span aria-hidden="true">&laquo;</span>
-                </a>
-              </li>
-              {% endif %}
-              {% for num in post_history_page.paginator.page_range %}
-              <li class="page-item {% if post_history_page.number == num %}active{% endif %}">
-                <a class="page-link" href="?page={{ num }}#observaciones">{{ num }}</a>
-              </li>
-              {% endfor %}
-              {% if post_history_page.has_next %}
-              <li class="page-item">
-                <a class="page-link" href="?page={{ post_history_page.next_page_number }}#observaciones"
-                  aria-label="Next">
-                  <span aria-hidden="true">&raquo;</span>
-                </a>
-              </li>
-              {% endif %}
-            </ul>
-          </nav>
+            </table>
+            <!-- Pagination Controls -->
+            <nav aria-label="Page navigation">
+              <ul class="pagination justify-content-center" data-bs-theme="dark">
+                {% if post_history_page.has_previous %}
+                <li class="page-item">
+                  <a class="page-link" href="?page={{ post_history_page.previous_page_number }}#observaciones"
+                    aria-label="Previous">
+                    <span aria-hidden="true">&laquo;</span>
+                  </a>
+                </li>
+                {% endif %}
+                {% for num in post_history_page.paginator.page_range %}
+                <li class="page-item {% if post_history_page.number == num %}active{% endif %}">
+                  <a class="page-link" href="?page={{ num }}#observaciones">{{ num }}</a>
+                </li>
+                {% endfor %}
+                {% if post_history_page.has_next %}
+                <li class="page-item">
+                  <a class="page-link" href="?page={{ post_history_page.next_page_number }}#observaciones"
+                    aria-label="Next">
+                    <span aria-hidden="true">&raquo;</span>
+                  </a>
+                </li>
+                {% endif %}
+              </ul>
+            </nav>
+          </div>
         </div>
       </div>
-    {% else %}
-    <!-- Si el post no está en estado "draft" -->
-    <h1>{{ post.title }}</h1>
-    <blockquote class="blockquote">
-      <small>{{ post.summary }}</small>
-    </blockquote>
-    <hr>
-    <p>{{ post.body|safe }}</p>
-    <small>Autor: {{ post.author.first_name }} {{ post.author.last_name }}</small><br>
-    <small>Categoría: {{ post.category }}</small><br>
-    <small>Etiquetas: {{ post.keywords }}</small><br>
+      {% else %}
+      <!-- Si el post no está en estado "draft" -->
+      <h1>{{ post.title }}</h1>
+      <blockquote class="blockquote">
+        <small>{{ post.summary }}</small>
+      </blockquote>
+      <hr>
+      <p>{{ post.body|safe }}</p>
+      <small>Autor: {{ post.author.first_name }} {{ post.author.last_name }}</small><br>
+      <small>Categoría: {{ post.category }}</small><br>
+      <small>Etiquetas: {{ post.keywords }}</small><br>
 
-    {% if post.status == 'to_publish' %}
-    <small>Estado: A publicar</small><br>
-    {% elif post.status == 'to_edit' %}
-    <small>Estado: En edición</small><br>
-    {% endif %}
-    {% endif %}
+      {% if post.status == 'to_publish' %}
+      <small>Estado: A publicar</small><br>
+      {% elif post.status == 'to_edit' %}
+      <small>Estado: En edición</small><br>
+      {% endif %}
+      {% endif %}
 
-    <br>
-    <div class="d-flex justify-content-between">
-      <a href="{% url 'my-posts' %}" class="btn btn-secondary btn-light">Volver</a>
-      <div>
-        <button class="btn btn-success my-0" type="submit">Guardar</button>
-        <button type="button" class="btn btn-primary my-0" data-bs-toggle="modal" data-bs-target="#changeReasonModal">Mandar a edición</button>
-        <button type="button" class="btn btn-danger my-0" data-bs-toggle="modal" data-bs-target="#deleteModal">Eliminar</button>
+      <br>
+      <div class="d-flex justify-content-between">
+        <a href="{% url 'my-posts' %}" class="btn btn-secondary btn-light">Volver</a>
+        <div>
+          <button class="btn btn-success my-0" type="submit">Guardar</button>
+          <button type="button" class="btn btn-primary my-0" data-bs-toggle="modal"
+            data-bs-target="#changeReasonModal">Mandar a edición</button>
+          <button type="button" class="btn btn-danger my-0" data-bs-toggle="modal"
+            data-bs-target="#deleteModal">Eliminar</button>
+        </div>
       </div>
-    </div>
   </form>
   <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
     <div class="modal-dialog">
@@ -228,7 +245,8 @@
   </div>
 
   <!-- Modal for Change Reason -->
-  <div class="modal fade" id="changeReasonModal" tabindex="-1" role="dialog" aria-labelledby="changeReasonLabel" aria-hidden="true">
+  <div class="modal fade" id="changeReasonModal" tabindex="-1" role="dialog" aria-labelledby="changeReasonLabel"
+    aria-hidden="true">
     <div class="modal-dialog" role="document">
       <div class="modal-content bg-dark text-white">
         <div class="modal-header">
@@ -272,7 +290,7 @@
     });
 
     // Handle the change reason modal
-    document.getElementById('submit-change-reason').addEventListener('click', function() {
+    document.getElementById('submit-change-reason').addEventListener('click', function () {
       var reason = document.getElementById('changeReasonInput').value;
       if (reason) {
         var changeReasonInput = document.createElement('input');

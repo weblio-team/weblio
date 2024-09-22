@@ -121,6 +121,8 @@ class MyPostEditBodyForm(forms.ModelForm):
         
 
 class ToEditPostInformationForm(forms.ModelForm):
+    change_reason = forms.CharField(widget=forms.HiddenInput(), required=False)
+    
     class Meta:
         model = Post
         fields = ['title', 'title_tag', 'summary', 'category', 'keywords', 'status']

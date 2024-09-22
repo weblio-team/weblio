@@ -15,6 +15,16 @@ from django.utils import timezone
 from simple_history.utils import update_change_reason
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.core.exceptions import PermissionDenied
+from simple_history.utils import update_change_reason
+
+
+def update_change_reason(instance, reason):
+    """
+    Actualiza la razón de cambio para una instancia de modelo con historial.
+    """
+    if hasattr(instance, 'history'):
+        instance.history.last().change_reason = reason
+        instance.history.last().save()
 
 # views for category administrators
 
@@ -195,6 +205,15 @@ class MyPostEditView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
         context = super().get_context_data(**kwargs)
         post = self.get_object()
 
+        # Diccionario de mapeo para traducir y formatear los estados
+        state_mapping = {
+            'draft': 'Borrador',
+            'to_edit': 'A editar',
+            'to_publish': 'A publicar',
+            'published': 'Publicado',
+            'inactive': 'Inactivo'
+        }
+
         # Order version history by history_date in descending order
         post_history = post.history.order_by('-history_date')
 
@@ -218,6 +237,8 @@ class MyPostEditView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
             context['information_form'] = MyPostEditInformationForm(instance=self.object)
             context['body_form'] = MyPostEditBodyForm(instance=self.object)
 
+        context['state_mapping'] = state_mapping
+        
         return context
 
     def post(self, request, *args, **kwargs):
@@ -255,7 +276,7 @@ class MyPostEditView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
                 post.status = post_data['status']
                 post.change_reason = post_data.get('change_reason', 'Updated post')
             else:
-                post.change_reason = post_data.get('change_reason', None)
+                post.change_reason = post_data.get('change_reason', '')
 
             post.save()
 
@@ -392,10 +413,16 @@ class ToEditPostView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        post = self.get_object()
+        post_history = self.object.history.all()
 
-        # Order version history by history_date in descending order
-        post_history = post.history.order_by('-history_date')
+        # Diccionario de mapeo para traducir y formatear los estados
+        state_mapping = {
+            'draft': 'Borrador',
+            'to_edit': 'A editar',
+            'to_publish': 'A publicar',
+            'published': 'Publicado',
+            'inactive': 'Inactivo'
+        }
 
         # Set up pagination (e.g., 5 items per page)
         paginator = Paginator(post_history, 5)  # 5 versions per page
@@ -416,6 +443,9 @@ class ToEditPostView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
         else:
             context['information_form'] = ToEditPostInformationForm(instance=self.object)
             context['body_form'] = ToEditPostBodyForm(instance=self.object)
+
+
+        context['state_mapping'] = state_mapping
 
         return context
 
@@ -447,9 +477,21 @@ class ToEditPostView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
 
         if information_form.is_valid() and body_form.is_valid():
             post = information_form.save(commit=False)
-            post = body_form.save(commit=False)
+            body_form.save(commit=False)
 
-            post.save()  # Save the post once
+            # Obtener la razón de cambio y el estado
+            change_reason = post_data.get('change_reason', '')
+            status = post_data.get('status', '')
+
+            # Check if the status has changed
+            if post_data['status'] != self.object.status:
+                post.status = post_data['status']
+                post.change_reason = post_data.get('change_reason', 'Updated post')
+            else:
+                post.change_reason = post_data.get('change_reason', '')
+
+            post.save()
+
             return redirect('to-edit')
         else:
             context = self.get_context_data()
@@ -459,12 +501,21 @@ class ToEditPostView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
         
     def form_valid(self, form):
         """Valida el formulario y actualiza el estado de la publicación según la entrada del usuario."""
-        form.instance.status = self.request.POST.get('status')
-        if form.instance.status == 'to_publish':
-            messages.success(self.request, 'La publicación se ha enviado para publicación.')
-        elif form.instance.status == 'draft':
-            messages.success(self.request, 'La publicación se ha guardado como borrador.')
-        return super().form_valid(form)
+        information_form = ToEditPostInformationForm(self.request.POST, instance=self.object)
+        body_form = ToEditPostBodyForm(self.request.POST, instance=self.object)
+        
+        self.object = information_form.save(commit=False)
+        body_form.save(commit=False)
+        change_reason = self.request.POST.get('change_reason', '')
+        status = self.request.POST.get('status', '')
+        if change_reason:
+            update_change_reason(self.object, change_reason)
+        if status:
+            self.object.status = status
+        self.object.save()
+        body_form.save()
+        return HttpResponseRedirect(self.get_success_url())
+    
 
 
 # views for publishers
@@ -523,6 +574,35 @@ class ToPublishPostView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView)
         post.status = status
         post.save()
         return HttpResponseRedirect(self.success_url)
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        post = self.get_object()
+        post_history = post.history.order_by('-history_date')
+
+        # Set up pagination (e.g., 5 items per page)
+        paginator = Paginator(post_history, 5)  # 5 versions per page
+        page = self.request.GET.get('page')
+
+        try:
+            post_history_page = paginator.page(page)
+        except PageNotAnInteger:
+            post_history_page = paginator.page(1)
+        except EmptyPage:
+            post_history_page = paginator.page(paginator.num_pages)
+
+        # Diccionario de mapeo para traducir y formatear los estados
+        state_mapping = {
+            'draft': 'Borrador',
+            'to_edit': 'A editar',
+            'to_publish': 'A publicar',
+            'published': 'Publicado',
+            'inactive' : 'Inactivo'
+        }
+
+        context['post_history_page'] = post_history_page
+        context['state_mapping'] = state_mapping
+        return context
 
 
 # views for subscribers
