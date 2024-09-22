@@ -10,6 +10,10 @@ from django.urls import reverse
 from posts.models import Category
 from django.http import HttpResponseNotAllowed
 from django.contrib import messages
+import requests
+from django.conf import settings
+from django.views.generic import TemplateView
+from posts.models import Post
 
 class CustomImageUploadView(View):
     """
@@ -200,3 +204,226 @@ class PaymentCancelView(View):
 
         # Redirigir al usuario a la página de la categoría correspondiente
         return redirect(category.get_absolute_url())
+
+class DashboardClapsPostsView(TemplateView):
+    """
+    Vista del reporte de views de los articulos.
+    """
+    template_name = 'dashboard/claps.html'
+    
+    def get_context_data(self, **kwargs):
+        """Agrega datos adicionales al contexto de la plantilla."""
+        context = super().get_context_data(**kwargs)
+        
+        # Adding existing context data
+        context['LYKET_API_KEY'] = settings.LYKET_API_KEY
+        context['DEBUG'] = settings.DEBUG
+
+        # API Call to Lyket
+        url = 'https://api.lyket.dev/v1/rank/clap-buttons?sort=asc&limit=100'
+        headers = {
+            'accept': 'application/json',
+            'Authorization': f'Bearer {settings.LYKET_API_KEY}'
+        }
+
+        try:
+            response = requests.get(url, headers=headers)
+            if response.status_code == 200:
+                # Handle 200 response format
+                clap_data = response.json()  # Parse the JSON response
+                enriched_clap_data = []
+
+                if isinstance(clap_data, list) and 'data' in clap_data[0]:
+                    # For 200 status code, process each item
+                    for item in clap_data:
+                        clap_button = {'id': item['data']['id'], 'total_claps': item['data']['attributes']['total_claps']}
+                        
+                        # Fetch the related Post by id
+                        try:
+                            post = Post.objects.get(id=clap_button['id'])
+                            clap_button['title'] = post.title  # Post title
+                            clap_button['author'] = post.author  # Post author
+                            clap_button['category'] = post.category  # Post category
+                        except Post.DoesNotExist:
+                            clap_button['title'] = 'Unknown Title'
+                            clap_button['author'] = 'Unknown Author'
+                            clap_button['category'] = 'Unknown Category'  # Default if post doesn't exist
+                        
+                        enriched_clap_data.append(clap_button)
+
+                    context['clap_data'] = enriched_clap_data  # Pass enriched data to context
+                else:
+                    context['clap_data'] = []  # No valid data found
+            elif response.status_code == 201:
+                # Handle 201 response format (array with data)
+                clap_data = response.json()
+                enriched_clap_data = []
+
+                for item in clap_data['data']:
+                    clap_button = {'id': item['id'], 'total_claps': item['attributes']['total_claps']}
+                    
+                    # Fetch the related Post by id
+                    try:
+                        post = Post.objects.get(id=clap_button['id'])
+                        clap_button['title'] = post.title  # Post title
+                        clap_button['author'] = post.author  # Post author
+                        clap_button['category'] = post.category  # Post category
+                    except Post.DoesNotExist:
+                        clap_button['title'] = 'Unknown Title'
+                        clap_button['author'] = 'Unknown Author'
+                        clap_button['category'] = 'Unknown Category'
+                    
+                    enriched_clap_data.append(clap_button)
+
+                context['clap_data'] = enriched_clap_data  # Pass enriched data to context
+            else:
+                context['clap_data'] = []  # Empty list if there is an error
+                context['raw_api_response'] = f"Error: {response.status_code}"
+        except requests.exceptions.RequestException as e:
+            context['clap_data'] = []  # Empty list in case of exception
+            context['raw_api_response'] = f"Request error: {e}"
+        
+        return context
+
+class DashboardUpdownsPostsView(TemplateView):
+    """
+    Vista del reporte de updown de los artículos.
+    """
+    template_name = 'dashboard/updowns.html'
+    
+    def get_context_data(self, **kwargs):
+        """Agrega datos adicionales al contexto de la plantilla."""
+        context = super().get_context_data(**kwargs)
+        
+        # Adding existing context data
+        context['LYKET_API_KEY'] = settings.LYKET_API_KEY
+        context['DEBUG'] = settings.DEBUG
+
+        # API Call to Lyket
+        url = 'https://api.lyket.dev/v1/rank/updown-buttons?sort=asc&limit=100'
+        headers = {
+            'accept': 'application/json',
+            'Authorization': f'Bearer {settings.LYKET_API_KEY}'
+        }
+
+        try:
+            response = requests.get(url, headers=headers)
+            if response.status_code == 200:
+                updown_data = response.json()  # Parse the JSON response
+                enriched_updown_data = []
+
+                if isinstance(updown_data, list) and 'data' in updown_data[0]:
+                    # Process each updown button data
+                    for item in updown_data:
+                        updown_button = {
+                            'id': item['data']['id'],
+                            'total_score': item['data']['attributes'].get('total_score', 0)
+                        }
+
+                        # Fetch the related Post by id
+                        try:
+                            post = Post.objects.get(id=updown_button['id'])
+                            updown_button['title'] = post.title  # Post title
+                            updown_button['author'] = post.author  # Post author
+                            updown_button['category'] = post.category  # Post category
+                        except Post.DoesNotExist:
+                            updown_button['title'] = 'Unknown Title'
+                            updown_button['author'] = 'Unknown Author'
+                            updown_button['category'] = 'Unknown Category'
+                        
+                        enriched_updown_data.append(updown_button)
+
+                    context['updown_data'] = enriched_updown_data
+                else:
+                    context['updown_data'] = []
+            elif response.status_code == 201:
+                updown_data = response.json()
+                enriched_updown_data = []
+
+                for item in updown_data['data']:
+                    updown_button = {
+                        'id': item['id'],
+                        'total_score': item['attributes'].get('total_score', 0)
+                    }
+
+                    # Fetch the related Post by id
+                    try:
+                        post = Post.objects.get(id=updown_button['id'])
+                        updown_button['title'] = post.title  # Post title
+                        updown_button['author'] = post.author  # Post author
+                        updown_button['category'] = post.category  # Post category
+                    except Post.DoesNotExist:
+                        updown_button['title'] = 'Unknown Title'
+                        updown_button['author'] = 'Unknown Author'
+                        updown_button['category'] = 'Unknown Category'
+                    
+                    enriched_updown_data.append(updown_button)
+
+                context['updown_data'] = enriched_updown_data
+            else:
+                context['updown_data'] = []
+                context['raw_api_response'] = f"Error: {response.status_code}"
+        except requests.exceptions.RequestException as e:
+            context['updown_data'] = []
+            context['raw_api_response'] = f"Request error: {e}"
+        
+        return context
+    
+class DashboardRatePostsView(TemplateView):
+    """
+    Vista del reporte de botones de calificación de los artículos (solo rate_button).
+    """
+    template_name = 'dashboard/rates.html'
+    
+    def get_context_data(self, **kwargs):
+        """Agrega datos adicionales al contexto de la plantilla."""
+        context = super().get_context_data(**kwargs)
+        
+        # Adding existing context data
+        context['LYKET_API_KEY'] = settings.LYKET_API_KEY
+        context['DEBUG'] = settings.DEBUG
+
+        # API Call to Lyket for rate buttons (filtered by "type": "rate_button")
+        url = 'https://api.lyket.dev/v1/rank/buttons/blog?sort=desc&limit=100'
+        headers = {
+            'accept': 'application/json',
+            'Authorization': f'Bearer {settings.LYKET_API_KEY}'
+        }
+
+        try:
+            response = requests.get(url, headers=headers)
+            if response.status_code in [200, 201]:
+                rate_data = response.json()  # Parse the JSON response
+                enriched_rate_data = []
+
+                # Process each button and filter for only "rate_button" types
+                for item in rate_data['data']['attributes']['responses']:
+                    if item['data']['type'] == 'rate_button':
+                        rate_button = {
+                            'id': item['data']['id'],
+                            'average_rating': item['data']['attributes'].get('average_rating', 0),
+                            'total_votes': item['data']['attributes'].get('total_votes', 0)
+                        }
+
+                        # Fetch the related Post by id
+                        try:
+                            post = Post.objects.get(id=rate_button['id'])
+                            rate_button['title'] = post.title  # Post title
+                            rate_button['author'] = post.author  # Post author
+                            rate_button['category'] = post.category  # Post category
+                        except Post.DoesNotExist:
+                            rate_button['title'] = 'Unknown Title'
+                            rate_button['author'] = 'Unknown Author'
+                            rate_button['category'] = 'Unknown Category'
+                        
+                        enriched_rate_data.append(rate_button)
+
+                context['rate_data'] = enriched_rate_data
+            else:
+                context['rate_data'] = []  # Empty list if there is an error
+                context['raw_api_response'] = f"Error: {response.status_code}"
+        except requests.exceptions.RequestException as e:
+            context['rate_data'] = []  # Empty list in case of exception
+            context['raw_api_response'] = f"Request error: {e}"
+        
+        return context

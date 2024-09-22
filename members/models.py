@@ -49,7 +49,7 @@ class Member(AbstractBaseUser, PermissionsMixin):
         verbose_name_plural = _('members')
 
         permissions = [
-        
+            ('view_dashboard', 'Can view dashboard'),
         ]
 
     def __str__(self):

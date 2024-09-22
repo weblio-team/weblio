@@ -76,6 +76,27 @@
                         </ul>
                     </li>
                 {% endif %}
+                <!-- Gestión de usuarios -->
+                {% if perms.auth.view_dashboard %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            Gestión de reportes
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{% url 'posts_claps' %}">Views por articulo</a></li>
+                            <li><a class="dropdown-item" href="{% url 'posts_updowns' %}">Likes/Dislikes por articulo</a></li>
+                            <li><a class="dropdown-item" href="{% url 'posts_rates' %}">Estrellas por articulo</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#">Views por categoria</a></li>
+                            <li><a class="dropdown-item" href="#">Likes/Dislikes por categoria</a></li>
+                            <li><a class="dropdown-item" href="#">Estrellas por categoria</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#">Views por usuario</a></li>
+                            <li><a class="dropdown-item" href="#">Likes/Dislikes por usuario</a></li>
+                            <li><a class="dropdown-item" href="#">Estrellas por usuario</a></li>
+                        </ul>
+                    </li>
+                {% endif %}
             </ul>
 
             <!-- Barra de búsqueda -->

@@ -50,7 +50,11 @@ ROOT_URLCONF = 'weblio.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [
+                os.path.join(BASE_DIR, 'services', 'templates'),
+                os.path.join(BASE_DIR, 'posts', 'templates'),
+                os.path.join(BASE_DIR, 'members', 'templates'),
+            ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
