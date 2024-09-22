@@ -1,8 +1,10 @@
 {% extends "base.html" %}
 {% block content %}
+{% load custom_filters %}
 <main role="main" class="container py-4">
   <h1>Editar artículo</h1>
 
+  <!-- Tabs de Bootstrap -->
   <ul class="nav nav-tabs" id="myTab" role="tablist">
     <li class="nav-item">
       <a class="nav-link active" id="informacion-tab" data-bs-toggle="tab" href="#informacion" role="tab" aria-controls="informacion" aria-selected="true">Información</a>
@@ -14,7 +16,7 @@
       <a class="nav-link" id="historial-tab" data-bs-toggle="tab" href="#historial" role="tab" aria-controls="historial" aria-selected="false">Historial de versiones</a>
     </li>
     <li class="nav-item">
-      <a class="nav-link" id="observaciones-tab" data-bs-toggle="tab" href="#observaciones" role="tab" aria-controls="observaciones" aria-selected="false">Observaciones de versiones</a>
+      <a class="nav-link" id="observaciones-tab" data-bs-toggle="tab" href="#observaciones" role="tab" aria-controls="observaciones" aria-selected="false">Observaciones</a>
     </li>
   </ul>
 
@@ -22,7 +24,7 @@
   <div class="tab-content" id="myTabContent">
     <!-- Información Tab -->
     <div class="tab-pane fade show active" id="informacion" role="tabpanel" aria-labelledby="informacion-tab">
-      <form method="post">
+      <form method="post" id="post-form">
         {% csrf_token %}
         <div class="py-3">
           <div class="form-group">
@@ -57,7 +59,7 @@
     <!-- Historial de versiones Tab -->
     <div class="tab-pane fade" id="historial" role="tabpanel" aria-labelledby="historial-tab">
       <div class="py-3">
-        <h1>Historial de versiones</h1>
+        <h2>Historial de versiones</h2>
         <table class="table table-dark table-hover">
           <thead>
             <tr>
@@ -117,8 +119,66 @@
 
     <!-- Observaciones de versiones Tab -->
     <div class="tab-pane fade" id="observaciones" role="tabpanel" aria-labelledby="observaciones-tab">
-      <div class="py-3">
-        <h1>Observaciones de versiones</h1>
+      <div class="container-fluid">
+        <div class="py-3">
+          <h2>Observaciones de cambios de estado</h2>
+          <table class="table table-dark table-hover">
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Usuario</th>
+                <th>Estado Anterior</th>
+                <th>Estado Nuevo</th>
+                <th>Observación</th>
+              </tr>
+              </thead>
+              <tbody>
+                {% for record in post_history_page %}
+                <tr>
+                  <td>{{ record.history_date|date:"d M Y, H:i" }}</td>
+                  <td>{{ record.history_user }}</td>
+                  <td>
+                      {% if record.prev_record %}
+                          {{ state_mapping|dict_get:record.prev_record.status }}
+                      {% else %}
+                          Sin estado anterior
+                      {% endif %}
+                  </td>
+                  <td>
+                      {{ state_mapping|dict_get:record.status }}
+                  </td>
+                  <td>{{ record.change_reason }}</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+              </table>
+          <!-- Pagination Controls -->
+          <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-center" data-bs-theme="dark">
+              {% if post_history_page.has_previous %}
+              <li class="page-item">
+                <a class="page-link" href="?page={{ post_history_page.previous_page_number }}#observaciones"
+                  aria-label="Previous">
+                  <span aria-hidden="true">&laquo;</span>
+                </a>
+              </li>
+              {% endif %}
+              {% for num in post_history_page.paginator.page_range %}
+              <li class="page-item {% if post_history_page.number == num %}active{% endif %}">
+                <a class="page-link" href="?page={{ num }}#observaciones">{{ num }}</a>
+              </li>
+              {% endfor %}
+              {% if post_history_page.has_next %}
+              <li class="page-item">
+                <a class="page-link" href="?page={{ post_history_page.next_page_number }}#observaciones"
+                  aria-label="Next">
+                  <span aria-hidden="true">&raquo;</span>
+                </a>
+              </li>
+              {% endif %}
+            </ul>
+          </nav>
+        </div>
       </div>
     </div>
   </div>
@@ -128,36 +188,124 @@
     <a href="{% url 'to-edit' %}" class="btn btn-secondary btn-light">Volver</a>
     <div>
       <button class="btn btn-success my-0" type="submit">Guardar</button>
-      <button class="btn btn-secondary" type="submit" name="status" value="draft">Mandar a borrador</button>
-      <button class="btn btn-primary" type="submit" name="status" value="to_publish">Mandar a publicar</button>
+      <button class="btn btn-secondary" type="button" data-bs-toggle="modal" data-bs-target="#changeReasonDraftModal">Mandar a borrador</button>
+      <button class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#changeReasonPublishModal">Mandar a publicar</button>
     </div>
   </div>
   </form>
+
+  <!-- Modal for Change Reason Draft  -->
+  <div class="modal fade" id="changeReasonDraftModal" tabindex="-1" role="dialog" aria-labelledby="changeReasonDraftLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content bg-dark text-white">
+        <div class="modal-header">
+          <h5 class="modal-title" id="changeReasonDraftLabel">Observación</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <label for="changeReasonDraftInput">Agrega una observación para el cambio de estado del artículo:</label>
+          <input type="text" id="changeReasonDraftInput" class="form-control bg-dark text-white mt-2">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-primary" id="submit-change-reason-draft">Confirmar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal for Change Reason Publish -->
+  <div class="modal fade" id="changeReasonPublishModal" tabindex="-1" role="dialog" aria-labelledby="changeReasonPublishLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content bg-dark text-white">
+        <div class="modal-header">
+          <h5 class="modal-title" id="changeReasonPublishLabel">Observación</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <label for="changeReasonPublishInput">Agrega una observación para el cambio de estado del artículo:</label>
+          <input type="text" id="changeReasonPublishInput" class="form-control bg-dark text-white mt-2">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-primary" id="submit-change-reason-publish">Confirmar</button>
+        </div>
+      </div>
+    </div>
+  </div>
 </main>
 
 <!-- Incluir JavaScript de Bootstrap -->
 <script>
-  document.addEventListener("DOMContentLoaded", function () {
-    // Check if there's a hash in the URL (e.g., #historial)
-    var hash = window.location.hash;
+  document.addEventListener('DOMContentLoaded', function() {
+    // Handle the change reason modal for sending a post to draft
+    document.getElementById('submit-change-reason-draft').addEventListener('click', function() {
+      var reason = document.getElementById('changeReasonDraftInput').value;
+      if (reason) {
+        var changeReasonDraftInput = document.createElement('input');
+        changeReasonDraftInput.type = 'hidden';
+        changeReasonDraftInput.name = 'change_reason';
+        changeReasonDraftInput.value = reason;
+        document.getElementById('post-form').appendChild(changeReasonDraftInput);
 
-    if (hash) {
-      // Find the tab with that hash and show it
-      var activeTab = document.querySelector('a[href="' + hash + '"]');
-      if (activeTab) {
-        var tab = new bootstrap.Tab(activeTab);
+        var statusDraftInput = document.createElement('input');
+        statusDraftInput.type = 'hidden';
+        statusDraftInput.name = 'status';
+        statusDraftInput.value = 'draft';
+        document.getElementById('post-form').appendChild(statusDraftInput);
+
+        document.getElementById('post-form').submit(); // Submit the form after reason is filled
+        $('#changeReasonDraftModal').modal('hide'); // Hide the modal
+      } else {
+        alert('Please provide a reason for changing the status.');
+      }
+    });
+
+    // Handle the change reason modal for sending a post to to-publish
+    document.getElementById('submit-change-reason-publish').addEventListener('click', function() {
+      var reason = document.getElementById('changeReasonPublishInput').value;
+      if (reason) {
+        var changeReasonPublishInput = document.createElement('input');
+        changeReasonPublishInput.type = 'hidden';
+        changeReasonPublishInput.name = 'change_reason';
+        changeReasonPublishInput.value = reason;
+        document.getElementById('post-form').appendChild(changeReasonPublishInput);
+
+        var statusPublishInput = document.createElement('input');
+        statusPublishInput.type = 'hidden';
+        statusPublishInput.name = 'status';
+        statusPublishInput.value = 'to_publish';
+        document.getElementById('post-form').appendChild(statusPublishInput);
+
+        document.getElementById('post-form').submit(); // Submit the form after reason is filled
+        $('#changeReasonPublishModal').modal('hide'); // Hide the modal
+      } else {
+        alert('Please provide a reason for changing the status.');
+      }
+    });
+  });
+</script>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    var triggerTabList = [].slice.call(document.querySelectorAll('#myTab a'))
+    triggerTabList.forEach(function (triggerEl) {
+      var tabTrigger = new bootstrap.Tab(triggerEl)
+
+      triggerEl.addEventListener('click', function (event) {
+        event.preventDefault()
+        tabTrigger.show()
+      })
+    });
+
+    // Activar la pestaña correspondiente si el hash está presente en la URL
+    if (window.location.hash) {
+      var hash = window.location.hash;
+      var tabEl = document.querySelector(hash + '-tab');
+      if (tabEl) {
+        var tab = new bootstrap.Tab(tabEl);
         tab.show();
       }
     }
-
-    // Add event listeners to save the clicked tab in the URL hash
-    var tabLinks = document.querySelectorAll('a[data-bs-toggle="tab"]');
-    tabLinks.forEach(function (tabLink) {
-      tabLink.addEventListener('click', function (event) {
-        // Update the URL hash when a tab is clicked
-        window.location.hash = event.target.getAttribute('href');
-      });
-    });
   });
 </script>
 {% endblock %}

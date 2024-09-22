@@ -169,6 +169,8 @@ class MyPostEditInformationForm(forms.ModelForm):
     Meta : class
         Clase interna que define el modelo, los campos, las etiquetas y los widgets del formulario.
     """
+    change_reason = forms.CharField(widget=forms.HiddenInput(), required=False)
+
     class Meta:
         """
         Metadatos del formulario.
@@ -185,12 +187,11 @@ class MyPostEditInformationForm(forms.ModelForm):
             Widgets personalizados para los campos del formulario.
         """
         model = Post
-        fields = ['title', 'title_tag', 'summary', 'body', 'category', 'status', 'keywords', 'thumbnail', 'publish_start_date', 'publish_end_date']
+        fields = ['title', 'title_tag', 'summary', 'category', 'status', 'keywords', 'thumbnail', 'publish_start_date', 'publish_end_date']
         labels = {
             'title': _('Título'),
             'title_tag': _('Etiqueta del Título'),
             'summary': _('Resumen'),
-            'body': _('Cuerpo'),
             'category': _('Categoría'),
             'author': _('Autor'),
             'status': _('Estado'),
@@ -283,6 +284,8 @@ class ToEditPostInformationForm(forms.ModelForm):
     Meta : class
         Clase interna que define el modelo, los campos y los widgets del formulario.
     """
+    change_reason = forms.CharField(widget=forms.HiddenInput(), required=False)
+    
     class Meta:
         """
         Metadatos del formulario.
@@ -482,3 +485,13 @@ class KanbanBoardForm(forms.ModelForm):
         """
         model = Post
         fields = ['title', 'status', 'author', 'category']
+
+class ToPublishPostForm(forms.ModelForm):
+    change_reason = forms.CharField(widget=forms.HiddenInput(), required=False)
+
+    class Meta:
+        model = Post
+        fields = ['status']
+        widgets = {
+            'status': forms.HiddenInput(),
+        }

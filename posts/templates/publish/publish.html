@@ -1,71 +1,187 @@
 {% extends "base.html" %}
 {% block title %}{{ post.title_tag }}{% endblock %}
 {% block content %}
+{% load custom_filters %}
 <main role="main" class="container py-4">
-	<h1>Publicar artículo</h1>
+    <h1>Publicar artículo</h1>
 
-	<!-- Tabs de Bootstrap -->
-	<ul class="nav nav-tabs" id="myTab" role="tablist">
-		<li class="nav-item">
-			<a class="nav-link active" id="vista-previa-tab" data-bs-toggle="tab" href="#vista-previa" role="tab"
-				aria-controls="vista-previa" aria-selected="true">Vista previa</a>
-		</li>
-		<li class="nav-item">
-			<a class="nav-link" id="observaciones-tab" data-bs-toggle="tab" href="#observaciones" role="tab"
-				aria-controls="observaciones" aria-selected="false">Observaciones de versiones</a>
-		</li>
-	</ul>
+    <!-- Tabs de Bootstrap -->
+    <ul class="nav nav-tabs" id="myTab" role="tablist">
+        <li class="nav-item">
+            <a class="nav-link active" id="vista-previa-tab" data-bs-toggle="tab" href="#vista-previa" role="tab"
+                aria-controls="vista-previa" aria-selected="true">Vista previa</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" id="observaciones-tab" data-bs-toggle="tab" href="#observaciones" role="tab"
+                aria-controls="observaciones" aria-selected="false">Observaciones</a>
+        </li>
+    </ul>
 
-	<!-- Contenido de las Tabs -->
-	<div class="tab-content" id="myTabContent">
-		<!-- Vista previa Tab -->
-		<div class="tab-pane fade show active" id="vista-previa" role="tabpanel" aria-labelledby="vista-previa-tab">
-			<div class="py-3">
-				<h1>{{ post.title }}</h1>
-				<blockquote class="blockquote">
-					<small>{{ post.summary }}</small>
-				</blockquote>
-				<hr>
-				<p>{{ post.body|safe }}</p>
-				<small>Autor: {{ post.author.first_name }} {{ post.author.last_name }}</small><br>
-				<small>Categoría: {{ post.category }}</small><br>
-				<small>Etiquetas: {{ post.keywords }}</small><br>
+    <!-- Contenido de las Tabs -->
+    <div class="tab-content" id="myTabContent">
+        <!-- Vista previa Tab -->
+        <div class="tab-pane fade show active" id="vista-previa" role="tabpanel" aria-labelledby="vista-previa-tab">
+            <div class="py-3">
+                <h1>{{ post.title }}</h1>
+                <blockquote class="blockquote">
+                    <small>{{ post.summary }}</small>
+                </blockquote>
+                <hr>
+                <p>{{ post.body|safe }}</p>
+                <small>Autor: {{ post.author.first_name }} {{ post.author.last_name }}</small><br>
+                <small>Categoría: {{ post.category }}</small><br>
+                <small>Etiquetas: {{ post.keywords }}</small><br>
 
-				<div class="d-flex justify-content-between py-4">
+                <div class="d-flex justify-content-between py-4">
                     <a href="{% url 'to-publish' %}" class="btn btn-light">Volver</a>
                     <div>
-                        <form method="post" action="{% url 'publish-a-post' post.pk %}" class="d-inline">
+                        <form method="post" action="{% url 'publish-a-post' post.pk %}" id="post-form" class="d-inline">
                             {% csrf_token %}
-                            <button type="submit" name="status" value="to_edit" class="btn btn-secondary">Mandar a edición</button>
-                            <button type="submit" name="status" value="published" class="btn btn-primary">Publicar</button>
+                            <button type="button" class="btn btn-secondary my-0" data-bs-toggle="modal"
+                                data-bs-target="#changeReasonEditModal">Mandar a edición</button>
+                            <button type="submit" name="status" value="published"
+                            class="btn btn-primary">Publicar</button>
                         </form>
                     </div>
                 </div>
-			</div>
-		</div>
+            </div>
+        </div>
 
-		<!-- Observaciones de versiones Tab -->
-		<div class="tab-pane fade" id="observaciones" role="tabpanel" aria-labelledby="observaciones-tab">
-			<div class="py-3">
-				<h1>Observaciones de versiones</h1>
-				<!-- Aquí podrías agregar el contenido específico sobre observaciones -->
-			</div>
-		</div>
-	</div>
+        <!-- Observaciones de versiones Tab -->
+        <div class="tab-pane fade" id="observaciones" role="tabpanel" aria-labelledby="observaciones-tab">
+            <div class="container-fluid">
+                <div class="py-3">
+                    <h2>Observaciones de cambios de estado</h2>
+                    <table class="table table-dark table-hover">
+                        <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Usuario</th>
+                                <th>Estado Anterior</th>
+                                <th>Estado Nuevo</th>
+                                <th>Observación</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for record in post_history_page %}
+                            <tr>
+                                <td>{{ record.history_date|date:"d M Y, H:i" }}</td>
+                                <td>{{ record.history_user }}</td>
+                                <td>
+                                    {% if record.prev_record %}
+                                    {{ state_mapping|dict_get:record.prev_record.status }}
+                                    {% else %}
+                                    Sin estado anterior
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {{ state_mapping|dict_get:record.status }}
+                                </td>
+                                <td>{{ record.change_reason }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    <!-- Pagination Controls -->
+                    <nav aria-label="Page navigation">
+                        <ul class="pagination justify-content-center" data-bs-theme="dark">
+                            {% if post_history_page.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link"
+                                    href="?page={{ post_history_page.previous_page_number }}#observaciones"
+                                    aria-label="Previous">
+                                    <span aria-hidden="true">&laquo;</span>
+                                </a>
+                            </li>
+                            {% endif %}
+                            {% for num in post_history_page.paginator.page_range %}
+                            <li class="page-item {% if post_history_page.number == num %}active{% endif %}">
+                                <a class="page-link" href="?page={{ num }}#observaciones">{{ num }}</a>
+                            </li>
+                            {% endfor %}
+                            {% if post_history_page.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ post_history_page.next_page_number }}#observaciones"
+                                    aria-label="Next">
+                                    <span aria-hidden="true">&raquo;</span>
+                                </a>
+                            </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Modal for Change Reason Edit -->
+    <div class="modal fade" id="changeReasonEditModal" tabindex="-1" role="dialog" aria-labelledby="changeReasonEditLabel"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content bg-dark text-white">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="changeReasonEditLabel">Observación</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <label for="changeReasonEditInput">Agrega una observación para el cambio de estado del artículo:</label>
+                    <input type="text" id="changeReasonEditInput" class="form-control bg-dark text-white mt-2">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="submit-change-reason-edit">Confirmar</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </main>
 
 <!-- Incluir JavaScript de Bootstrap -->
 <script>
-	document.addEventListener("DOMContentLoaded", function () {
-		var triggerTabList = [].slice.call(document.querySelectorAll('#myTab a'))
-		triggerTabList.forEach(function (triggerEl) {
-			var tabTrigger = new bootstrap.Tab(triggerEl)
+    document.addEventListener('DOMContentLoaded', function() {
+        // Handle the change reason modal for sending a post to to-edit
+        document.getElementById('submit-change-reason-edit').addEventListener('click', function() {
+            var reason = document.getElementById('changeReasonEditInput').value;
+            if (reason) {
+                var changeReasonEditInput = document.createElement('input');
+                changeReasonEditInput.type = 'hidden';
+                changeReasonEditInput.name = 'change_reason';
+                changeReasonEditInput.value = reason;
+                document.getElementById('post-form').appendChild(changeReasonEditInput);
 
-			triggerEl.addEventListener('click', function (event) {
-				event.preventDefault()
-				tabTrigger.show()
-			})
-		})
-	});
+                var statusEditInput = document.createElement('input');
+                statusEditInput.type = 'hidden';
+                statusEditInput.name = 'status';
+                statusEditInput.value = 'to_edit';
+                document.getElementById('post-form').appendChild(statusEditInput);
+
+                document.getElementById('post-form').submit(); // Submit the form after reason is filled
+                var editModal = new bootstrap.Modal(document.getElementById('changeReasonEditModal'));
+                editModal.hide(); // Hide the modal
+            } else {
+                alert('Please provide a reason for changing the status.');
+            }
+        });
+    });
+</script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        var triggerTabList = [].slice.call(document.querySelectorAll('#myTab a'))
+        triggerTabList.forEach(function (triggerEl) {
+            var tabTrigger = new bootstrap.Tab(triggerEl)
+
+            triggerEl.addEventListener('click', function (event) {
+                event.preventDefault()
+                tabTrigger.show()
+            })
+        });
+
+        // Activar la pestaña de observaciones si el hash está presente en la URL
+        if (window.location.hash === '#observaciones') {
+            var tabEl = document.querySelector('#observaciones-tab')
+            var tab = new bootstrap.Tab(tabEl)
+            tab.show()
+        }
+    });
 </script>
 {% endblock %}

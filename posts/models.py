@@ -93,6 +93,7 @@ class Post(models.Model):
     thumbnail = models.ImageField(upload_to='thumbnails/', blank=True, null=True)
     publish_start_date = models.DateTimeField(blank=True, null=True)
     publish_end_date = models.DateTimeField(blank=True, null=True)
+    change_reason = models.CharField(max_length=255, blank=True, null=True)
 
     class Meta:
         permissions = [

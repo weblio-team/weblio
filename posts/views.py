@@ -1,13 +1,13 @@
 import json
 from django.http import Http404, HttpResponseForbidden, HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
-from django.urls import reverse_lazy
+from django.urls import reverse, reverse_lazy
 from django.contrib.auth.mixins import PermissionRequiredMixin, LoginRequiredMixin
 from django.utils.decorators import method_decorator
 from django.views import View
 from .models import Category, Post
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView, TemplateView
-from .forms import CategoryForm, CategoryEditForm, KanbanBoardForm, MyPostAddBodyForm, MyPostAddInformationForm, MyPostEditInformationForm, MyPostEditBodyForm, ToEditPostInformationForm, ToEditPostBodyForm
+from .forms import CategoryForm, CategoryEditForm, KanbanBoardForm, MyPostAddBodyForm, MyPostAddInformationForm, MyPostEditInformationForm, MyPostEditBodyForm, ToEditPostInformationForm, ToEditPostBodyForm, ToPublishPostForm
 from django.db.models import Q
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib import messages
@@ -16,6 +16,16 @@ from simple_history.utils import update_change_reason
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.core.exceptions import PermissionDenied
 from django.conf import settings
+from simple_history.utils import update_change_reason
+
+
+def update_change_reason(instance, reason):
+    """
+    Actualiza la razón de cambio para una instancia de modelo con historial.
+    """
+    if hasattr(instance, 'history'):
+        instance.history.last().change_reason = reason
+        instance.history.last().save()
 
 # views for category administrators
 
@@ -185,7 +195,7 @@ class MyPostEditView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
     model = Post
     template_name = 'create/edit.html'
     permission_required = 'posts.add_post'
-    fields = ['title', 'title_tag', 'summary', 'body', 'category', 'keywords']    
+    fields = ['title', 'title_tag', 'summary', 'body', 'category', 'keywords']
 
     def dispatch(self, request, *args, **kwargs):
         post = get_object_or_404(Post, pk=self.kwargs['pk'])
@@ -196,6 +206,15 @@ class MyPostEditView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         post = self.get_object()
+
+        # Diccionario de mapeo para traducir y formatear los estados
+        state_mapping = {
+            'draft': 'Borrador',
+            'to_edit': 'A editar',
+            'to_publish': 'A publicar',
+            'published': 'Publicado',
+            'inactive': 'Inactivo'
+        }
 
         # Order version history by history_date in descending order
         post_history = post.history.order_by('-history_date')
@@ -220,6 +239,8 @@ class MyPostEditView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
             context['information_form'] = MyPostEditInformationForm(instance=self.object)
             context['body_form'] = MyPostEditBodyForm(instance=self.object)
 
+        context['state_mapping'] = state_mapping
+        
         return context
 
     def post(self, request, *args, **kwargs):
@@ -239,37 +260,39 @@ class MyPostEditView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
             body_form = MyPostEditBodyForm(initial={
                 'body': post_data.get('body')
             })
-            
-        # Check if 'status' is missing and set it to the existing status from the post instance
-        elif 'status' not in post_data:
-            post_data['status'] = self.object.status
+        else:
+            # Check if 'status' is missing and set it to the existing status from the post instance
+            if 'status' not in post_data:
+                post_data['status'] = self.object.status
 
-        # Create the forms with the modified data
-        information_form = MyPostEditInformationForm(post_data, instance=self.object)
-        body_form = MyPostEditBodyForm(post_data, instance=self.object)
+            # Create the forms with the modified data
+            information_form = MyPostEditInformationForm(post_data, instance=self.object)
+            body_form = MyPostEditBodyForm(post_data, instance=self.object)
 
         if information_form.is_valid() and body_form.is_valid():
             post = information_form.save(commit=False)
-            post = body_form.save(commit=False)
+            post.body = body_form.cleaned_data['body']
 
-            post.save()  # Save the post once
-            update_change_reason(post, post_data.get('change_reason', 'Updated post'))  # Log version history
+            # Check if the status has changed
+            if post_data['status'] != self.object.status:
+                post.status = post_data['status']
+                post.change_reason = post_data.get('change_reason', 'Updated post')
+            else:
+                post.change_reason = post_data.get('change_reason', '')
 
-            # Set status and add messages
-            post.status = post_data.get('status')
-            if post.status == 'to_publish':
-                messages.success(self.request, 'La publicación se ha enviado para publicación.')
-            elif post.status == 'draft':
-                messages.success(self.request, 'La publicación se ha guardado como borrador.')
+            post.save()
 
+            # Update the change reason in the version history
+            update_change_reason(post, post.change_reason)
+
+            messages.success(self.request, "Post saved successfully.")
             return redirect('my-posts')
         else:
             context = self.get_context_data()
             context['information_form'] = information_form
             context['body_form'] = body_form
-            messages.success(self.request, 'La publicación se ha restaurado como borrador.')
-        return self.render_to_response(context)
-
+            messages.error(self.request, 'Error al actualizar la publicación.')
+            return self.render_to_response(context)
 
 class MyPostDeleteView(PermissionRequiredMixin, LoginRequiredMixin, DeleteView):
     """
@@ -392,10 +415,16 @@ class ToEditPostView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        post = self.get_object()
+        post_history = self.object.history.all()
 
-        # Order version history by history_date in descending order
-        post_history = post.history.order_by('-history_date')
+        # Diccionario de mapeo para traducir y formatear los estados
+        state_mapping = {
+            'draft': 'Borrador',
+            'to_edit': 'A editar',
+            'to_publish': 'A publicar',
+            'published': 'Publicado',
+            'inactive': 'Inactivo'
+        }
 
         # Set up pagination (e.g., 5 items per page)
         paginator = Paginator(post_history, 5)  # 5 versions per page
@@ -416,6 +445,9 @@ class ToEditPostView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
         else:
             context['information_form'] = ToEditPostInformationForm(instance=self.object)
             context['body_form'] = ToEditPostBodyForm(instance=self.object)
+
+
+        context['state_mapping'] = state_mapping
 
         return context
 
@@ -447,9 +479,21 @@ class ToEditPostView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
 
         if information_form.is_valid() and body_form.is_valid():
             post = information_form.save(commit=False)
-            post = body_form.save(commit=False)
+            body_form.save(commit=False)
 
-            post.save()  # Save the post once
+            # Obtener la razón de cambio y el estado
+            change_reason = post_data.get('change_reason', '')
+            status = post_data.get('status', '')
+
+            # Check if the status has changed
+            if post_data['status'] != self.object.status:
+                post.status = post_data['status']
+                post.change_reason = post_data.get('change_reason', 'Updated post')
+            else:
+                post.change_reason = post_data.get('change_reason', '')
+
+            post.save()
+
             return redirect('to-edit')
         else:
             context = self.get_context_data()
@@ -459,12 +503,21 @@ class ToEditPostView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
         
     def form_valid(self, form):
         """Valida el formulario y actualiza el estado de la publicación según la entrada del usuario."""
-        form.instance.status = self.request.POST.get('status')
-        if form.instance.status == 'to_publish':
-            messages.success(self.request, 'La publicación se ha enviado para publicación.')
-        elif form.instance.status == 'draft':
-            messages.success(self.request, 'La publicación se ha guardado como borrador.')
-        return super().form_valid(form)
+        information_form = ToEditPostInformationForm(self.request.POST, instance=self.object)
+        body_form = ToEditPostBodyForm(self.request.POST, instance=self.object)
+        
+        self.object = information_form.save(commit=False)
+        body_form.save(commit=False)
+        change_reason = self.request.POST.get('change_reason', '')
+        status = self.request.POST.get('status', '')
+        if change_reason:
+            update_change_reason(self.object, change_reason)
+        if status:
+            self.object.status = status
+        self.object.save()
+        body_form.save()
+        return HttpResponseRedirect(self.get_success_url())
+    
 
 
 # views for publishers
@@ -506,24 +559,80 @@ class ToPublishPostView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView)
     """
     model = Post
     template_name = 'publish/publish.html'
-    fields = '__all__'
     success_url = reverse_lazy('to-publish')
     permission_required = 'posts.can_publish'
+    form_class = ToPublishPostForm
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        post = self.get_object()
+        post_history = post.history.order_by('-history_date')
 
-    def post(self, request, pk, *args, **kwargs):
+        # Set up pagination (e.g., 5 items per page)
+        paginator = Paginator(post_history, 5)  # 5 versions per page
+        page = self.request.GET.get('page')
+
+        try:
+            post_history_page = paginator.page(page)
+        except PageNotAnInteger:
+            post_history_page = paginator.page(1)
+        except EmptyPage:
+            post_history_page = paginator.page(paginator.num_pages)
+
+        # Diccionario de mapeo para traducir y formatear los estados
+        state_mapping = {
+            'draft': 'Borrador',
+            'to_edit': 'A editar',
+            'to_publish': 'A publicar',
+            'published': 'Publicado',
+            'inactive' : 'Inactivo'
+        }
+
+        context['post_history_page'] = post_history_page
+        context['state_mapping'] = state_mapping
+        return context
+
+    def post(self, request, *args, **kwargs):
         """Actualiza el estado de la publicación según la entrada del usuario y la guarda."""
-        post = get_object_or_404(Post, pk=pk)
-        status = request.POST.get('status')
+        self.object = self.get_object()
+        post_data = request.POST.copy()
+
+        form = ToPublishPostForm(post_data, instance=self.object)
+
+        if form.is_valid():
+            post = form.save(commit=False)
+
+            # Obtener la razón de cambio y el estado
+            change_reason = post_data.get('change_reason', '')
+            status = post_data.get('status', '')
+
+            if post_data['status'] != self.object.status:
+                post.status = post_data['status']
+                post.change_reason = post_data.get('change_reason', 'Updated post')
+            else:
+                post.change_reason = post_data.get('change_reason', '')
+
+            post.save()
+
+            return redirect('to-publish')
+        else:
+            context = self.get_context_data(form=form)
+            return self.render_to_response(context)
         
-        if status == 'published':
-            messages.success(request, 'La publicación se ha publicado correctamente.')
-        elif status == 'to_edit':
-            messages.success(request, 'La publicación se ha enviado para edición.')
+    def form_valid(self, form):
+        """Valida el formulario y actualiza el estado de la publicación según la entrada del usuario."""
+        form = ToPublishPostForm(self.request.POST, instance=self.object)
 
-        post.status = status
-        post.save()
-        return HttpResponseRedirect(self.success_url)
-
+        self.object = form.save(commit=False)
+        change_reason = self.request.POST.get('change_reason', '')
+        status = self.request.POST.get('status', '')
+        if change_reason:
+            update_change_reason(self.object, change_reason)
+        if status:
+            self.object.status = status
+        self.object.save()
+        form.save()
+        return HttpResponseRedirect(self.get_success_url())
 
 # views for subscribers
 
