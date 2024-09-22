@@ -1,4 +1,4 @@
-from django.http import JsonResponse
+from django.http import Http404, JsonResponse
 from django.core.files.storage import default_storage
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
@@ -7,13 +7,12 @@ import stripe
 from django.conf import settings
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
-from posts.models import Category
+from posts.models import Post, Category
 from django.http import HttpResponseNotAllowed
 from django.contrib import messages
 import requests
 from django.conf import settings
 from django.views.generic import TemplateView
-from posts.models import Post
 
 class CustomImageUploadView(View):
     """
@@ -426,4 +425,123 @@ class DashboardRatePostsView(TemplateView):
             context['rate_data'] = []  # Empty list in case of exception
             context['raw_api_response'] = f"Request error: {e}"
         
+        return context
+
+class DashboardPostsView(TemplateView):
+    """
+    Vista del dashboard mostrando la comparación de claps, updowns, rates, y estadística de views por tipo de categoría.
+    """
+    template_name = 'dashboard/dashboard.html'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        
+        # Adding existing context data
+        context['LYKET_API_KEY'] = settings.LYKET_API_KEY
+        context['DEBUG'] = settings.DEBUG
+
+        # Initialize total stats
+        total_updowns = 0  # Sum of total_score for all updown buttons
+        total_claps = 0
+        total_rating = 0
+        total_rate_votes = 0
+
+        # Initialize views by kind (public, free, premium)
+        views_by_kind = {"public": 0, "free": 0, "premium": 0}
+
+        # Get all categories from the posts
+        all_categories = Category.objects.all()  # Get all categories
+        category_claps = {category.name: 0 for category in all_categories}  # Initialize claps for each category
+        category_updowns = {category.name: 0 for category in all_categories}  # Initialize updowns for each category
+        category_ratings = {category.name: {"total_rating": 0, "total_votes": 0} for category in all_categories}  # Initialize ratings
+
+        # API Call to Lyket for all button types
+        url = 'https://api.lyket.dev/v1/rank/buttons?sort=desc&limit=100'
+        headers = {
+            'accept': 'application/json',
+            'Authorization': f'Bearer {settings.LYKET_API_KEY}'
+        }
+
+        try:
+            response = requests.get(url, headers=headers)
+            if response.status_code in [200, 201]:
+                button_data = response.json()  # Parse the JSON response
+
+                # Process each button and aggregate based on category
+                for item in button_data['data']['attributes']['responses']:
+                    button_type = item['data']['type']
+                    attributes = item['data']['attributes']
+                    post_id = item['data']['id']
+
+                    # Fetch related Post and its category
+                    try:
+                        post = Post.objects.get(id=post_id)
+                        category = post.category
+                    except Post.DoesNotExist:
+                        continue  # Skip posts that do not exist
+
+                    # Aggregate views by category kind
+                    if category.kind in views_by_kind:
+                        views_by_kind[category.kind] += attributes.get('total_claps', 0)
+
+                    # For clap_button
+                    if button_type == 'clap_button':
+                        total_claps += attributes.get('total_claps', 0)  # Aggregate total claps
+                        category_claps[category.name] += attributes.get('total_claps', 0)  # Aggregate claps for the category
+
+                    # For updown_button
+                    elif button_type == 'updown_button':
+                        total_updowns += attributes.get('total_score', 0)  # Aggregate total_score for total updowns
+                        category_updowns[category.name] += attributes.get('total_score', 0)  # Aggregate updowns for the category
+
+                    # For rate_button
+                    elif button_type == 'rate_button':
+                        total_votes = attributes.get('total_votes', 0)
+                        average_rating = attributes.get('average_rating', 0)
+                        total_rating += average_rating * total_votes
+                        total_rate_votes += total_votes
+                        category_ratings[category.name]["total_rating"] += average_rating * total_votes
+                        category_ratings[category.name]["total_votes"] += total_votes
+
+                # Calculate the average ratings for each category
+                category_avg_ratings = {
+                    category: (data["total_rating"] / data["total_votes"]) if data["total_votes"] > 0 else 0
+                    for category, data in category_ratings.items()
+                }
+
+                # Sort categories by claps, updowns, and ratings
+                sorted_clap_data = sorted(category_claps.items(), key=lambda x: x[1], reverse=True)
+                sorted_updown_data = sorted(category_updowns.items(), key=lambda x: x[1], reverse=True)
+                sorted_rating_data = sorted(category_avg_ratings.items(), key=lambda x: x[1], reverse=True)
+
+                # Add total values and category data to the context for the chart and widgets
+                context['clap_data'] = sorted_clap_data
+                context['updown_data'] = sorted_updown_data
+                context['rating_data'] = sorted_rating_data
+                context['total_updowns'] = total_updowns  # Sum of total_score for all updown buttons
+                context['total_claps'] = total_claps
+                context['average_rating'] = total_rating / total_rate_votes if total_rate_votes > 0 else 0
+
+                # Add views by kind (public, free, premium) to the context
+                context['views_by_kind'] = views_by_kind
+
+            else:
+                context['clap_data'] = []
+                context['updown_data'] = []
+                context['rating_data'] = []
+                context['total_updowns'] = 0
+                context['total_claps'] = 0
+                context['average_rating'] = 0
+                context['views_by_kind'] = {"public": 0, "free": 0, "premium": 0}
+                context['raw_api_response'] = f"Error: {response.status_code}"
+        except requests.exceptions.RequestException as e:
+            context['clap_data'] = []
+            context['updown_data'] = []
+            context['rating_data'] = []
+            context['total_updowns'] = 0
+            context['total_claps'] = 0
+            context['average_rating'] = 0
+            context['views_by_kind'] = {"public": 0, "free": 0, "premium": 0}
+            context['raw_api_response'] = f"Request error: {e}"
+
         return context

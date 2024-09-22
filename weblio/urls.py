@@ -21,6 +21,7 @@ if settings.DEBUG:
     urlpatterns += path('ckeditor/upload/', ImageUploadView.as_view(), name='ckeditor_upload'),
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+    urlpatterns +=  path('dashboard/views/', HomeView.as_view(), name='posts_claps'), path('dashboard/updowns/', HomeView.as_view(), name='posts_updowns'), path('dashboard/rates/', HomeView.as_view(), name='posts_rates'), path('dashboard/', HomeView.as_view(), name='posts_dashboard'),
 else:
     urlpatterns += path("services/", include('services.urls')),
 

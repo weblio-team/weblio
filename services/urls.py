@@ -3,7 +3,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from .views import CustomImageUploadView
 from .views import CreateCheckoutSessionView, PaymentSuccessView, PaymentCancelView
-from .views import DashboardClapsPostsView, DashboardUpdownsPostsView, DashboardRatePostsView
+from .views import DashboardClapsPostsView, DashboardUpdownsPostsView, DashboardRatePostsView, DashboardPostsView
 
 urlpatterns = [
     path("ckeditor/", include('ckeditor_uploader.urls')),
@@ -14,5 +14,6 @@ urlpatterns = [
     path('dashboard/views/', DashboardClapsPostsView.as_view(), name='posts_claps'),
     path('dashboard/updowns/', DashboardUpdownsPostsView.as_view(), name='posts_updowns'),
     path('dashboard/rates/', DashboardRatePostsView.as_view(), name='posts_rates'),
+    path('dashboard/', DashboardPostsView.as_view(), name='posts_dashboard'),
     
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

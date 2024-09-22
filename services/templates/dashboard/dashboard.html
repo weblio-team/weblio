@@ -1,0 +1,227 @@
+{% extends "base.html" %}
+{% block content %}
+        <div role="main" class="container container-fluid py-4">
+
+            <!-- Tab Navigation -->
+            <ul class="nav nav-tabs" id="myTab" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <a class="nav-link active" id="info-tab" data-bs-toggle="tab" href="#info" role="tab" aria-controls="info" aria-selected="true">Resumen</a>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <a class="nav-link" id="report-tab" data-bs-toggle="tab" href="#report" role="tab" aria-controls="report" aria-selected="false">Reportes</a>
+                </li>
+            </ul>
+        
+            <div class="tab-content mt-3" id="myTabContent">
+                <!-- Tab 1: Resumen -->
+                <div class="tab-pane fade show active" id="info" role="tabpanel" aria-labelledby="info-tab">
+                    <!-- Statistics Widgets -->
+                    <div class="row text-center">
+                        <!-- Total Me gusta/No me gusta -->
+                        <div class="col-lg-4 col-md-6">
+                            <div class="card shadow-sm bg-dark text-light">
+                                <div class="card-body">
+                                    <p><i class="bi bi-hand-thumbs-up-fill"></i> Me gusta/No me gusta</p>
+                                    <h3>{{ total_updowns }}</h3>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Total Vistas -->
+                        <div class="col-lg-4 col-md-6">
+                            <div class="card shadow-sm bg-dark text-light">
+                                <div class="card-body">
+                                    <p><i class="bi bi-eye-fill"></i> Vistas</p>
+                                    <h3>{{ total_claps }}</h3>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Average Estrellas -->
+                        <div class="col-lg-4 col-md-6">
+                            <div class="card shadow-sm bg-dark text-light">
+                                <div class="card-body">
+                                    <p><i class="bi bi-star-fill"></i> Estrellas</p>
+                                    <h3>{{ average_rating|floatformat:2 }}</h3> <!-- Display with 2 decimal places -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+        
+                    <!-- Chart Section -->
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <canvas id="comparisonChart" class="bg-dark"></canvas>
+                        </div>
+                        <div class="col-lg-6 d-flex justify-content-center">
+                            <!-- Container for resizing pie chart -->
+                            <div style="width: 70%; max-width: 400px;">
+                                <canvas id="viewsPieChart" class="bg-dark"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+        
+                <!-- Tab 2: Reportes -->
+                <div class="tab-pane fade" id="report" role="tabpanel" aria-labelledby="report-tab">
+                    
+                    <!-- Reports by Article -->
+                    <div class="row">
+                        <div class="col-12">
+                            <h5 class="text-light mb-3"><i class="bi bi-file-earmark-text"></i> Reportes por Artículo</h5>
+                        </div>
+                        <div class="col-lg-4 col-md-6 mb-3">
+                            <a href="{% url 'posts_claps' %}" class="btn btn-outline-light w-100 p-3 rounded-3 shadow-sm">
+                                <i class="bi bi-eye"></i> Vistas por artículo
+                            </a>
+                        </div>
+                        <div class="col-lg-4 col-md-6 mb-3">
+                            <a href="{% url 'posts_updowns' %}" class="btn btn-outline-light w-100 p-3 rounded-3 shadow-sm">
+                                <i class="bi bi-hand-thumbs-up"></i> Me gusta/No me gusta por artículo
+                            </a>
+                        </div>
+                        <div class="col-lg-4 col-md-6 mb-3">
+                            <a href="{% url 'posts_rates' %}" class="btn btn-outline-light w-100 p-3 rounded-3 shadow-sm">
+                                <i class="bi bi-star"></i> Estrellas por artículo
+                            </a>
+                        </div>
+                    </div>
+        
+                    <!-- Reports by Category -->
+                    <div class="row">
+                        <div class="col-12">
+                            <h5 class="text-light mb-3"><i class="bi bi-tags"></i> Reportes por Categoría</h5>
+                        </div>
+                        <div class="col-lg-4 col-md-6 mb-3">
+                            <a href="#" class="btn btn-outline-light w-100 p-3 rounded-3 shadow-sm">
+                                <i class="bi bi-bar-chart-line"></i> Vistas por categoría
+                            </a>
+                        </div>
+                        <div class="col-lg-4 col-md-6 mb-3">
+                            <a href="#" class="btn btn-outline-light w-100 p-3 rounded-3 shadow-sm">
+                                <i class="bi bi-hand-thumbs-up-fill"></i> Me gusta/No me gusta por categoría
+                            </a>
+                        </div>
+                        <div class="col-lg-4 col-md-6 mb-3">
+                            <a href="#" class="btn btn-outline-light w-100 p-3 rounded-3 shadow-sm">
+                                <i class="bi bi-star-fill"></i> Estrellas por categoría
+                            </a>
+                        </div>
+                    </div>
+        
+                    <!-- Reports by User -->
+                    <div class="row">
+                        <div class="col-12">
+                            <h5 class="text-light mb-3"><i class="bi bi-person"></i> Reportes por Usuario</h5>
+                        </div>
+                        <div class="col-lg-4 col-md-6 mb-3">
+                            <a href="#" class="btn btn-outline-light w-100 p-3 rounded-3 shadow-sm">
+                                <i class="bi bi-eye"></i> Vistas por usuario
+                            </a>
+                        </div>
+                        <div class="col-lg-4 col-md-6 mb-3">
+                            <a href="#" class="btn btn-outline-light w-100 p-3 rounded-3 shadow-sm">
+                                <i class="bi bi-hand-thumbs-up"></i> Me gusta/No me gusta por usuario
+                            </a>
+                        </div>
+                        <div class="col-lg-4 col-md-6 mb-3">
+                            <a href="#" class="btn btn-outline-light w-100 p-3 rounded-3 shadow-sm">
+                                <i class="bi bi-stars"></i> Estrellas por usuario
+                            </a>
+                        </div>
+                    </div>
+        
+                </div>
+            </div>
+        </div>
+
+<!-- Include Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Bar Chart: Vistas, Me gusta/No me gusta, Estrellas -->
+    <script>
+        var ctx = document.getElementById('comparisonChart').getContext('2d');
+        var comparisonChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: [{% for category, _ in clap_data %}'{{ category }}', {% endfor %}],  // Category names
+                datasets: [
+                    {
+                        label: 'Total Vistas',
+                        data: [{% for _, claps in clap_data %}{{ claps }}, {% endfor %}],  // Total Vistas (Claps) for each category
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'Total Me gusta/No me gusta',
+                        data: [{% for _, updowns in updown_data %}{{ updowns }}, {% endfor %}],  // Total Me gusta/No me gusta for each category
+                        backgroundColor: 'rgba(255, 159, 64, 0.2)',
+                        borderColor: 'rgba(255, 159, 64, 1)',
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'Average Estrellas',
+                        data: [{% for _, rating in rating_data %}{{ rating }}, {% endfor %}],  // Average Estrellas for each category
+                        backgroundColor: 'rgba(153, 102, 255, 0.2)',
+                        borderColor: 'rgba(153, 102, 255, 1)',
+                        borderWidth: 1
+                    }
+                ]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            color: '#fff'  // Dark mode ticks color
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            color: '#fff'  // Dark mode ticks color
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: '#fff'  // Dark mode legend color
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+
+    <!-- Pie Chart: Views by Category Kind -->
+    <script>
+        var ctx2 = document.getElementById('viewsPieChart').getContext('2d');
+        var viewsPieChart = new Chart(ctx2, {
+            type: 'pie',
+            data: {
+                labels: ['Public', 'Free', 'Premium'],
+                datasets: [{
+                    label: 'Vistas por tipo de categoría',
+                    data: [
+                        {{ views_by_kind.public }},
+                        {{ views_by_kind.free }},
+                        {{ views_by_kind.premium }}
+                    ],
+                    backgroundColor: ['#3498db', '#2ecc71', '#e74c3c'],
+                    borderColor: '#333',  // Dark mode border
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: '#fff'  // Dark mode legend color
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+{% endblock %}
