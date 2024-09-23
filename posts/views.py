@@ -894,6 +894,7 @@ class UpdatePostsStatusView(PermissionRequiredMixin, LoginRequiredMixin, View):
                 try:
                     post = Post.objects.get(pk=post_id)
                     post.status = status_id
+                    post.change_reason = "Actualizado desde el tablero Kanban"
                     post.save()
                 except Post.DoesNotExist:
                     pass
