@@ -218,10 +218,14 @@ class MyPostEditView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
 
         # Order version history by history_date in descending order
         post_history = post.history.order_by('-history_date')
+        post_history_with_reason = post.history.filter(change_reason__isnull=False).exclude(change_reason='').order_by('-history_date')
 
         # Set up pagination (e.g., 5 items per page)
-        paginator = Paginator(post_history, 5)  # 5 versions per page
+        paginator = Paginator(post_history, 5)
+        paginator_with_reason = Paginator(post_history_with_reason, 5)
+
         page = self.request.GET.get('page')
+        page_with_reason = self.request.GET.get('page_with_reason')
 
         try:
             post_history_page = paginator.page(page)
@@ -230,7 +234,15 @@ class MyPostEditView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
         except EmptyPage:
             post_history_page = paginator.page(paginator.num_pages)
 
+        try:
+            post_history_with_reason_page = paginator_with_reason.page(page_with_reason)
+        except PageNotAnInteger:
+            post_history_with_reason_page = paginator_with_reason.page(1)
+        except EmptyPage:
+            post_history_with_reason_page = paginator_with_reason.page(paginator_with_reason.num_pages)
+
         context['post_history_page'] = post_history_page
+        context['post_history_with_reason_page'] = post_history_with_reason_page
 
         if self.request.POST:
             context['information_form'] = MyPostEditInformationForm(self.request.POST, instance=self.object)
@@ -416,6 +428,7 @@ class ToEditPostView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         post_history = self.object.history.all()
+        post_history_with_reason = self.object.history.filter(change_reason__isnull=False).exclude(change_reason='')
 
         # Diccionario de mapeo para traducir y formatear los estados
         state_mapping = {
@@ -427,8 +440,11 @@ class ToEditPostView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
         }
 
         # Set up pagination (e.g., 5 items per page)
-        paginator = Paginator(post_history, 5)  # 5 versions per page
+        paginator = Paginator(post_history, 5)
+        paginator_with_reason = Paginator(post_history_with_reason, 5)
+
         page = self.request.GET.get('page')
+        page_with_reason = self.request.GET.get('page_with_reason')
 
         try:
             post_history_page = paginator.page(page)
@@ -437,7 +453,15 @@ class ToEditPostView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
         except EmptyPage:
             post_history_page = paginator.page(paginator.num_pages)
 
+        try:
+            post_history_with_reason_page = paginator_with_reason.page(page_with_reason)
+        except PageNotAnInteger:
+            post_history_with_reason_page = paginator_with_reason.page(1)
+        except EmptyPage:
+            post_history_with_reason_page = paginator_with_reason.page(paginator_with_reason.num_pages)
+
         context['post_history_page'] = post_history_page
+        context['post_history_with_reason_page'] = post_history_with_reason_page
 
         if self.request.POST:
             context['information_form'] = ToEditPostInformationForm(self.request.POST, instance=self.object)
@@ -566,7 +590,7 @@ class ToPublishPostView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView)
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         post = self.get_object()
-        post_history = post.history.order_by('-history_date')
+        post_history = self.object.history.filter(change_reason__isnull=False).exclude(change_reason='')
 
         # Set up pagination (e.g., 5 items per page)
         paginator = Paginator(post_history, 5)  # 5 versions per page
@@ -870,6 +894,7 @@ class UpdatePostsStatusView(PermissionRequiredMixin, LoginRequiredMixin, View):
                 try:
                     post = Post.objects.get(pk=post_id)
                     post.status = status_id
+                    post.change_reason = "Actualizado desde el tablero Kanban"
                     post.save()
                 except Post.DoesNotExist:
                     pass
