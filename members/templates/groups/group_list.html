@@ -5,80 +5,54 @@
     <h1>Lista de Roles</h1>
     <form method="post" action="{% url 'group-list' %}">
         {% csrf_token %}
-        <table class="table table-dark table-striped table-bordered">
-        <thead>
-            <tr>
-                <th scope="col">Seleccionar</th>
-                <th scope="col">Rol</th>
-                <th scope="col">Permisos</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for group in groups %}
-            <tr>
-                <td>
-                    <input type="radio" name="selected_group" value="{{ group.id }}" {% if forloop.first %}checked{% endif %}>
-                </td>
-                <td>{{ group.name }}</td>
-                <td>
-                    {% if group.permissions.exists %}
-                        <ul>
-                            {% for permission in group.permissions.all %}
-                                <li>{{ permission.name }}</li>
-                            {% endfor %}
-                        </ul>
-                    {% else %}
-                        Sin permisos
-                    {% endif %}
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-        </table>
-    <button type="submit" name="action" value="edit_group" class="btn btn-light">Editar Rol</button>
-    <button type="submit" name="action" value="delete_group" class="btn btn-light">Borrar Rol</button>
+        
+        <!-- Tabla con Bootstrap Table -->
+        <div class="table-responsive">
+            <table 
+                id="groups-table"
+                class="table table-striped table-dark"
+                data-toggle="table"
+                data-sortable="true"
+            >
+                <thead>
+                    <tr>
+                        <th data-field="select-group"></th>
+                        <th data-field="group-name" data-sortable="true">Rol</th>
+                        <th data-field="permissions" data-sortable="false">Permisos</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for group_data in translated_groups %}
+                    <tr>
+                        <td>
+                            <input type="radio" name="selected_group" value="{{ group_data.group.id }}" {% if forloop.first %}checked{% endif %}>
+                        </td>
+                        <td>{{ group_data.group.name }}</td>
+                        <td>
+                            {% if group_data.grouped_permissions %}
+                                <ul>
+                                    {% for module_name, submodules in group_data.grouped_permissions.items %}
+                                        <li><strong>{{ module_name }}</strong></li>
+                                        <ul>
+                                            {% for submodule_name, permissions in submodules.items %}
+                                                <li>{{ submodule_name }}: {{ permissions|join:", " }}</li>
+                                            {% endfor %}
+                                        </ul>
+                                    {% endfor %}
+                                </ul>
+                            {% else %}
+                                Sin permisos
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="py-4"></div>
+            <button type="submit" name="action" value="edit_group" class="btn btn-primary">Editar Rol</button>
+            <button type="submit" name="action" value="delete_group" class="btn btn-danger">Borrar Rol</button>
+        </div>
     </form>
 </main>
 {% endblock %}
-
-<style>
-    body {
-        background-color: #121212;
-        color: #ffffff;
-    }
-
-    .table-dark {
-        background-color: #343a40;
-    }
-
-    .table-dark th, .table-dark td {
-        border-color: #454d55;
-    }
-
-    .table-dark thead th {
-        color: #ffffff;
-        background-color: #454d55;
-    }
-
-    .table-dark tbody tr {
-        color: #ffffff;
-    }
-
-    .table-dark tbody tr:nth-of-type(odd) {
-        background-color: #3c3f41;
-    }
-
-    .table-dark tbody tr:nth-of-type(even) {
-        background-color: #343a40;
-    }
-
-    .btn-primary {
-        background-color: #007bff;
-        border-color: #007bff;
-    }
-
-    .btn-primary:hover {
-        background-color: #0056b3;
-        border-color: #004085;
-    }
-</style>

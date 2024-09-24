@@ -21,6 +21,9 @@ from django.contrib.auth.mixins import PermissionRequiredMixin, LoginRequiredMix
 from django.utils.translation import gettext_lazy as _
 from django.db.models import Count
 
+from django.contrib.auth.models import Permission
+from django.utils.translation import gettext as _
+from django.conf import settings
 
 class HomeView(TemplateView):
     """
@@ -36,61 +39,95 @@ class HomeView(TemplateView):
 class GroupListView(LoginRequiredMixin, PermissionRequiredMixin, TemplateView):
     """
     Vista para listar todos los grupos junto con sus permisos.
-
-    Atributos:
-        template_name (str): Ruta del template que se utiliza para renderizar la vista.
-        permission_required (list): Lista de permisos requeridos para acceder a la vista.
-
-    Métodos:
-        get_context_data(**kwargs): Agrega los grupos con sus permisos al contexto de la plantilla.
-        form_valid(form): Procesa el formulario cuando es válido.
-        form_invalid(form): Procesa el formulario cuando es inválido.
     """
+
     template_name = 'groups/group_list.html'
     permission_required = ['auth.view_group',]
 
     def get_context_data(self, **kwargs):
         """
-        Agrega los grupos con sus permisos al contexto de la plantilla.
-
-        Returns:
-            dict: Contexto con los grupos y permisos.
+        Agrega los grupos con sus permisos traducidos al contexto de la plantilla.
         """
         context = super().get_context_data(**kwargs)
         groups = Group.objects.all().prefetch_related('permissions')
-        context['groups'] = groups
+
+        # Traducir y agrupar permisos para cada grupo
+        translated_groups = []
+        for group in groups:
+            grouped_permissions = self.get_grouped_permissions(group)
+            translated_groups.append({
+                'group': group,
+                'grouped_permissions': grouped_permissions
+            })
+
+        context['translated_groups'] = translated_groups
         return context
 
-    def form_valid(self, form):
+    def get_grouped_permissions(self, group):
         """
-        Procesa el formulario cuando es válido.
-
-        Args:
-            form (GroupListForm): El formulario que ha sido validado.
-
-        Returns:
-            HttpResponse: Respuesta con el contexto actualizado con los permisos del grupo seleccionado.
+        Agrupa y traduce los permisos de un grupo para mostrarlos en el listado.
         """
-        group_id = form.cleaned_data['group'].id
-        group = Group.objects.get(id=group_id)
-        permissions = group.permissions.all()
-        
-        # Pasar los permisos al contexto de la plantilla
-        context = self.get_context_data(form=form, permissions=permissions)
-        return self.render_to_response(context)
-    
-    def form_invalid(self, form):
-        """
-        Procesa el formulario cuando es inválido.
+        permissions = group.permissions.exclude(content_type__model__in=['historicalpost',
+                                                                         'session',
+                                                                         'contenttype'
+                                                                         'logentry',
+                                                                         ]
+        ).select_related('content_type')
+        grouped_permissions = {}
+        for perm in permissions:
+            module_name = perm.content_type.app_label.capitalize()
+            submodule_name = perm.content_type.model.capitalize()
 
-        Args:
-            form (GroupListForm): El formulario inválido.
+            # Traducción de módulos y submódulos
+            translated_module = {
+                'auth': 'Gestión de roles y permisos',
+                'members': 'Gestión de usuarios',
+                'posts': 'Gestión de Contenido',
+                'categories': 'Categorías',
+            }.get(perm.content_type.app_label, module_name)
 
-        Returns:
-            HttpResponse: Respuesta con el contexto de la plantilla, sin permisos.
-        """
-        context = self.get_context_data(form=form, permissions=None)
-        return self.render_to_response(context)
+            translated_submodule = {
+                'group': 'Roles',
+                'permission': 'Permisos',
+                'post': 'Artículos',
+                'category': 'Categorías',
+                'member': 'Miembros',
+            }.get(perm.content_type.model, submodule_name)
+
+            # Traducción de permisos
+            translated_permission = {
+                'Can add group': 'Puede agregar rol',
+                'Can change group': 'Puede cambiar rol',
+                'Can delete group': 'Puede eliminar rol',
+                'Can view group': 'Puede ver rol',
+                'Can add permission': 'Puede agregar permiso',
+                'Can change permission': 'Puede cambiar permiso',
+                'Can delete permission': 'Puede eliminar permiso',
+                'Can view permission': 'Puede ver permiso',
+                'Can add post': 'Puede agregar artículo',
+                'Can change post': 'Puede cambiar artículo',
+                'Can delete post': 'Puede eliminar artículo',
+                'Can view post': 'Puede ver artículo',
+                'Can add category': 'Puede agregar categoría',
+                'Can change category': 'Puede cambiar categoría',
+                'Can delete category': 'Puede eliminar categoría',
+                'Can view category': 'Puede ver categoría',
+                'Can add member': 'Puede agregar miembro',
+                'Can change member': 'Puede cambiar miembro',
+                'Can delete member': 'Puede eliminar miembro',
+                'Can view member': 'Puede ver miembro',
+                'Can view dashboard': 'Puede ver dashboard',
+            }.get(perm.name, perm.name)
+
+            # Agrupar los permisos traducidos por módulo y submódulo
+            if translated_module not in grouped_permissions:
+                grouped_permissions[translated_module] = {}
+            if translated_submodule not in grouped_permissions[translated_module]:
+                grouped_permissions[translated_module][translated_submodule] = []
+
+            grouped_permissions[translated_module][translated_submodule].append(translated_permission)
+
+        return grouped_permissions
     
     def post(self, request, *args, **kwargs):
         selected_group_id = request.POST.get('selected_group')
@@ -112,28 +149,123 @@ class GroupEditView(FormView):
     """
     
     template_name = 'groups/group_edit.html'
-    
-    def get(self, request, pk):
+    form_class = GroupEditForm
+
+    def get_context_data(self, **kwargs):
         """
-        Recupera el grupo especificado por pk y muestra un formulario para editar sus permisos.
+        Agrega los permisos agrupados y traducidos al contexto del formulario.
 
         Args:
-            request: La solicitud HTTP.
-            pk: El identificador del grupo a editar.
+            kwargs: Argumentos adicionales pasados al contexto.
 
         Returns:
-            Renderiza la plantilla 'groups/group_edit.html' con el formulario y los datos del grupo.
+            dict: Contexto con el formulario y los permisos agrupados y traducidos.
         """
-        group = get_object_or_404(Group, pk=pk)
-        permissions = group.permissions.all() if group else []
-        form = GroupEditForm(instance=group)
-        context = {
+        context = super().get_context_data(**kwargs)
+        group = self.get_group()
+
+        # Obtener el formulario con los permisos actuales del grupo
+        form = self.get_form()
+
+        # Obtener permisos agrupados y traducidos
+        grouped_permissions = self.get_grouped_permissions(group)
+
+        # Lista de IDs de los permisos actuales del grupo
+        selected_permissions_ids = group.permissions.values_list('id', flat=True)
+
+        # Añadir los permisos agrupados y traducidos al contexto
+        context.update({
             'form': form,
             'group': group,
-            'permissions': permissions,
-        }
-        return render(request, self.template_name, context)
-    
+            'grouped_permissions': grouped_permissions,
+            'selected_permissions_ids': list(selected_permissions_ids)  # Pasar como lista
+        })
+        return context
+
+    def get_group(self):
+        """
+        Recupera el grupo especificado por pk.
+
+        Returns:
+            Group: El grupo a editar.
+        """
+        pk = self.kwargs.get('pk')
+        return get_object_or_404(Group, pk=pk)
+
+    def get_grouped_permissions(self, group):
+        """
+        Agrupa y traduce los permisos para mostrarlos en el formulario.
+
+        Args:
+            group: El grupo cuyos permisos se agruparán.
+
+        Returns:
+            dict: Permisos agrupados por módulo y submódulo.
+        """
+        # Excluir permisos no deseados
+        permissions = Permission.objects.exclude(
+            content_type__model__in=['historicalpost', 'contenttype', 'session', 'logentry']
+        ).select_related('content_type').distinct()
+
+        grouped_permissions = {}
+        for perm in permissions:
+            module_name = perm.content_type.app_label.capitalize()
+            submodule_name = perm.content_type.model.capitalize()
+
+            # Traducción de módulos y submódulos
+            translated_module = {
+                'auth': 'Gestión de roles y permisos',
+                'members': 'Gestión de usuarios',
+                'posts': 'Gestión de Contenido',
+                'categories': 'Categorías',
+            }.get(perm.content_type.app_label, module_name)
+
+            translated_submodule = {
+                'group': 'Roles',
+                'permission': 'Permisos',
+                'post': 'Artículos',
+                'category': 'Categorías',
+                'member': 'Miembros',
+            }.get(perm.content_type.model, submodule_name)
+
+            # Traducción de permisos
+            translated_permission = {
+                'Can add group': 'Puede agregar rol',
+                'Can change group': 'Puede cambiar rol',
+                'Can delete group': 'Puede eliminar rol',
+                'Can view group': 'Puede ver rol',
+                'Can add permission': 'Puede agregar permiso',
+                'Can change permission': 'Puede cambiar permiso',
+                'Can delete permission': 'Puede eliminar permiso',
+                'Can view permission': 'Puede ver permiso',
+                'Can add post': 'Puede agregar artículo',
+                'Can change post': 'Puede cambiar artículo',
+                'Can delete post': 'Puede eliminar artículo',
+                'Can view post': 'Puede ver artículo',
+                'Can publish post': 'Puede publicar artículo',
+                'Can add category': 'Puede agregar categoría',
+                'Can change category': 'Puede cambiar categoría',
+                'Can delete category': 'Puede eliminar categoría',
+                'Can view category': 'Puede ver categoría',
+                'Can add member': 'Puede agregar miembro',
+                'Can change member': 'Puede cambiar miembro',
+                'Can delete member': 'Puede eliminar miembro',
+                'Can view member': 'Puede ver miembro',
+                'Can view dashboard': 'Puede ver dashboard',
+            }.get(perm.name, perm.name)
+
+            if translated_module not in grouped_permissions:
+                grouped_permissions[translated_module] = {}
+            if translated_submodule not in grouped_permissions[translated_module]:
+                grouped_permissions[translated_module][translated_submodule] = []
+
+            grouped_permissions[translated_module][translated_submodule].append({
+                'id': perm.id,
+                'name': translated_permission  # Usar la traducción del permiso
+            })
+
+        return grouped_permissions
+
     def post(self, request, pk):
         """
         Procesa el formulario enviado para actualizar los permisos del grupo.
@@ -149,12 +281,15 @@ class GroupEditView(FormView):
         form = GroupEditForm(request.POST, instance=group)
         if form.is_valid():
             form.save()
-            return redirect('group-list')  # Redirige a la lista de grupos u otra página
+            messages.success(request, f'El grupo "{group.name}" ha sido actualizado.')
+            return redirect('group-list')
         context = {
-            'form': form, 
-            'group': group
+            'form': form,
+            'group': group,
+            'grouped_permissions': self.get_grouped_permissions(group),
+            'selected_permissions_ids': list(group.permissions.values_list('id', flat=True))
         }
-        return render(request, 'groups/group_edit.html', context)
+        return render(request, self.template_name, context)
 
 
 class GroupDeleteView(DeleteView):
@@ -253,6 +388,107 @@ class CreateGroupView(LoginRequiredMixin, PermissionRequiredMixin, FormView):
     permission_required = ['auth.add_group', 
                            'auth.add_permission'
         ]
+
+    def get_context_data(self, **kwargs):
+        """
+        Agrega los permisos agrupados y traducidos al contexto del formulario.
+
+        Returns:
+            dict: Contexto con el formulario y los permisos agrupados.
+        """
+        context = super().get_context_data(**kwargs)
+        form = self.get_form()
+
+        # Obtener permisos agrupados y traducidos
+        grouped_permissions = self.get_grouped_permissions()
+
+        # Añadir los permisos agrupados al contexto
+        context.update({
+            'form': form,
+            'grouped_permissions': grouped_permissions
+        })
+
+        return context
+
+    def get_grouped_permissions(self):
+        """
+        Agrupa y traduce los permisos para mostrarlos en el formulario.
+
+        Returns:
+            dict: Permisos agrupados por módulo y submódulo.
+        """
+        # Excluye los permisos no deseados y selecciona los que pertenecen al grupo
+        permissions = Permission.objects.exclude(
+            content_type__model__in=['historicalpost', 'contenttype', 'session', 'logentry']
+        ).select_related('content_type').distinct()
+
+        grouped_permissions = {}
+        for perm in permissions:
+            module_name = perm.content_type.app_label.capitalize()
+            submodule_name = perm.content_type.model.capitalize()
+
+            # Traducción de módulos y submódulos
+            translated_module = {
+                'auth': 'Gestión de roles y permisos',
+                'members': 'Gestión de usuarios',
+                'posts': 'Gestión de Contenido',
+                'categories': 'Categorías',
+            }.get(perm.content_type.app_label, module_name)
+
+            translated_submodule = {
+                'group': 'Roles',
+                'permission': 'Permisos',
+                'post': 'Artículos',
+                'category': 'Categorías',
+                'member': 'Miembros',
+            }.get(perm.content_type.model, submodule_name)
+
+            # Traducción de permisos
+            translated_permission = {
+                'Can add group': 'Puede agregar rol',
+                'Can change group': 'Puede cambiar rol',
+                'Can delete group': 'Puede eliminar rol',
+                'Can view group': 'Puede ver rol',
+                'Can add permission': 'Puede agregar permiso',
+                'Can change permission': 'Puede cambiar permiso',
+                'Can delete permission': 'Puede eliminar permiso',
+                'Can view permission': 'Puede ver permiso',
+                'Can add post': 'Puede agregar artículo',
+                'Can change post': 'Puede cambiar artículo',
+                'Can delete post': 'Puede eliminar artículo',
+                'Can view post': 'Puede ver artículo',
+                'Can add category': 'Puede agregar categoría',
+                'Can change category': 'Puede cambiar categoría',
+                'Can delete category': 'Puede eliminar categoría',
+                'Can view category': 'Puede ver categoría',
+                'Can add member': 'Puede agregar miembro',
+                'Can change member': 'Puede cambiar miembro',
+                'Can delete member': 'Puede eliminar miembro',
+                'Can view member': 'Puede ver miembro',
+                'Can view dashboard': 'Puede ver dashboard',
+            }.get(perm.name, perm.name)
+
+            # Agrupación de permisos
+            if translated_module not in grouped_permissions:
+                grouped_permissions[translated_module] = {}
+            if translated_submodule not in grouped_permissions[translated_module]:
+                grouped_permissions[translated_module][translated_submodule] = []
+
+            grouped_permissions[translated_module][translated_submodule].append({
+                'id': perm.id,
+                'name': translated_permission  # Usar la traducción del permiso
+            })
+        
+        # Eliminar el permiso 'Puede ver dashboard' si esta en debug
+        if settings.DEBUG:
+            grouped_permissions = {
+                module: {
+                    submodule: [perm for perm in perms if perm['name'] != 'Puede ver dashboard']
+                    for submodule, perms in submodules.items()
+                }
+                for module, submodules in grouped_permissions.items()
+            }
+        return grouped_permissions
 
     def form_valid(self, form):
         """
