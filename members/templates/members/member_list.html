@@ -1,101 +1,117 @@
 {% extends "base.html" %}
-
 {% block content %}
-<main class="container py-4">
-    <h1>Usuarios {% if group %}con rol: {{ group.name }}{% endif %}</h1>
-    <form method="post" action="{% url 'member-list' %}">
-        {% csrf_token %}
-        <table class="table table-dark table-striped table-bordered">
-            <thead>
-                <tr>
-                    <th scope="col">Seleccionar</th>
-                    <th scope="col">Usuario</th>
-                    <th scope="col">Email</th>
-                    <th scope="col">Roles</th>
-                    <th scope="col">Permisos</th>
-                    <th scope="col">Activo</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for member in members %}
-                <tr>
-                    <td>
-                        <input type="radio" name="selected_member" value="{{ member.id }}" {% if forloop.first %}checked{% endif %}>
-                    </td>
-                    <td>{{ member.username }}</td>
-                    <td>{{ member.email }}</td>
-                    <td>
-                        {% if member.groups.exists %}
-                            <ul>
-                                {% for group in member.groups.all %}
-                                    <li>{{ group.name }}</li>
-                                {% endfor %}
-                            </ul>
-                        {% else %}
-                            Ninguno
-                        {% endif %}
-                    </td>
-                    <td>
-                        {% if member.user_permissions.exists %}
-                            <ul>
-                                {% for perm in member.user_permissions.all %}
-                                    <li>{{ perm.name }}</li>
-                                {% endfor %}
-                            </ul>
-                        {% else %}
-                            Sin permisos
-                        {% endif %}
-                    </td>
-                    <td>{{ member.is_active|yesno:"Sí,No" }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+    <main class="container py-4">
+        <h1>Usuarios {% if group %}con rol: {{ group.name }}{% endif %}</h1>
+        <form method="post" action="{% url 'member-list' %}">
+            {% csrf_token %}
+            
+            <!-- Bootstrap Table -->
+            <div class="table-responsive">
+                <table 
+                    id="members-table" 
+                    class="table table-striped table-dark"
+                    data-toggle="table"
+                    data-search="true"
+                    data-pagination="true"
+                    data-sortable="true"
+                    data-page-size="10"
+                    data-page-list="[10, 25, 50, 100]"
+                    data-locale="es-ES"
+                >
+                    <thead>
+                        <tr>
+                            <th data-field="select"></th>
+                            <th data-field="username" data-sortable="true">Usuario</th>
+                            <th data-field="email" data-sortable="true">Email</th>
+                            <th data-field="roles" data-sortable="true">Roles</th>
+                            <th data-field="permissions" data-sortable="true">Permisos</th>
+                            <th data-field="active" data-sortable="true">Activo</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for member_obj in members %}
+                        <tr>
+                            <td>
+                                <input type="radio" name="selected_member" value="{{ member_obj.member.id }}" {% if forloop.first %}checked{% endif %}>
+                            </td>
+                            <td>{{ member_obj.member.username }}</td>
+                            <td>{{ member_obj.member.email }}</td>
+                            <td>
+                                {% if member_obj.member.groups.exists %}
+                                    <ul>
+                                        {% for group in member_obj.member.groups.all %}
+                                            <li>{{ group.name }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                {% else %}
+                                    Ninguno
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if member_obj.grouped_permissions %}
+                                    <ul>
+                                        {% for module, submodules in member_obj.grouped_permissions.items %}
+                                            <li><strong>{{ module }}</strong>
+                                                <ul>
+                                                    {% for submodule, permissions in submodules.items %}
+                                                        <li>{{ submodule }}:
+                                                            <ul>
+                                                                {% for permission in permissions %}
+                                                                    <li>{{ permission }}</li>
+                                                                {% endfor %}
+                                                            </ul>
+                                                        </li>
+                                                    {% endfor %}
+                                                </ul>
+                                            </li>
+                                        {% endfor %}
+                                    </ul>
+                                {% else %}
+                                    Sin permisos
+                                {% endif %}
+                            </td>
+                            <td>{{ member_obj.member.is_active|yesno:"Sí,No" }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
             <button type="submit" name="action" value="edit_group" class="btn btn-light">Editar Roles</button>
             <button type="submit" name="action" value="edit_permission" class="btn btn-light">Editar Permisos</button>
             <button type="submit" name="action" value="toggle_status" class="btn btn-light">Activar/Desactivar</button>
         </form>
-        </main>
-        {% endblock %}
+    </main>
+    <style>
+        /* Dark Mode for Search Input */
+        .bootstrap-table .search input {
+            background-color: #333;  /* Dark background */
+            color: #fff;  /* White text */
+            border-color: #444;  /* Dark border */
+        }
 
-<style>
-    body {
-        background-color: #121212;
-        color: #ffffff;
-    }
-
-    .table-dark {
-        background-color: #343a40;
-    }
-
-    .table-dark th, .table-dark td {
-        border-color: #454d55;
-    }
-
-    .table-dark thead th {
-        color: #ffffff;
-        background-color: #454d55;
-    }
-
-    .table-dark tbody tr {
-        color: #ffffff;
-    }
-
-    .table-dark tbody tr:nth-of-type(odd) {
-        background-color: #3c3f41;
-    }
-
-    .table-dark tbody tr:nth-of-type(even) {
-        background-color: #343a40;
-    }
-
-    .btn-primary {
-        background-color: #007bff;
-        border-color: #007bff;
-    }
-
-    .btn-primary:hover {
-        background-color: #0056b3;
-        border-color: #004085;
-    }
-</style>
+        /* White placeholder text */
+        .bootstrap-table .search input::placeholder {
+            color: #fff;  /* White placeholder text */
+        }
+    
+        /* Dark Mode for Paginator */
+        .pagination li.active a,
+        .pagination li.active a:hover,
+        .pagination li.active a:focus {
+            background-color: #555;  /* Dark background for active page */
+            border-color: #666;  /* Dark border */
+            color: #fff;  /* White text */
+        }
+    
+        .pagination li a {
+            background-color: #333;  /* Dark background for normal pages */
+            color: #fff;  /* White text */
+            border-color: #444;  /* Dark border */
+        }
+    
+        .pagination li a:hover {
+            background-color: #555;  /* Darker background on hover */
+        }
+    </style>
+{% endblock %}

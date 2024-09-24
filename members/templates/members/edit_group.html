@@ -1,20 +1,67 @@
 {% extends "base.html" %}
 
 {% block content %}
-<main class="container py-4">
-    <h2>Editar roles de {{ member.username }}</h2>
-    <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }} 
-        <button type="submit" class="btn btn-light">Guardar</button>
-        <a href="{% if next_url %}{{ next_url }}{% else %}{% url 'member-list' %}{% endif %}" class="btn btn-light">Cancelar</a>
-    </form>
-</main>
-{% endblock %}
+    <main class="container py-4">
+        <h2>Editar roles de {{ member.username }}</h2>
 
-<style>
-    body {
-        background-color: #121212;
-        color: #ffffff;
-    }
-</style>
+        <form method="post">
+            {% csrf_token %}
+
+            <!-- Tabla de roles (grupos) agrupados con traducción y permisos asociados -->
+            <div class="table-responsive">
+                <table 
+                    id="roles-table"
+                    class="table table-striped table-dark"
+                    data-toggle="table"
+                    data-search="true"
+                    data-sortable="true"
+                    data-mobile-responsive="true"
+                >
+                    <thead>
+                        <tr>
+                            <th data-field="checkbox"></th>
+                            <th data-field="group" data-sortable="true">Rol</th>
+                            <th data-field="permissions">Permisos Asociados</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for translated_group in translated_groups %}
+                        <tr>
+                            <td>
+                                <!-- Checkbox para seleccionar o deseleccionar grupos -->
+                                <input type="checkbox" name="groups" value="{{ translated_group.group.id }}" 
+                                    {% if translated_group.group.id in selected_group_ids %}checked{% endif %}>
+                            </td>
+                            <td><strong>{{ translated_group.group.name }}</strong></td>
+                            <td>
+                                <ul>
+                                    {% for module_name, submodules in translated_group.grouped_permissions.items %}
+                                    <li><strong>{{ module_name }}</strong>
+                                        <ul>
+                                            {% for submodule_name, permissions in submodules.items %}
+                                            <li>{{ submodule_name }}:
+                                                <ul>
+                                                    {% for permission in permissions %}
+                                                    <li>{{ permission }}</li>
+                                                    {% endfor %}
+                                                </ul>
+                                            </li>
+                                            {% endfor %}
+                                        </ul>
+                                    </li>
+                                    {% endfor %}
+                                </ul>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="py-4">
+                <button type="submit" class="btn btn-light">Guardar</button>
+                <a href="{% if next_url %}{{ next_url }}{% else %}{% url 'member-list' %}{% endif %}" class="btn btn-light">Cancelar</a>
+            </div>
+        </form>
+    </main>
+{% endblock %}

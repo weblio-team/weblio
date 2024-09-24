@@ -1,21 +1,54 @@
 {% extends "base.html" %}
 
 {% block content %}
-<main class="container">
-    <h1>Editar permisos de {{ member.username }}</h1>
-    <label>Roles: {{ group_names|join:", " }}</label>
-    <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit" class="btn btn-light">Guardar</button>
-        <a href="{% url 'member-list' %}" class="btn btn-light">Cancelar</a>
-    </form>
-</main>
-{% endblock %}
+    <main class="container py-4">
+        <h1>Editar permisos de {{ member.username }}</h1>
+        <label>Roles: {{ group_names|join:", " }}</label>
 
-<style>
-    body {
-        background-color: #121212;
-        color: #ffffff;
-    }
-</style>
+        <form method="post">
+            {% csrf_token %}
+
+            <!-- Tabla de permisos agrupados por módulo y submódulo con Bootstrap Table -->
+            <div class="table-responsive">
+                <table 
+                    id="permissions-table"
+                    class="table table-striped table-dark"
+                    data-toggle="table"
+                    data-sortable="true"
+                    data-search="true"
+                    data-mobile-responsive="true"
+                >
+                    <thead>
+                        <tr>
+                            <th data-field="select"></th>
+                            <th data-field="module" data-sortable="true">Módulo</th>
+                            <th data-field="submodule" data-sortable="true">Submódulo</th>
+                            <th data-field="permission">Permiso</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for module_name, submodules in translated_permissions.items %}
+                            {% for submodule_name, permissions in submodules.items %}
+                                {% for permission in permissions %}
+                                <tr>
+                                    <td>
+                                        <!-- Checkbox para seleccionar o deseleccionar permisos -->
+                                        <input type="checkbox" name="permissions" value="{{ permission.id }}" 
+                                            {% if permission.id in selected_permissions %}checked{% endif %}>
+                                    </td>
+                                    <td>{{ module_name }}</td>
+                                    <td>{{ submodule_name }}</td>
+                                    <td>{{ permission.name }}</td>
+                                </tr>
+                                {% endfor %}
+                            {% endfor %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <button type="submit" class="btn btn-light">Guardar</button>
+            <a href="{% url 'member-list' %}" class="btn btn-light">Cancelar</a>
+        </form>
+    </main>
+{% endblock %}
