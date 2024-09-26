@@ -2,6 +2,12 @@
 {% block title %}{{ post.title_tag }}{% endblock %}
 {% block content %}
 <main role="main" class="container py-4">
+    {% if post.thumbnail %}
+    <img src="{{ post.thumbnail.url }}" class="img-fluid rounded-start" alt="Thumbnail Image" style="width: 100%;">
+    {% endif %}
+    <hr>
+    <small>Fecha de inicio de publicación: {{ post.publish_start_date }}</small><br>
+    <small>Fecha de fin de publicación: {{ post.publish_end_date }}</small><br>
     <h1>{{ post.title }}</h1>
     <blockquote class="blockquote">
         <small>{{ post.summary }}</small>

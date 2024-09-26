@@ -8,6 +8,7 @@ from ckeditor_uploader.fields import RichTextUploadingField
 from members.models import Member
 import requests
 from simple_history.models import HistoricalRecords
+from django.utils import timezone
 
 # Create your models here.
 class Category(models.Model):
@@ -84,7 +85,8 @@ class Post(models.Model):
     title_tag = models.CharField(max_length=100)
     summary = models.CharField(max_length=100, default=lorem_ipsum.words(10)) 
     body = RichTextUploadingField('Text', blank=True, default=get_lorem_ipsum_text)
-    date_posted = models.DateTimeField(auto_now_add=True)
+    date_posted = models.DateTimeField(blank=True, null=True)
+    date_created = models.DateTimeField(auto_now_add=True, blank=True, null=True)
     author = models.ForeignKey(Member, on_delete=models.CASCADE)
     status = models.CharField(max_length=20, choices=(('draft', 'Draft'), ('to_edit', 'To Edit'), ('to_publish', 'To Publish'), ('published', 'Published'),), default='draft')
     category = models.ForeignKey(Category, on_delete=models.SET_DEFAULT, default=get_default_category)
@@ -94,6 +96,7 @@ class Post(models.Model):
     publish_start_date = models.DateTimeField(blank=True, null=True)
     publish_end_date = models.DateTimeField(blank=True, null=True)
     change_reason = models.CharField(max_length=255, blank=True, null=True)
+    thumbnail = models.ImageField(upload_to='thumbnails/', blank=True, null=True)
 
     class Meta:
         permissions = [
@@ -118,3 +121,11 @@ class Post(models.Model):
             self.date_posted.strftime('%Y'),
             slugify(self.title)
         ])
+    
+    def save(self, *args, **kwargs):
+        """
+        Sobrescribe el método save para establecer date_posted cuando el estado cambia a 'published'.
+        """
+        if self.status == 'published' and self.date_posted is None:
+            self.date_posted = timezone.now()
+        super().save(*args, **kwargs)
