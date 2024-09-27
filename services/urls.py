@@ -5,6 +5,8 @@ from .views import CustomImageUploadView
 from .views import CreateCheckoutSessionView, PaymentSuccessView, PaymentCancelView
 from .views import DashboardClapsPostsView, DashboardUpdownsPostsView, DashboardRatePostsView, DashboardPostsView
 from django.contrib.auth import views as auth_views
+from django.urls import reverse_lazy
+from .views import CustomPasswordResetView
 
 urlpatterns = [
 
@@ -24,9 +26,18 @@ urlpatterns = [
     path('dashboard/', DashboardPostsView.as_view(), name='posts_dashboard'),
 
     # urls for password reset
-    path('password-reset/', auth_views.PasswordResetView.as_view(), name='reset_password'),
-    path('password-reset-sent/', auth_views.PasswordResetDoneView.as_view(), name='password_reset_done'),
-    path('password-reset/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
-    path('password-reset-complete/', auth_views.PasswordResetCompleteView.as_view(), name='password_reset_complete'),
+    path('password-reset-email/', CustomPasswordResetView.as_view(
+        template_name='emails/password-reset/password_reset_form.html',
+        email_template_name='emails/password-reset/password_reset_email.html',
+        success_url=reverse_lazy('password_reset_done_email')
+    ), name='reset_password_email'),
+    path('password-reset-sent-email/', auth_views.PasswordResetDoneView.as_view(
+        template_name='emails/password-reset/password_reset_done.html'), name='password_reset_done_email'),
+    path('password-reset-email/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(
+        template_name='emails/password-reset/password_reset_confirm.html',
+        success_url=reverse_lazy('member-login')
+    ), name='password_reset_confirm_email'),
+    path('password-reset-complete-email/', auth_views.PasswordResetCompleteView.as_view(
+        template_name='emails/password-reset/password_reset_complete.html'), name='password_reset_complete_email'),
     
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

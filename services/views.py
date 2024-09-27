@@ -11,13 +11,13 @@ from posts.models import Post, Category
 from django.http import HttpResponseNotAllowed
 from django.contrib import messages
 import requests
-from django.conf import settings
 from django.views.generic import TemplateView
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 from django.utils import timezone
 import platform
+from django.contrib.auth.views import PasswordResetView
 
 class CustomImageUploadView(View):
     """
@@ -594,3 +594,26 @@ class SendLoginEmailView(View):
         else:
             ip = request.META.get('REMOTE_ADDR')
         return ip
+
+class CustomPasswordResetView(PasswordResetView):
+    email_template_name = 'emails/password-reset/password_reset_email.html'
+    html_email_template_name = 'emails/password-reset/password_reset_email.html'  # Añadir HTML para asegurarnos
+    template_name = 'emails/password-reset/password_reset_form.html'
+
+    def send_mail(self, subject_template_name, email_template_name, context, from_email, to_email, html_email_template_name=None):
+        """
+        Enviar correo como HTML utilizando EmailMultiAlternatives.
+        """
+        subject = render_to_string(subject_template_name, context).strip()
+        body = render_to_string(email_template_name, context)
+
+        # Crear el correo con texto plano
+        email_message = EmailMultiAlternatives(subject, body, from_email, [to_email])
+
+        # Adjuntar la versión HTML
+        if html_email_template_name:
+            html_body = render_to_string(html_email_template_name, context)
+            email_message.attach_alternative(html_body, "text/html")
+
+        # Enviar el correo
+        email_message.send()

@@ -15,16 +15,36 @@ urlpatterns = [
     path('', HomeView.as_view(), name='home'),
 ]
 
-# Se configura la URL de la imagen subida del ckeditor segun el entorno
+# Se configuran las URLs de los servicios externos segun el entorno
 if settings.DEBUG:
-    urlpatterns += path("ckeditor/", include('ckeditor_uploader.urls')),
-    urlpatterns += path('ckeditor/upload/', ImageUploadView.as_view(), name='ckeditor_upload'),
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
-    urlpatterns +=  path('dashboard/views/', HomeView.as_view(), name='posts_claps'), path('dashboard/updowns/', HomeView.as_view(), name='posts_updowns'), path('dashboard/rates/', HomeView.as_view(), name='posts_rates'), path('dashboard/', HomeView.as_view(), name='posts_dashboard'),
-else:
-    urlpatterns += path("services/", include('services.urls')),
+    urlpatterns += [
+        
+        # URLs for ckeditor (development)
+        path("ckeditor/", include('ckeditor_uploader.urls')),
+        path('ckeditor/upload/', ImageUploadView.as_view(), name='ckeditor_upload'),
 
+        # URLs for stripe (development)
+        path('stripe/create-checkout-session/<int:category_id>/', HomeView.as_view(), name='stripe_checkout'),
+        path('stripe/payment-success/', HomeView.as_view(), name='payment_success'),
+        path('stripe/payment-cancel/<int:category_id>/', HomeView.as_view(), name='payment_cancel'),
+
+        # URLs for dashboard (development)
+        path('dashboard/views/', HomeView.as_view(), name='posts_claps'),
+        path('dashboard/updowns/', HomeView.as_view(), name='posts_updowns'),
+        path('dashboard/rates/', HomeView.as_view(), name='posts_rates'),
+        path('dashboard/', HomeView.as_view(), name='posts_dashboard'),
+
+        # URLs for password reset email (development)
+        path('members/reset_password/', HomeView.as_view(), name='reset_password_email'),
+        path('members/password_reset_done/', HomeView.as_view(), name='password_reset_done_email'),
+        path('members/password_reset_confirm/', HomeView.as_view(), name='password_reset_confirm_email'),
+        path('members/password_reset_complete/', HomeView.as_view(), name='password_reset_complete_email'),
+
+    ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+else:
+    urlpatterns += [
+        path("services/", include('services.urls')),
+    ]
 
 # Se configuran las vistas de error
 handler404 = Error404View.as_view()
