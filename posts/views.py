@@ -1,5 +1,6 @@
 import json
 from django.http import Http404, HttpResponseForbidden, HttpResponseRedirect, JsonResponse
+import datetime
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
 from django.contrib.auth.mixins import PermissionRequiredMixin, LoginRequiredMixin
@@ -7,12 +8,12 @@ from django.utils.decorators import method_decorator
 from django.views import View
 from .models import Category, Post
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView, TemplateView
-from .forms import CategoryForm, CategoryEditForm, KanbanBoardForm, MyPostAddBodyForm, MyPostAddGeneralForm, MyPostAddProgramForm, MyPostAddThumbnailForm, MyPostEditGeneralForm, MyPostEditBodyForm, MyPostEditProgramForm, MyPostEditThumbnailForm, ToEditPostInformationForm, ToEditPostBodyForm, ToPublishPostForm
-from django.db.models import Q
+from .forms import CategoryForm, CategoryEditForm, KanbanBoardForm, MyPostAddBodyForm, MyPostAddGeneralForm, MyPostAddProgramForm, MyPostAddThumbnailForm, MyPostEditGeneralForm, MyPostEditBodyForm, MyPostEditProgramForm, MyPostEditThumbnailForm, ToEditPostGeneralForm, ToEditPostBodyForm, ToPublishPostForm
+from django.db.models import Q, OuterRef, Subquery
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib import messages
 from django.utils import timezone
-from simple_history.utils import update_change_reason
+from simple_history.models import HistoricalRecords
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.core.exceptions import PermissionDenied
 from django.conf import settings
@@ -163,12 +164,18 @@ class MyPostsView(PermissionRequiredMixin, LoginRequiredMixin, ListView):
     """
     model = Post
     template_name = 'create/my_posts.html'
-    ordering = ['date_created']
     permission_required = 'posts.add_post'
     
     def get_queryset(self):
-        """Obtiene las publicaciones del usuario autenticado, ordenadas por fecha de publicación."""
-        return Post.objects.filter(author=self.request.user).order_by('-date_posted')
+        """Obtiene las publicaciones del usuario autenticado, ordenadas por la fecha de la última versión del historial."""
+        PostHistory = Post.history.model
+        latest_history = PostHistory.objects.filter(id=OuterRef('id')).order_by('-history_date')
+        
+        queryset = Post.objects.filter(author=self.request.user).annotate(
+            latest_history_date=Subquery(latest_history.values('history_date')[:1])
+        ).order_by('-latest_history_date')
+        
+        return queryset
     
     def get_context_data(self, **kwargs):
         """Añade información adicional al contexto, como la lista de publicaciones."""
@@ -423,13 +430,21 @@ class ToEditView(PermissionRequiredMixin, LoginRequiredMixin, ListView):
     permission_required = 'posts.change_post'
     
     def get_queryset(self):
-        """Obtiene las publicaciones con estado 'to_edit', cuyo autor no sea el usuario logueado, ordenadas por fecha de publicación."""
-        return Post.objects.filter(status='to_edit').exclude(author=self.request.user).order_by('-date_posted')
+        """Obtiene las publicaciones con estado 'to_edit', cuyo autor no sea el usuario logueado, ordenadas por la fecha de la última versión del historial."""
+        PostHistory = Post.history.model
+        latest_history = PostHistory.objects.filter(id=OuterRef('id')).order_by('-history_date')
+        
+        queryset = Post.objects.filter(status='to_edit').exclude(author=self.request.user).annotate(
+            latest_history_date=Subquery(latest_history.values('history_date')[:1])
+        ).order_by('-latest_history_date')
+        
+        return queryset
     
     def get_context_data(self, **kwargs):
         """Añade información adicional al contexto, como la lista de publicaciones."""
         context = super().get_context_data(**kwargs)
         context['posts'] = context['object_list']
+
         return context
 
 
@@ -453,7 +468,7 @@ class ToEditPostView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
     """
     model = Post
     template_name = 'edit/edit.html'
-    fields = ['title', 'title_tag', 'summary', 'body', 'category', 'keywords']    
+    fields = ['title', 'title_tag', 'summary', 'body', 'category', 'keywords', 'publish_start_date', 'publish_end_date', 'thumbnail']    
     permission_required = 'posts.change_post'
 
     def dispatch(self, request, *args, **kwargs):
@@ -501,15 +516,16 @@ class ToEditPostView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
         context['post_history_with_reason_page'] = post_history_with_reason_page
 
         if self.request.POST:
-            context['information_form'] = ToEditPostInformationForm(self.request.POST, instance=self.object)
+            context['gen_form'] = ToEditPostGeneralForm(self.request.POST, instance=self.object)
             context['body_form'] = ToEditPostBodyForm(self.request.POST, instance=self.object)
         else:
-            context['information_form'] = ToEditPostInformationForm(instance=self.object)
+            context['gen_form'] = ToEditPostGeneralForm(instance=self.object)
             context['body_form'] = ToEditPostBodyForm(instance=self.object)
 
-
+        context['publish_start_date'] = self.object.publish_start_date
+        context['publish_end_date'] = self.object.publish_end_date
+        context['current_thumbnail_url'] = self.object.thumbnail.url if self.object.thumbnail else None
         context['state_mapping'] = state_mapping
-
         return context
 
     def post(self, request, *args, **kwargs):
@@ -518,33 +534,39 @@ class ToEditPostView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
         # Make a copy of POST data to modify
         post_data = request.POST.copy()
 
+        # Initialize forms
+        gen_form = None
+        body_form = None
+        thumbnail_form = None
+        program_form = None
+
         if 'restore_version' in post_data:
-            information_form = ToEditPostInformationForm(initial={
+            gen_form = ToEditPostGeneralForm(initial={
                 'title': post_data.get('title'),
                 'title_tag': post_data.get('title_tag'),
                 'summary': post_data.get('summary'),
                 'category': post_data.get('category'),
-                'keywords': post_data.get('keywords')
+                'keywords': post_data.get('keywords'),
+                'status': post_data.get('status'),
             })
             body_form = ToEditPostBodyForm(initial={
                 'body': post_data.get('body')
             })
-            
-        # Check if 'status' is missing and set it to the existing status from the post instance
-        elif 'status' not in post_data:
-            post_data['status'] = self.object.status
+        else:
+            # Check if 'status' is missing and set it to the existing status from the post instance
+            if 'status' not in post_data:
+                post_data['status'] = self.object.status
 
-        # Create the forms with the modified data
-        information_form = ToEditPostInformationForm(post_data, instance=self.object)
-        body_form = ToEditPostBodyForm(post_data, instance=self.object)
+            # Create the forms with the modified data
+            gen_form = ToEditPostGeneralForm(post_data, instance=self.object)
+            body_form = ToEditPostBodyForm(post_data, instance=self.object)
 
-        if information_form.is_valid() and body_form.is_valid():
-            post = information_form.save(commit=False)
-            body_form.save(commit=False)
-
-            # Obtener la razón de cambio y el estado
-            change_reason = post_data.get('change_reason', '')
-            status = post_data.get('status', '')
+        if gen_form.is_valid() and body_form.is_valid():
+            post = gen_form.save(commit=False)
+            post.body = body_form.cleaned_data['body']
+            post.publish_start_date = self.object.publish_start_date
+            post.publish_end_date = self.object.publish_end_date
+            post.thumbnail = self.object.thumbnail
 
             # Check if the status has changed
             if post_data['status'] != self.object.status:
@@ -558,26 +580,38 @@ class ToEditPostView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
             return redirect('to-edit')
         else:
             context = self.get_context_data()
-            context['information_form'] = information_form
+            context['gen_form'] = gen_form
             context['body_form'] = body_form
+            context['publish_start_date'] = self.object.publish_start_date
+            context['publish_end_date'] = self.object.publish_end_date
+            context['thumbnail_url'] = self.object.thumbnail.url if self.object.thumbnail else None
+            messages.success(self.request, 'El artículo se ha restaurado correctamente.')
             return self.render_to_response(context)
         
     def form_valid(self, form):
         """Valida el formulario y actualiza el estado de la publicación según la entrada del usuario."""
-        information_form = ToEditPostInformationForm(self.request.POST, instance=self.object)
+        gen_form = ToEditPostGeneralForm(self.request.POST, instance=self.object)
         body_form = ToEditPostBodyForm(self.request.POST, instance=self.object)
-        
-        self.object = information_form.save(commit=False)
-        body_form.save(commit=False)
-        change_reason = self.request.POST.get('change_reason', '')
-        status = self.request.POST.get('status', '')
-        if change_reason:
-            update_change_reason(self.object, change_reason)
-        if status:
-            self.object.status = status
-        self.object.save()
-        body_form.save()
-        return HttpResponseRedirect(self.get_success_url())
+
+        if gen_form.is_valid() and body_form.is_valid():
+            self.object = gen_form.save(commit=False)
+            self.object.body = body_form.cleaned_data['body']
+
+            change_reason = self.request.POST.get('change_reason', '')
+            status = self.request.POST.get('status', '')
+
+            if change_reason:
+                update_change_reason(self.object, change_reason)
+            if status:
+                self.object.status = status
+
+            self.object.save()
+            return HttpResponseRedirect(self.get_success_url())
+        else:
+            context = self.get_context_data()
+            context['gen_form'] = gen_form
+            context['body_form'] = body_form
+            return self.render_to_response(context)
     
 
 

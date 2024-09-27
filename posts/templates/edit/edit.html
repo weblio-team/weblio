@@ -2,176 +2,170 @@
 {% block content %}
 {% load custom_filters %}
 <main role="main" class="container py-4">
-  <h1>Editar artículo</h1>
+  <form id="post-form" method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <h1>Editar artículo</h1>
 
-  <!-- Tabs de Bootstrap -->
-  <ul class="nav nav-tabs" id="myTab" role="tablist">
-    <li class="nav-item">
-      <a class="nav-link active" id="informacion-tab" data-bs-toggle="tab" href="#informacion" role="tab" aria-controls="informacion" aria-selected="true">Información</a>
-    </li>
-    <li class="nav-item">
-      <a class="nav-link" id="cuerpo-tab" data-bs-toggle="tab" href="#cuerpo" role="tab" aria-controls="cuerpo" aria-selected="false">Cuerpo</a>
-    </li>
-    <li class="nav-item">
-      <a class="nav-link" id="historial-tab" data-bs-toggle="tab" href="#historial" role="tab" aria-controls="historial" aria-selected="false">Historial de versiones</a>
-    </li>
-    <li class="nav-item">
-      <a class="nav-link" id="observaciones-tab" data-bs-toggle="tab" href="#observaciones" role="tab" aria-controls="observaciones" aria-selected="false">Observaciones</a>
-    </li>
-  </ul>
+    <!-- Tabs de Bootstrap -->
+    <ul class="nav nav-tabs mb-3" id="myTab" role="tablist">
+      <li class="nav-item">
+        <a class="nav-link active" id="informacion-tab" data-bs-toggle="tab" href="#informacion" role="tab" aria-controls="informacion" aria-selected="true">Información</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" id="cuerpo-tab" data-bs-toggle="tab" href="#cuerpo" role="tab" aria-controls="cuerpo" aria-selected="false">Cuerpo</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" id="historial-tab" data-bs-toggle="tab" href="#historial" role="tab" aria-controls="historial" aria-selected="false">Historial de versiones</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" id="observaciones-tab" data-bs-toggle="tab" href="#observaciones" role="tab" aria-controls="observaciones" aria-selected="false">Observaciones</a>
+      </li>
+    </ul>
 
-  <!-- Contenido de las Tabs -->
-  <div class="tab-content" id="myTabContent">
-    <!-- Información Tab -->
-    <div class="tab-pane fade show active" id="informacion" role="tabpanel" aria-labelledby="informacion-tab">
-      <form method="post" id="post-form">
-        {% csrf_token %}
-        <div class="py-3">
-          <div class="form-group">
-            <label for="id_title">Título</label>
-            {{ information_form.title }}
+    <!-- Contenido de las Tabs -->
+    <div class="tab-content" id="myTabContent">
+      <!-- Información Tab -->
+      <div class="tab-pane fade show active" id="informacion" role="tabpanel" aria-labelledby="informacion-tab">
+        <ul class="nav nav-tabs" id="infoTab" role="tablist">
+          <li class="nav-item">
+            <a class="nav-link active" id="existing-fields-tab" data-bs-toggle="tab" href="#existing-fields" role="tab"
+              aria-controls="existing-fields" aria-selected="true">General</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" id="dates-tab" data-bs-toggle="tab" href="#dates" role="tab" aria-controls="dates"
+              aria-selected="false">Fechas de publicación</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" id="thumbnail-tab" data-bs-toggle="tab" href="#thumbnail" role="tab"
+              aria-controls="thumbnail" aria-selected="false">Foto de portada</a>
+          </li>
+        </ul>
+
+        <div class="tab-content">
+          <!-- Existing Fields -->
+          <div class="tab-pane fade show active" id="existing-fields" role="tabpanel"
+            aria-labelledby="existing-fields-tab">
+            <div class="py-3">
+              <div class="form-group">
+                <label for="id_title">Título</label>
+                {{ gen_form.title }}
+              </div>
+              <div class="form-group">
+                <label for="id_title_tag">Etiqueta de título</label>
+                {{ gen_form.title_tag }}
+              </div>
+              <div class="form-group">
+                <label for="id_summary">Resumen</label>
+                {{ gen_form.summary }}
+              </div>
+              <div class="form-group">
+                <label for="id_category">Categoría</label>
+                {{ gen_form.category }}
+              </div>
+              <div class="form-group">
+                <label for="id_keywords">Etiquetas</label>
+                {{ gen_form.keywords }}
+              </div>
+            </div>
           </div>
-          <div class="form-group">
-            <label for="id_title_tag">Etiqueta de título</label>
-            {{ information_form.title_tag }}
+
+          <!-- Dates Tab -->
+          <div class="tab-pane fade" id="dates" role="tabpanel" aria-labelledby="dates-tab">
+            <div class="py-3">
+              <div class="form-group">
+                <label for="id_start_date"><strong>Inicio de publicación:</strong></label>
+                <p>{{ publish_start_date|date:"l"|capitalize_first }}, {{ publish_start_date|date:"F"|capitalize_first }} {{ publish_start_date|date:"j, Y, g:i A" }}</p>
+              </div>
+              <div class="form-group">
+                <label for="id_end_date"><strong>Fin de publicación:</strong></label>
+                <p>{{ publish_end_date|date:"l"|capitalize_first }}, {{ publish_end_date|date:"F"|capitalize_first }} {{ publish_end_date|date:"j, Y, g:i A" }}</p>
+              </div>
+            </div>
           </div>
-          <div class="form-group">
-            <label for="id_summary">Resumen</label>
-            {{ information_form.summary }}
-          </div>
-          <div class="form-group">
-            <label for="id_category">Categoría</label>
-            {{ information_form.category }}
+
+          <!-- Thumbnail Upload Tab -->
+          <div class="tab-pane fade" id="thumbnail" role="tabpanel" aria-labelledby="thumbnail-tab">
+            <div class="py-3">
+              <div class="form-group">
+                <!-- Mostrar la vista previa de la imagen actual si existe -->
+                <div class="mt-2">
+                    {% if current_thumbnail_url %}
+                        <img id="current-thumbnail" 
+                            src="{{ current_thumbnail_url }}" 
+                            alt="Current Thumbnail" 
+                            style="max-width: 300px;">
+                    {% else %}
+                        <p id="no-thumbnail-message">No hay una foto de portada subida.</p>
+                    {% endif %}
+                </div>
+              </div>    
+            </div>       
           </div>
         </div>
-    </div>
+      </div>
 
-    <!-- Cuerpo Tab -->
-    <div class="tab-pane fade" id="cuerpo" role="tabpanel" aria-labelledby="cuerpo-tab">
-      <div class="py-3">
-        <div class="form-group">
-          {{ body_form.media }}
-          {{ body_form.body }}
+      <!-- Cuerpo Tab -->
+      <div class="tab-pane fade" id="cuerpo" role="tabpanel" aria-labelledby="cuerpo-tab">
+        <div class="py-3">
+          <div class="form-group">
+            {{ body_form.media }}
+            {{ body_form.body }}
+          </div>
         </div>
       </div>
-    </div>
 
-    <!-- Historial de versiones Tab -->
-    <div class="tab-pane fade" id="historial" role="tabpanel" aria-labelledby="historial-tab">
-      <div class="py-3">
-        <h2>Historial de versiones</h2>
-        <table class="table table-dark table-hover">
-          <thead>
-            <tr>
-              <th>Fecha</th>
-              <th>Tipo</th>
-              <th>Usuario</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for record in post_history_page %}
-            <tr>
-              <td>{{ record.history_date|date:"d M Y, H:i" }}</td>
-              <td>
-                {% if record.history_type == '+' %}
-                Creado
-                {% elif record.history_type == '~' %}
-                Actualizado
-                {% elif record.history_type == '-' %}
-                Eliminado
-                {% endif %}
-              </td>
-              <td>{{ record.history_user }}</td>
-              <td><a href="{% url 'history' post.pk record.history_id %}">Ver detalles</a></td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-
-        <!-- Pagination Controls -->
-        <nav aria-label="Page navigation">
-          <ul class="pagination justify-content-center" data-bs-theme="dark">
-            {% if post_history_page.has_previous %}
-            <li class="page-item">
-              <a class="page-link" href="?page={{ post_history_page.previous_page_number }}#historial"
-                aria-label="Previous">
-                <span aria-hidden="true">&laquo;</span>
-              </a>
-            </li>
-            {% endif %}
-            {% for num in post_history_page.paginator.page_range %}
-            <li class="page-item {% if post_history_page.number == num %}active{% endif %}">
-              <a class="page-link" href="?page={{ num }}#historial">{{ num }}</a>
-            </li>
-            {% endfor %}
-            {% if post_history_page.has_next %}
-            <li class="page-item">
-              <a class="page-link" href="?page={{ post_history_page.next_page_number }}#historial" aria-label="Next">
-                <span aria-hidden="true">&raquo;</span>
-              </a>
-            </li>
-            {% endif %}
-          </ul>
-        </nav>
-      </div>
-    </div>
-
-    <!-- Observaciones de versiones Tab -->
-    <div class="tab-pane fade" id="observaciones" role="tabpanel" aria-labelledby="observaciones-tab">
-      <div class="container-fluid">
+      <!-- Historial de versiones Tab -->
+      <div class="tab-pane fade" id="historial" role="tabpanel" aria-labelledby="historial-tab">
         <div class="py-3">
-          <h2>Observaciones de cambios de estado</h2>
+          <h2>Historial de versiones</h2>
           <table class="table table-dark table-hover">
             <thead>
               <tr>
                 <th>Fecha</th>
+                <th>Tipo</th>
                 <th>Usuario</th>
-                <th>Estado Anterior</th>
-                <th>Estado Nuevo</th>
-                <th>Observación</th>
+                <th>Acciones</th>
               </tr>
             </thead>
             <tbody>
-              {% for record in post_history_with_reason_page %}
+              {% for record in post_history_page %}
               <tr>
                 <td>{{ record.history_date|date:"d M Y, H:i" }}</td>
+                <td>
+                  {% if record.history_type == '+' %}
+                  Creado
+                  {% elif record.history_type == '~' %}
+                  Actualizado
+                  {% elif record.history_type == '-' %}
+                  Eliminado
+                  {% endif %}
+                </td>
                 <td>{{ record.history_user }}</td>
-                <td>
-                    {% if record.prev_record %}
-                        {{ state_mapping|dict_get:record.prev_record.status }}
-                    {% else %}
-                        Sin estado anterior
-                    {% endif %}
-                </td>
-                <td>
-                    {{ state_mapping|dict_get:record.status }}
-                </td>
-                <td>{{ record.change_reason }}</td>
+                <td><a href="{% url 'history' post.pk record.history_id %}">Ver detalles</a></td>
               </tr>
               {% endfor %}
             </tbody>
           </table>
+
           <!-- Pagination Controls -->
           <nav aria-label="Page navigation">
             <ul class="pagination justify-content-center" data-bs-theme="dark">
-              {% if post_history_with_reason_page.has_previous %}
+              {% if post_history_page.has_previous %}
               <li class="page-item">
-                <a class="page-link" href="?page_with_reason={{ post_history_with_reason_page.previous_page_number }}#observaciones"
+                <a class="page-link" href="?page={{ post_history_page.previous_page_number }}#historial"
                   aria-label="Previous">
                   <span aria-hidden="true">&laquo;</span>
                 </a>
               </li>
               {% endif %}
-              {% for num in post_history_with_reason_page.paginator.page_range %}
-              <li class="page-item {% if post_history_with_reason_page.number == num %}active{% endif %}">
-                <a class="page-link" href="?page_with_reason={{ num }}#observaciones">{{ num }}</a>
+              {% for num in post_history_page.paginator.page_range %}
+              <li class="page-item {% if post_history_page.number == num %}active{% endif %}">
+                <a class="page-link" href="?page={{ num }}#historial">{{ num }}</a>
               </li>
               {% endfor %}
-              {% if post_history_with_reason_page.has_next %}
+              {% if post_history_page.has_next %}
               <li class="page-item">
-                <a class="page-link" href="?page_with_reason={{ post_history_with_reason_page.next_page_number }}#observaciones"
-                  aria-label="Next">
+                <a class="page-link" href="?page={{ post_history_page.next_page_number }}#historial" aria-label="Next">
                   <span aria-hidden="true">&raquo;</span>
                 </a>
               </li>
@@ -180,18 +174,82 @@
           </nav>
         </div>
       </div>
-    </div>
-  </div>
 
-  <!-- Botones de acción -->
-  <div class="d-flex justify-content-between mt-3">
-    <a href="{% url 'to-edit' %}" class="btn btn-secondary btn-light">Volver</a>
-    <div>
-      <button class="btn btn-success my-0" type="submit">Guardar</button>
-      <button class="btn btn-secondary" type="button" data-bs-toggle="modal" data-bs-target="#changeReasonDraftModal">Mandar a borrador</button>
-      <button class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#changeReasonPublishModal">Mandar a publicar</button>
+      <!-- Observaciones de versiones Tab -->
+      <div class="tab-pane fade" id="observaciones" role="tabpanel" aria-labelledby="observaciones-tab">
+        <div class="container-fluid">
+          <div class="py-3">
+            <h2>Observaciones de cambios de estado</h2>
+            <table class="table table-dark table-hover">
+              <thead>
+                <tr>
+                  <th>Fecha</th>
+                  <th>Usuario</th>
+                  <th>Estado Anterior</th>
+                  <th>Estado Nuevo</th>
+                  <th>Observación</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for record in post_history_with_reason_page %}
+                <tr>
+                  <td>{{ record.history_date|date:"d M Y, H:i" }}</td>
+                  <td>{{ record.history_user }}</td>
+                  <td>
+                      {% if record.prev_record %}
+                          {{ state_mapping|dict_get:record.prev_record.status }}
+                      {% else %}
+                          Sin estado anterior
+                      {% endif %}
+                  </td>
+                  <td>
+                      {{ state_mapping|dict_get:record.status }}
+                  </td>
+                  <td>{{ record.change_reason }}</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+            <!-- Pagination Controls -->
+            <nav aria-label="Page navigation">
+              <ul class="pagination justify-content-center" data-bs-theme="dark">
+                {% if post_history_with_reason_page.has_previous %}
+                <li class="page-item">
+                  <a class="page-link" href="?page_with_reason={{ post_history_with_reason_page.previous_page_number }}#observaciones"
+                    aria-label="Previous">
+                    <span aria-hidden="true">&laquo;</span>
+                  </a>
+                </li>
+                {% endif %}
+                {% for num in post_history_with_reason_page.paginator.page_range %}
+                <li class="page-item {% if post_history_with_reason_page.number == num %}active{% endif %}">
+                  <a class="page-link" href="?page_with_reason={{ num }}#observaciones">{{ num }}</a>
+                </li>
+                {% endfor %}
+                {% if post_history_with_reason_page.has_next %}
+                <li class="page-item">
+                  <a class="page-link" href="?page_with_reason={{ post_history_with_reason_page.next_page_number }}#observaciones"
+                    aria-label="Next">
+                    <span aria-hidden="true">&raquo;</span>
+                  </a>
+                </li>
+                {% endif %}
+              </ul>
+            </nav>
+          </div>
+        </div>
+      </div>
     </div>
-  </div>
+
+    <!-- Botones de acción -->
+    <div class="d-flex justify-content-between mt-3">
+      <a href="{% url 'to-edit' %}" class="btn btn-secondary btn-light">Volver</a>
+      <div>
+        <button class="btn btn-success my-0" type="submit">Guardar</button>
+        <button class="btn btn-secondary" type="button" data-bs-toggle="modal" data-bs-target="#changeReasonDraftModal">Mandar a borrador</button>
+        <button class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#changeReasonPublishModal">Mandar a publicar</button>
+      </div>
+    </div>
   </form>
 
   <!-- Modal for Change Reason Draft  -->
@@ -308,4 +366,12 @@
     }
   });
 </script>
+<style>
+  /* Change the color for active tabs within the "Información" section */
+  #informacion .nav-link.active {
+    border-color: #007bff; /* Change this to your desired active tab color */
+    background-color: #007bff; /* Change this to your desired active tab color */
+    color: white; /* Text color for the active tab */
+  }
+</style>
 {% endblock %}
