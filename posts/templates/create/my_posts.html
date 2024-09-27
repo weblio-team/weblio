@@ -8,7 +8,7 @@
                 <div class="card mb-3 w-100">
                     <div class="row g-0">
                         <div class="col-md-3">
-                            <img src="{{ post.thumbnail.url }}" class="img-fluid rounded-start" alt="Thumbnail Image" style="width: 100%;">
+                            <img src="{% if post.thumbnail %}{{ post.thumbnail.url }}{% else %}https://picsum.photos/200{% endif %}" class="img-fluid rounded-start" alt="Thumbnail Image" style="width: 100%;">
                         </div>
                         <div class="col-md-9">
                             <div class="card-body">

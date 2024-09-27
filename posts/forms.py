@@ -305,7 +305,7 @@ class MyPostEditBodyForm(forms.ModelForm):
         return body
         
 
-class ToEditPostInformationForm(forms.ModelForm):
+class ToEditPostGeneralForm(forms.ModelForm):
     """
     Formulario para editar la información de una publicación.
 
@@ -343,7 +343,7 @@ class ToEditPostInformationForm(forms.ModelForm):
                 'keywords': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Insertar etiquetas'}),
                 'status': forms.HiddenInput(),
         }
-
+                
 class ToEditPostBodyForm(forms.ModelForm):
     """
     Formulario para editar el cuerpo de una publicación.
