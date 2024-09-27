@@ -25,19 +25,25 @@
                         <a href="{% url 'reset_password_email' %}">Olvide mi contraseña</a>
                     </div>
                 </div>
-            </form>
-            <div class="contact-info text-center w-75 p-3" style="background-color: #333; border-radius: 15px; position: absolute; bottom: 10vh; color: #fff; border: 1px solid #555;">
-                <p><strong>Tienes problemas? Ponte en contacto!</strong></p>
-                <div class="d-flex justify-content-center flex-wrap">
-                    <div class="me-3">
-                        <p><i class="fas fa-envelope me-2"></i> <a href="mailto:weblio.team@gmail.com" style="color: #4aa1ff;">weblio.team@gmail.com</a></p>
+                <div class="contact-info text-center w-75 p-4" style="background-color: #333; border-radius: 15px; position: absolute; bottom: 15vh; color: #fff; border: 1px solid #555;">
+                    <p><strong>Tienes problemas? Ponte en contacto!</strong></p>
+                    <div class="d-flex justify-content-center flex-wrap">
+                        <div class="me-3">
+                            <p><i class="fas fa-envelope me-2"></i> <a href="mailto:weblio.team@gmail.com" style="color: #4aa1ff;">weblio.team@gmail.com</a></p>
+                        </div>
+                        <div>
+                            <p><i class="fas fa-phone me-2"></i> <span style="color: #4aa1ff;">+123456789</span></p>
+                        </div>
                     </div>
-                    <div>
-                        <p><i class="fas fa-phone me-2"></i> <span style="color: #4aa1ff;">+123456789</span></p>
-                    </div>
-                </div>
-            </div>            
+                </div>        
+            </form>    
         </div>
     </div>
 </main>
+<style>
+    main {
+        min-height: calc(100vh - 122px); /* Considerar altura del footer */
+        overflow: hidden;
+    }
+</style>
 {% endblock %}
