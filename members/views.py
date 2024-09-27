@@ -775,7 +775,7 @@ class MemberEditGroupView(LoginRequiredMixin, PermissionRequiredMixin, views.Vie
         if settings.DEBUG:
             grouped_permissions = {
                 module: {
-                    submodule: [perm for perm in perms if perm['name'] != 'Puede ver dashboard']
+                submodule: [perm for perm in perms if perm != 'Puede ver dashboard']
                     for submodule, perms in submodules.items()
                 }
                 for module, submodules in grouped_permissions.items()
