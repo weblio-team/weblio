@@ -156,7 +156,7 @@ class CategoryEditForm(forms.ModelForm):
         return cleaned_data
     
 # forms for authors views
-class MyPostEditInformationForm(forms.ModelForm):
+class MyPostEditGeneralForm(forms.ModelForm):
     """
     Formulario para editar la información de una publicación.
 
@@ -187,7 +187,7 @@ class MyPostEditInformationForm(forms.ModelForm):
             Widgets personalizados para los campos del formulario.
         """
         model = Post
-        fields = ['title', 'title_tag', 'summary', 'category', 'status', 'keywords', 'thumbnail', 'publish_start_date', 'publish_end_date']
+        fields = ['title', 'title_tag', 'summary', 'category', 'status', 'keywords']
         labels = {
             'title': _('Título'),
             'title_tag': _('Etiqueta del Título'),
@@ -196,9 +196,6 @@ class MyPostEditInformationForm(forms.ModelForm):
             'author': _('Autor'),
             'status': _('Estado'),
             'keywords': _('Etiquetas'),
-            'thumbnail': _('Miniatura'),
-            'publish_start_date': _('Fecha de inicio de vigencia'),
-            'publish_end_date': _('Fecha de fin de vigencia'),
         }
         widgets = {
             'title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Insertar título'}),
@@ -206,12 +203,49 @@ class MyPostEditInformationForm(forms.ModelForm):
             'summary': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Insertar resumen'}),
             'category': forms.Select(attrs={'class': 'form-control'}),
             'keywords': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Insertar etiquetas'}),
-            'thumbnail': forms.FileInput(attrs={'class': 'form-control'}),
-            'publish_start_date': forms.DateTimeInput(attrs={'class': 'form-control', 'placeholder': 'Insertar fecha de inicio de vigencia'}),
-            'publish_end_date': forms.DateTimeInput(attrs={'class': 'form-control', 'placeholder': 'Insertar fecha de fin de vigencia'}),
             'status': forms.HiddenInput(),
         }
 
+class MyPostEditThumbnailForm(forms.ModelForm):
+    class Meta:
+        model = Post
+        fields = ['thumbnail']
+        widgets = {
+            'thumbnail': forms.ClearableFileInput(attrs={
+                'class': 'form-control', 
+                'accept': 'image/*',  # Solo permite imágenes
+                'data-current-url': '',  # Aquí puedes agregar el atributo, pero no se muestra al usuario
+            }),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super(MyPostEditThumbnailForm, self).__init__(*args, **kwargs)
+        # Si ya existe una imagen subida, puedes mostrar una vista previa
+        if self.instance and self.instance.pk and self.instance.thumbnail:
+            self.fields['thumbnail'].widget.attrs['data-current-url'] = self.instance.thumbnail.url
+
+class MyPostEditProgramForm(forms.ModelForm):
+    class Meta:
+        model = Post
+        fields = ['publish_start_date', 'publish_end_date']
+        widgets = {
+            'publish_start_date': forms.DateTimeInput(attrs={
+                'class': 'form-control', 
+                'type': 'datetime-local'
+            }, format='%Y-%m-%dT%H:%M'),  # Este es el formato correcto para datetime-local
+            'publish_end_date': forms.DateTimeInput(attrs={
+                'class': 'form-control', 
+                'type': 'datetime-local'
+            }, format='%Y-%m-%dT%H:%M'),  # Formato correcto
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance and self.instance.pk:
+            if self.instance.publish_start_date:
+                self.fields['publish_start_date'].initial = self.instance.publish_start_date.strftime('%Y-%m-%dT%H:%M')
+            if self.instance.publish_end_date:
+                self.fields['publish_end_date'].initial = self.instance.publish_end_date.strftime('%Y-%m-%dT%H:%M')
 
 class MyPostEditBodyForm(forms.ModelForm):
     """
@@ -360,7 +394,7 @@ class ToEditPostBodyForm(forms.ModelForm):
         self.fields['body'].required = True
 
 
-class MyPostAddInformationForm(forms.ModelForm):
+class MyPostAddGeneralForm(forms.ModelForm):
     """
     Formulario para agregar información de una publicación.
 
@@ -395,9 +429,31 @@ class MyPostAddInformationForm(forms.ModelForm):
             'summary': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Insertar resumen'}),
             'category': forms.Select(attrs={'class': 'form-control'}),
             'keywords': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Insertar etiquetas'}),
+        }
+
+class MyPostAddThumbnailForm(forms.ModelForm):
+    class Meta:
+        model = Post
+        fields = ['thumbnail']
+        widgets = {
             'thumbnail': forms.FileInput(attrs={'class': 'form-control'}),
-            'publish_start_date': forms.DateTimeInput(attrs={'class': 'form-control', 'type': 'datetime-local'}),
-            'publish_end_date': forms.DateTimeInput(attrs={'class': 'form-control', 'type': 'datetime-local'}),
+        }
+
+class MyPostAddProgramForm(forms.ModelForm):
+    class Meta:
+        model = Post
+        fields = ['publish_start_date', 'publish_end_date']
+        widgets = {
+            'publish_start_date': forms.DateTimeInput(attrs={
+                'class': 'form-control', 
+                'placeholder': 'Insertar fecha de inicio de vigencia',
+                'type': 'datetime-local'  # Asegúrate de que el tipo sea datetime-local
+            }),
+            'publish_end_date': forms.DateTimeInput(attrs={
+                'class': 'form-control', 
+                'placeholder': 'Insertar fecha de fin de vigencia',
+                'type': 'datetime-local'  # Asegúrate de que el tipo sea datetime-local
+            }),
         }
 
 

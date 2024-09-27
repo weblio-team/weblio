@@ -7,7 +7,7 @@ from django.utils.decorators import method_decorator
 from django.views import View
 from .models import Category, Post
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView, TemplateView
-from .forms import CategoryForm, CategoryEditForm, KanbanBoardForm, MyPostAddBodyForm, MyPostAddInformationForm, MyPostEditInformationForm, MyPostEditBodyForm, ToEditPostInformationForm, ToEditPostBodyForm, ToPublishPostForm
+from .forms import CategoryForm, CategoryEditForm, KanbanBoardForm, MyPostAddBodyForm, MyPostAddGeneralForm, MyPostAddProgramForm, MyPostAddThumbnailForm, MyPostEditGeneralForm, MyPostEditBodyForm, MyPostEditProgramForm, MyPostEditThumbnailForm, ToEditPostInformationForm, ToEditPostBodyForm, ToPublishPostForm
 from django.db.models import Q
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib import messages
@@ -163,7 +163,7 @@ class MyPostsView(PermissionRequiredMixin, LoginRequiredMixin, ListView):
     """
     model = Post
     template_name = 'create/my_posts.html'
-    ordering = ['-date_posted']
+    ordering = ['date_created']
     permission_required = 'posts.add_post'
     
     def get_queryset(self):
@@ -195,7 +195,7 @@ class MyPostEditView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
     model = Post
     template_name = 'create/edit.html'
     permission_required = 'posts.add_post'
-    fields = ['title', 'title_tag', 'summary', 'body', 'category', 'keywords']
+    fields = ['title', 'title_tag', 'summary', 'body', 'category', 'keywords', 'publish_start_date', 'publish_end_date', 'thumbnail']
 
     def dispatch(self, request, *args, **kwargs):
         post = get_object_or_404(Post, pk=self.kwargs['pk'])
@@ -243,16 +243,20 @@ class MyPostEditView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
 
         context['post_history_page'] = post_history_page
         context['post_history_with_reason_page'] = post_history_with_reason_page
+        context['current_thumbnail_url'] = post.thumbnail.url if post.thumbnail else ''
 
         if self.request.POST:
-            context['information_form'] = MyPostEditInformationForm(self.request.POST, instance=self.object)
-            context['body_form'] = MyPostEditBodyForm(self.request.POST, instance=self.object)
+            context['gen_form'] = MyPostEditGeneralForm(self.request.POST, instance=post)
+            context['body_form'] = MyPostEditBodyForm(self.request.POST, instance=post)
+            context['thumbnail_form'] = MyPostEditThumbnailForm(self.request.POST, self.request.FILES, instance=post)
+            context['program_form'] = MyPostEditProgramForm(self.request.POST, instance=post)  # Faltaba instance=post
         else:
-            context['information_form'] = MyPostEditInformationForm(instance=self.object)
-            context['body_form'] = MyPostEditBodyForm(instance=self.object)
+            context['gen_form'] = MyPostEditGeneralForm(instance=post)
+            context['body_form'] = MyPostEditBodyForm(instance=post)
+            context['thumbnail_form'] = MyPostEditThumbnailForm(instance=post)
+            context['program_form'] = MyPostEditProgramForm(instance=post)  # Faltaba instance=post
 
         context['state_mapping'] = state_mapping
-        
         return context
 
     def post(self, request, *args, **kwargs):
@@ -261,8 +265,14 @@ class MyPostEditView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
         # Make a copy of POST data to modify
         post_data = request.POST.copy()
 
+        # Initialize forms
+        gen_form = None
+        body_form = None
+        thumbnail_form = None
+        program_form = None
+
         if 'restore_version' in post_data:
-            information_form = MyPostEditInformationForm(initial={
+            gen_form = MyPostEditGeneralForm(initial={
                 'title': post_data.get('title'),
                 'title_tag': post_data.get('title_tag'),
                 'summary': post_data.get('summary'),
@@ -272,18 +282,31 @@ class MyPostEditView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
             body_form = MyPostEditBodyForm(initial={
                 'body': post_data.get('body')
             })
+            program_form = MyPostEditProgramForm(initial={
+                'publish_start_date': self.object.publish_start_date,
+                'publish_end_date': self.object.publish_end_date
+            })
+            thumbnail_form = MyPostEditThumbnailForm(initial={
+                'thumbnail': self.object.thumbnail
+            })
         else:
             # Check if 'status' is missing and set it to the existing status from the post instance
             if 'status' not in post_data:
                 post_data['status'] = self.object.status
 
             # Create the forms with the modified data
-            information_form = MyPostEditInformationForm(post_data, instance=self.object)
+            gen_form = MyPostEditGeneralForm(post_data, instance=self.object)
             body_form = MyPostEditBodyForm(post_data, instance=self.object)
+            thumbnail_form = MyPostEditThumbnailForm(post_data, request.FILES, instance=self.object)
+            program_form = MyPostEditProgramForm(post_data, instance=self.object)
 
-        if information_form.is_valid() and body_form.is_valid():
-            post = information_form.save(commit=False)
+        # si se esta guardando una nueva version
+        if gen_form.is_valid() and body_form.is_valid() and thumbnail_form.is_valid() and program_form.is_valid():
+            post = gen_form.save(commit=False)
             post.body = body_form.cleaned_data['body']
+            post.thumbnail = thumbnail_form.cleaned_data.get('thumbnail')
+            post.publish_start_date = program_form.cleaned_data.get('publish_start_date')
+            post.publish_end_date = program_form.cleaned_data.get('publish_end_date')
 
             # Check if the status has changed
             if post_data['status'] != self.object.status:
@@ -297,13 +320,16 @@ class MyPostEditView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
             # Update the change reason in the version history
             update_change_reason(post, post.change_reason)
 
-            messages.success(self.request, "Post saved successfully.")
+            messages.success(self.request, "El artículo se ha actualizado correctamente.")
             return redirect('my-posts')
+        # si se esta restaurando a una version anterior
         else:
             context = self.get_context_data()
-            context['information_form'] = information_form
+            context['gen_form'] = gen_form
             context['body_form'] = body_form
-            messages.error(self.request, 'Error al actualizar la publicación.')
+            context['thumbnail_form'] = thumbnail_form
+            context['program_form'] = program_form
+            messages.success(self.request, 'El artículo se ha restaurado correctamente.')
             return self.render_to_response(context)
 
 class MyPostDeleteView(PermissionRequiredMixin, LoginRequiredMixin, DeleteView):
@@ -343,30 +369,41 @@ class MyPostAddView(PermissionRequiredMixin, LoginRequiredMixin, View):
     """
     permission_required = 'posts.add_post'
     def get(self, request, *args, **kwargs):
-        info_form = MyPostAddInformationForm()
+        gen_form = MyPostAddGeneralForm()
         body_form = MyPostAddBodyForm()
+        thumbnail_form = MyPostAddThumbnailForm()
+        program_form = MyPostAddProgramForm()
         return render(request, 'create/create.html', {
-            'info_form': info_form,
-            'body_form': body_form
+            'gen_form': gen_form,
+            'body_form': body_form,
+            'thumbnail_form': thumbnail_form,
+            'program_form': program_form,
         })
 
     def post(self, request, *args, **kwargs):
-        info_form = MyPostAddInformationForm(request.POST)
+        gen_form = MyPostAddGeneralForm(request.POST)
+        thumbnail_form = MyPostAddThumbnailForm(request.POST, request.FILES)  # For media uploads
+        program_form = MyPostAddProgramForm(request.POST)
         body_form = MyPostAddBodyForm(request.POST, request.FILES)  # For media uploads
 
-        if info_form.is_valid() and body_form.is_valid():
+        if gen_form.is_valid() and body_form.is_valid() and thumbnail_form.is_valid() and program_form.is_valid():
             # Create the post object but don't commit it to the database yet
-            post = info_form.save(commit=False)
+            post = gen_form.save(commit=False)
             post.body = body_form.cleaned_data.get('body')
             post.status = 'draft'  # Set the status to 'draft'
             post.author = request.user  # Assign the current user as the author
+            post.thumbnail = thumbnail_form.cleaned_data.get('thumbnail')
+            post.publish_start_date = program_form.cleaned_data.get('publish_start_date')
+            post.publish_end_date = program_form.cleaned_data.get('publish_end_date')
             post.save()  # Now save the post
 
             return redirect('my-posts')  # Redirect to the posts list
         else:
             return render(request, 'create/create.html', {
-                'info_form': info_form,
-                'body_form': body_form
+                'gen_form': gen_form,
+                'body_form': body_form,
+                'thumbnail_form': thumbnail_form,
+                'program_form': program_form,
             })
 
 # views for editors
