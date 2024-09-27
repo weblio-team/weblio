@@ -183,3 +183,11 @@ COMMENTBOX_API_KEY = "5656563893141504-proj"
 # Stripe settings
 STRIPE_SECRET_KEY = 'sk_test_51Q0AFPExUxjRx0RpTB80794w8DxRRlgD8j2pe2wADC1kGHe5k2x104Rsr60G9fQi27kp9yqTt5m9fgTA2f32rKQS00fr1cwO3o'
 STRIPE_PUBLISHABLE_KEY = 'pk_test_51Q0AFPExUxjRx0Rpl43gBHsax9yrb6rYn5OHWxjecEBCrARC0MsVxnBQkGMHBSJKrh0mv27oMhhOkiHxepLtCozT00vBxQpXLS'
+
+# Email settings
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'weblio.team@gmail.com'
+EMAIL_HOST_PASSWORD = 'klbohblyoghjdlyo'

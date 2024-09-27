@@ -13,6 +13,11 @@ from django.contrib import messages
 import requests
 from django.conf import settings
 from django.views.generic import TemplateView
+from django.core.mail import EmailMultiAlternatives
+from django.template.loader import render_to_string
+from django.utils.html import strip_tags
+from django.utils import timezone
+import platform
 
 class CustomImageUploadView(View):
     """
@@ -545,3 +550,47 @@ class DashboardPostsView(TemplateView):
             context['raw_api_response'] = f"Request error: {e}"
 
         return context
+
+class SendLoginEmailView(View):
+    """
+    Vista encargada de enviar un correo de notificación de inicio de sesión.
+    Esta vista envía un correo electrónico formateado en HTML cuando un usuario inicia sesión.
+    """
+
+    def send_email(self, user, request):
+        # Información del login
+        login_time = timezone.now()
+        formatted_login_time = login_time.strftime('%Y-%m-%d %H:%M:%S')
+        device = platform.system()
+        ip_address = self.get_client_ip(request)
+
+        # Renderizar el cuerpo del mensaje con una plantilla HTML
+        html_content = render_to_string('emails/login.html', {
+            'username': user.username,
+            'login_time': formatted_login_time,
+            'device': device,
+            'ip_address': ip_address,
+        })
+        plain_message = strip_tags(html_content)  # Texto sin formato, en caso de que el cliente no soporte HTML
+        subject = 'Notificación de inicio de sesión'
+
+        # Crear el mensaje de correo
+        email = EmailMultiAlternatives(
+            subject,
+            plain_message,  # Contenido en texto sin formato
+            'weblio.team@gmail.com',  # Remitente
+            [user.email]  # Destinatario
+        )
+        email.attach_alternative(html_content, "text/html")  # Adjuntar el contenido en HTML
+        email.send()  # Enviar el correo
+
+    def get_client_ip(self, request):
+        """
+        Obtiene la dirección IP del cliente a partir de la solicitud HTTP.
+        """
+        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+        if x_forwarded_for:
+            ip = x_forwarded_for.split(',')[0]
+        else:
+            ip = request.META.get('REMOTE_ADDR')
+        return ip

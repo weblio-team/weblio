@@ -24,6 +24,7 @@ from django.db.models import Count, Prefetch
 from django.contrib.auth.models import Permission
 from django.utils.translation import gettext as _
 from django.conf import settings
+from services.views import SendLoginEmailView
 
 class HomeView(TemplateView):
     """
@@ -1069,6 +1070,11 @@ class MemberLoginView(LoginView):
             La respuesta HTTP con el formulario válido renderizado.
         """
         response = super().form_valid(form)
+
+        # Enviar correo de notificación al usuario
+        email_view = SendLoginEmailView()
+        email_view.send_email(self.request.user, self.request)
+
         messages.success(self.request, "Bienvenido de vuelta " + self.request.user.username)
         return response
 
