@@ -773,7 +773,7 @@ class SuscriberExplorePostsView(ListView):
         # Filtrar los posts con status 'published' que cumplan cualquiera de las dos condiciones
         return Post.objects.filter(
             Q(status='published') & (programmed | regular)
-        ).order_by('-date_posted')
+        ).order_by('-priority', '-date_posted')
     
     def get_context_data(self, **kwargs):
         """Añade información adicional al contexto, como la lista de categorías."""
@@ -815,7 +815,7 @@ class SuscriberFeedPostsView(ListView):
         # Filtrar los posts con status 'published' que cumplan cualquiera de las dos condiciones
         return Post.objects.filter(
             Q(status='published') & (programmed | regular) & Q(category__in=purchased_categories)
-        ).order_by('-date_posted')
+        ).order_by('-priority', '-date_posted')
     
     def get_context_data(self, **kwargs):
         """Añade información adicional al contexto, como la lista de categorías."""

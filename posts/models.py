@@ -101,6 +101,7 @@ class Post(models.Model):
     publish_end_date = models.DateTimeField(blank=True, null=True)
     change_reason = models.CharField(max_length=255, blank=True, null=True)
     thumbnail = models.ImageField(upload_to='thumbnails/', blank=True, null=True)
+    priority = models.IntegerField(blank=True, null=True)
 
     class Meta:
         permissions = [
@@ -126,10 +127,27 @@ class Post(models.Model):
             slugify(self.title)
         ])
     
+    def calculate_priority(self):
+        """
+        Calcula la prioridad del post basado en el tipo de categoría (kind).
+
+        1: public
+        2: free
+        3: premium
+        """
+        if self.category.kind == 'public':
+            return 1
+        elif self.category.kind == 'free':
+            return 2
+        elif self.category.kind == 'premium':
+            return 3
+        return None
+    
     def save(self, *args, **kwargs):
         """
         Sobrescribe el método save para establecer date_posted cuando el estado cambia a 'published'.
         """
+        # Establecer la fecha de publicación si el estado es 'published' y la fecha de publicación es nula
         if self.status == 'published' and self.date_posted is None:
             self.date_posted = timezone.now()
         
@@ -138,6 +156,9 @@ class Post(models.Model):
         if self.pk:
             old_post = Post.objects.get(pk=self.pk)
             old_status = old_post.status
+
+        # Calcular la prioridad antes de guardar
+        self.priority = self.calculate_priority()
 
         super().save(*args, **kwargs)
 
