@@ -425,7 +425,6 @@ class ToEditView(PermissionRequiredMixin, LoginRequiredMixin, ListView):
     """
     model = Post
     template_name = 'edit/to_edit.html'
-    ordering = ['-date_posted']
     permission_required = 'posts.change_post'
     
     def get_queryset(self):
@@ -627,17 +626,33 @@ class ToPublishView(PermissionRequiredMixin, LoginRequiredMixin, ListView):
     """
     model = Post
     template_name = 'publish/to_publish.html'
-    ordering = ['-date_posted']
     permission_required = 'posts.can_publish'
     
     def get_queryset(self):
-        """Obtiene las publicaciones con estado 'to_publish', cuyo autor no sea el usuario logueado, ordenadas por fecha de publicación."""
-        return Post.objects.filter(status='to_publish').exclude(author=self.request.user).order_by('-date_posted')
+        """Obtiene las publicaciones con estado 'to_publish', cuyo autor no sea el usuario logueado, ordenadas por la fecha de la última versión del historial."""
+        PostHistory = Post.history.model
+        latest_history = PostHistory.objects.filter(id=OuterRef('id')).order_by('-history_date')
+        
+        queryset = Post.objects.filter(status='to_publish').exclude(author=self.request.user).annotate(
+            latest_history_date=Subquery(latest_history.values('history_date')[:1])
+        ).order_by('-latest_history_date')
+        
+        return queryset
     
     def get_context_data(self, **kwargs):
-        """Añade información adicional al contexto, como la lista de publicaciones."""
+        """Añade información adicional al contexto, como la lista de publicaciones y las fechas de publicación."""
         context = super().get_context_data(**kwargs)
         context['posts'] = context['object_list']
+        
+        # Añadir las fechas de publicación al contexto
+        publish_dates = {}
+        for post in context['posts']:
+            publish_dates[post.id] = {
+                'publish_start_date': post.publish_start_date,
+                'publish_end_date': post.publish_end_date
+            }
+        context['publish_dates'] = publish_dates
+        
         return context
 
 
@@ -684,6 +699,8 @@ class ToPublishPostView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView)
 
         context['post_history_page'] = post_history_page
         context['state_mapping'] = state_mapping
+        context['publish_start_date'] = post.publish_start_date
+        context['publish_end_date'] = post.publish_end_date
         return context
 
     def post(self, request, *args, **kwargs):
