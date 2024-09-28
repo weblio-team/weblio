@@ -1,349 +1,363 @@
 [
-{
-    "model": "members.member",
-    "pk": 1,
-    "fields": {
-        "password": "pbkdf2_sha256$870000$fgB5SNiLHrmp0qRwsv68mz$G/2Utmi1+FnzRZh7e/5OsB7lvzWOemw2j8ccs49hR2E=",
-        "last_login": "2024-09-11T00:18:47.135",
-        "is_superuser": true,
-        "username": "admin",
-        "first_name": "Weblio",
-        "last_name": "admin",
-        "email": "weblio@admin.com",
-        "is_active": true,
-        "is_staff": true,
-        "date_joined": "2024-09-10T22:58:56.184",
-        "pfp": "",
-        "groups": [
-            2,
-            3,
-            4,
-            8
-        ],
-        "user_permissions": [
-            9,
-            10,
-            11,
-            12,
-            5,
-            6,
-            7,
-            8,
-            22,
-            23,
-            24,
-            25,
-            26,
-            27,
-            28,
-            33,
-            37,
-            34,
-            35
-        ]
+    {
+        "model": "members.member",
+        "pk": 1,
+        "fields": {
+            "password": "pbkdf2_sha256$870000$fgB5SNiLHrmp0qRwsv68mz$G/2Utmi1+FnzRZh7e/5OsB7lvzWOemw2j8ccs49hR2E=",
+            "last_login": "2024-09-28T12:53:21.053",
+            "is_superuser": true,
+            "username": "admin",
+            "first_name": "Weblio",
+            "last_name": "admin",
+            "email": "weblio@admin.com",
+            "is_active": true,
+            "is_staff": true,
+            "date_joined": "2024-09-10T22:58:56.184",
+            "pfp": "",
+            "groups": [
+                2,
+                3,
+                4,
+                8
+            ],
+            "user_permissions": [
+                9,
+                10,
+                11,
+                12,
+                5,
+                6,
+                7,
+                8,
+                22,
+                23,
+                25,
+                24,
+                26,
+                27,
+                28,
+                33,
+                34,
+                35,
+                37
+            ],
+            "purchased_categories": []
+        }
+    },
+    {
+        "model": "members.member",
+        "pk": 2,
+        "fields": {
+            "password": "pbkdf2_sha256$870000$fgB5SNiLHrmp0qRwsv68mz$G/2Utmi1+FnzRZh7e/5OsB7lvzWOemw2j8ccs49hR2E=",
+            "last_login": "2024-09-10T23:34:01.253",
+            "is_superuser": false,
+            "username": "suscriptor",
+            "first_name": "Suscriptor",
+            "last_name": "Weblio",
+            "email": "suscriptor@weblio.com",
+            "is_active": true,
+            "is_staff": false,
+            "date_joined": "2024-09-10T23:23:24.539",
+            "pfp": "",
+            "groups": [
+                1
+            ],
+            "user_permissions": [
+                36
+            ],
+            "purchased_categories": []
+        }
+    },
+    {
+        "model": "members.member",
+        "pk": 3,
+        "fields": {
+            "password": "pbkdf2_sha256$870000$fgB5SNiLHrmp0qRwsv68mz$G/2Utmi1+FnzRZh7e/5OsB7lvzWOemw2j8ccs49hR2E=",
+            "last_login": null,
+            "is_superuser": false,
+            "username": "majo-autora",
+            "first_name": "majo",
+            "last_name": "autora",
+            "email": "monokumajo@gmail.com",
+            "is_active": true,
+            "is_staff": false,
+            "date_joined": "2024-09-10T23:26:10.429",
+            "pfp": "",
+            "groups": [
+                2
+            ],
+            "user_permissions": [
+                33,
+                35
+            ],
+            "purchased_categories": []
+        }
+    },
+    {
+        "model": "members.member",
+        "pk": 4,
+        "fields": {
+            "password": "pbkdf2_sha256$870000$fgB5SNiLHrmp0qRwsv68mz$G/2Utmi1+FnzRZh7e/5OsB7lvzWOemw2j8ccs49hR2E=",
+            "last_login": null,
+            "is_superuser": false,
+            "username": "majo-editora",
+            "first_name": "majo",
+            "last_name": "editora",
+            "email": "majo@editora.com",
+            "is_active": true,
+            "is_staff": false,
+            "date_joined": "2024-09-10T23:26:27.771",
+            "pfp": "",
+            "groups": [
+                3
+            ],
+            "user_permissions": [
+                34
+            ],
+            "purchased_categories": []
+        }
+    },
+    {
+        "model": "members.member",
+        "pk": 5,
+        "fields": {
+            "password": "pbkdf2_sha256$870000$fgB5SNiLHrmp0qRwsv68mz$G/2Utmi1+FnzRZh7e/5OsB7lvzWOemw2j8ccs49hR2E=",
+            "last_login": null,
+            "is_superuser": false,
+            "username": "majo-publicadora",
+            "first_name": "majo",
+            "last_name": "publicadora",
+            "email": "majo@publicadora.com",
+            "is_active": true,
+            "is_staff": false,
+            "date_joined": "2024-09-10T23:26:43.939",
+            "pfp": "",
+            "groups": [
+                4
+            ],
+            "user_permissions": [
+                37
+            ],
+            "purchased_categories": []
+        }
+    },
+    {
+        "model": "members.member",
+        "pk": 6,
+        "fields": {
+            "password": "pbkdf2_sha256$870000$fgB5SNiLHrmp0qRwsv68mz$G/2Utmi1+FnzRZh7e/5OsB7lvzWOemw2j8ccs49hR2E=",
+            "last_login": "2024-09-11T00:09:57.672",
+            "is_superuser": false,
+            "username": "kevin-autor",
+            "first_name": "kevin",
+            "last_name": "autor",
+            "email": "kevinhttps@gmail.com",
+            "is_active": true,
+            "is_staff": false,
+            "date_joined": "2024-09-10T23:27:30.725",
+            "pfp": "",
+            "groups": [
+                2
+            ],
+            "user_permissions": [
+                33,
+                35
+            ],
+            "purchased_categories": []
+        }
+    },
+    {
+        "model": "members.member",
+        "pk": 7,
+        "fields": {
+            "password": "pbkdf2_sha256$870000$fgB5SNiLHrmp0qRwsv68mz$G/2Utmi1+FnzRZh7e/5OsB7lvzWOemw2j8ccs49hR2E=",
+            "last_login": "2024-09-10T23:37:03.363",
+            "is_superuser": false,
+            "username": "kevin-editor",
+            "first_name": "kevin",
+            "last_name": "editor",
+            "email": "kevin@editor.com",
+            "is_active": true,
+            "is_staff": false,
+            "date_joined": "2024-09-10T23:27:52.376",
+            "pfp": "",
+            "groups": [
+                3
+            ],
+            "user_permissions": [
+                34
+            ],
+            "purchased_categories": []
+        }
+    },
+    {
+        "model": "members.member",
+        "pk": 8,
+        "fields": {
+            "password": "pbkdf2_sha256$870000$fgB5SNiLHrmp0qRwsv68mz$G/2Utmi1+FnzRZh7e/5OsB7lvzWOemw2j8ccs49hR2E=",
+            "last_login": null,
+            "is_superuser": false,
+            "username": "kevin-publicador",
+            "first_name": "kevin",
+            "last_name": "publicador",
+            "email": "kevin@publicador.com",
+            "is_active": true,
+            "is_staff": false,
+            "date_joined": "2024-09-10T23:28:04.245",
+            "pfp": "",
+            "groups": [
+                4
+            ],
+            "user_permissions": [
+                37
+            ],
+            "purchased_categories": []
+        }
+    },
+    {
+        "model": "members.member",
+        "pk": 9,
+        "fields": {
+            "password": "pbkdf2_sha256$870000$fgB5SNiLHrmp0qRwsv68mz$G/2Utmi1+FnzRZh7e/5OsB7lvzWOemw2j8ccs49hR2E=",
+            "last_login": null,
+            "is_superuser": false,
+            "username": "werner-autor",
+            "first_name": "werner",
+            "last_name": "autor",
+            "email": "werner@autor.com",
+            "is_active": true,
+            "is_staff": false,
+            "date_joined": "2024-09-10T23:28:27.081",
+            "pfp": "",
+            "groups": [
+                2
+            ],
+            "user_permissions": [
+                33,
+                35
+            ],
+            "purchased_categories": []
+        }
+    },
+    {
+        "model": "members.member",
+        "pk": 10,
+        "fields": {
+            "password": "pbkdf2_sha256$870000$fgB5SNiLHrmp0qRwsv68mz$G/2Utmi1+FnzRZh7e/5OsB7lvzWOemw2j8ccs49hR2E=",
+            "last_login": null,
+            "is_superuser": false,
+            "username": "werner-editor",
+            "first_name": "werner",
+            "last_name": "editor",
+            "email": "werner@editor.com",
+            "is_active": true,
+            "is_staff": false,
+            "date_joined": "2024-09-10T23:28:38.785",
+            "pfp": "",
+            "groups": [
+                3
+            ],
+            "user_permissions": [
+                34
+            ],
+            "purchased_categories": []
+        }
+    },
+    {
+        "model": "members.member",
+        "pk": 11,
+        "fields": {
+            "password": "pbkdf2_sha256$870000$fgB5SNiLHrmp0qRwsv68mz$G/2Utmi1+FnzRZh7e/5OsB7lvzWOemw2j8ccs49hR2E=",
+            "last_login": null,
+            "is_superuser": false,
+            "username": "werner-publicador",
+            "first_name": "werner",
+            "last_name": "publicador",
+            "email": "werner@publicador.com",
+            "is_active": true,
+            "is_staff": false,
+            "date_joined": "2024-09-10T23:28:50.759",
+            "pfp": "",
+            "groups": [
+                4
+            ],
+            "user_permissions": [
+                37
+            ],
+            "purchased_categories": []
+        }
+    },
+    {
+        "model": "members.member",
+        "pk": 12,
+        "fields": {
+            "password": "pbkdf2_sha256$870000$fgB5SNiLHrmp0qRwsv68mz$G/2Utmi1+FnzRZh7e/5OsB7lvzWOemw2j8ccs49hR2E=",
+            "last_login": null,
+            "is_superuser": false,
+            "username": "amanda-autora",
+            "first_name": "amanda",
+            "last_name": "autora",
+            "email": "amanda@autora.com",
+            "is_active": true,
+            "is_staff": false,
+            "date_joined": "2024-09-10T23:29:13.791",
+            "pfp": "",
+            "groups": [
+                2
+            ],
+            "user_permissions": [
+                33,
+                35
+            ],
+            "purchased_categories": []
+        }
+    },
+    {
+        "model": "members.member",
+        "pk": 13,
+        "fields": {
+            "password": "pbkdf2_sha256$870000$fgB5SNiLHrmp0qRwsv68mz$G/2Utmi1+FnzRZh7e/5OsB7lvzWOemw2j8ccs49hR2E=",
+            "last_login": null,
+            "is_superuser": false,
+            "username": "amanda-editora",
+            "first_name": "amanda",
+            "last_name": "editora",
+            "email": "amanda@editora.com",
+            "is_active": true,
+            "is_staff": false,
+            "date_joined": "2024-09-10T23:29:26.206",
+            "pfp": "",
+            "groups": [
+                3
+            ],
+            "user_permissions": [
+                34
+            ],
+            "purchased_categories": []
+        }
+    },
+    {
+        "model": "members.member",
+        "pk": 14,
+        "fields": {
+            "password": "pbkdf2_sha256$870000$fgB5SNiLHrmp0qRwsv68mz$G/2Utmi1+FnzRZh7e/5OsB7lvzWOemw2j8ccs49hR2E=",
+            "last_login": null,
+            "is_superuser": false,
+            "username": "amanda-publicadora",
+            "first_name": "amanda",
+            "last_name": "publicadora",
+            "email": "amanda@publicadora.com",
+            "is_active": true,
+            "is_staff": false,
+            "date_joined": "2024-09-10T23:29:41.462",
+            "pfp": "",
+            "groups": [
+                4
+            ],
+            "user_permissions": [
+                37
+            ],
+            "purchased_categories": []
+        }
     }
-},
-{
-    "model": "members.member",
-    "pk": 2,
-    "fields": {
-        "password": "pbkdf2_sha256$870000$fgB5SNiLHrmp0qRwsv68mz$G/2Utmi1+FnzRZh7e/5OsB7lvzWOemw2j8ccs49hR2E=",
-        "last_login": "2024-09-10T23:34:01.253",
-        "is_superuser": false,
-        "username": "suscriptor",
-        "first_name": "Suscriptor",
-        "last_name": "Weblio",
-        "email": "suscriptor@weblio.com",
-        "is_active": true,
-        "is_staff": false,
-        "date_joined": "2024-09-10T23:23:24.539",
-        "pfp": "",
-        "groups": [
-            1
-        ],
-        "user_permissions": [
-            36
-        ]
-    }
-},
-{
-    "model": "members.member",
-    "pk": 3,
-    "fields": {
-        "password": "pbkdf2_sha256$870000$fgB5SNiLHrmp0qRwsv68mz$G/2Utmi1+FnzRZh7e/5OsB7lvzWOemw2j8ccs49hR2E=",
-        "last_login": null,
-        "is_superuser": false,
-        "username": "majo-autora",
-        "first_name": "majo",
-        "last_name": "autora",
-        "email": "monokumajo@gmail.com",
-        "is_active": true,
-        "is_staff": false,
-        "date_joined": "2024-09-10T23:26:10.429",
-        "pfp": "",
-        "groups": [
-            2
-        ],
-        "user_permissions": [
-            33,
-            35
-        ]
-    }
-},
-{
-    "model": "members.member",
-    "pk": 4,
-    "fields": {
-        "password": "pbkdf2_sha256$870000$fgB5SNiLHrmp0qRwsv68mz$G/2Utmi1+FnzRZh7e/5OsB7lvzWOemw2j8ccs49hR2E=",
-        "last_login": null,
-        "is_superuser": false,
-        "username": "majo-editora",
-        "first_name": "majo",
-        "last_name": "editora",
-        "email": "majo@editora.com",
-        "is_active": true,
-        "is_staff": false,
-        "date_joined": "2024-09-10T23:26:27.771",
-        "pfp": "",
-        "groups": [
-            3
-        ],
-        "user_permissions": [
-            34
-        ]
-    }
-},
-{
-    "model": "members.member",
-    "pk": 5,
-    "fields": {
-        "password": "pbkdf2_sha256$870000$fgB5SNiLHrmp0qRwsv68mz$G/2Utmi1+FnzRZh7e/5OsB7lvzWOemw2j8ccs49hR2E=",
-        "last_login": null,
-        "is_superuser": false,
-        "username": "majo-publicadora",
-        "first_name": "majo",
-        "last_name": "publicadora",
-        "email": "majo@publicadora.com",
-        "is_active": true,
-        "is_staff": false,
-        "date_joined": "2024-09-10T23:26:43.939",
-        "pfp": "",
-        "groups": [
-            4
-        ],
-        "user_permissions": [
-            37
-        ]
-    }
-},
-{
-    "model": "members.member",
-    "pk": 6,
-    "fields": {
-        "password": "pbkdf2_sha256$870000$fgB5SNiLHrmp0qRwsv68mz$G/2Utmi1+FnzRZh7e/5OsB7lvzWOemw2j8ccs49hR2E=",
-        "last_login": "2024-09-11T00:09:57.672",
-        "is_superuser": false,
-        "username": "kevin-autor",
-        "first_name": "kevin",
-        "last_name": "autor",
-        "email": "kevinhttps@gmail.com",
-        "is_active": true,
-        "is_staff": false,
-        "date_joined": "2024-09-10T23:27:30.725",
-        "pfp": "",
-        "groups": [
-            2
-        ],
-        "user_permissions": [
-            33,
-            35
-        ]
-    }
-},
-{
-    "model": "members.member",
-    "pk": 7,
-    "fields": {
-        "password": "pbkdf2_sha256$870000$fgB5SNiLHrmp0qRwsv68mz$G/2Utmi1+FnzRZh7e/5OsB7lvzWOemw2j8ccs49hR2E=",
-        "last_login": "2024-09-10T23:37:03.363",
-        "is_superuser": false,
-        "username": "kevin-editor",
-        "first_name": "kevin",
-        "last_name": "editor",
-        "email": "kevin@editor.com",
-        "is_active": true,
-        "is_staff": false,
-        "date_joined": "2024-09-10T23:27:52.376",
-        "pfp": "",
-        "groups": [
-            3
-        ],
-        "user_permissions": [
-            34
-        ]
-    }
-},
-{
-    "model": "members.member",
-    "pk": 8,
-    "fields": {
-        "password": "pbkdf2_sha256$870000$fgB5SNiLHrmp0qRwsv68mz$G/2Utmi1+FnzRZh7e/5OsB7lvzWOemw2j8ccs49hR2E=",
-        "last_login": null,
-        "is_superuser": false,
-        "username": "kevin-publicador",
-        "first_name": "kevin",
-        "last_name": "publicador",
-        "email": "kevin@publicador.com",
-        "is_active": true,
-        "is_staff": false,
-        "date_joined": "2024-09-10T23:28:04.245",
-        "pfp": "",
-        "groups": [
-            4
-        ],
-        "user_permissions": [
-            37
-        ]
-    }
-},
-{
-    "model": "members.member",
-    "pk": 9,
-    "fields": {
-        "password": "pbkdf2_sha256$870000$fgB5SNiLHrmp0qRwsv68mz$G/2Utmi1+FnzRZh7e/5OsB7lvzWOemw2j8ccs49hR2E=",
-        "last_login": null,
-        "is_superuser": false,
-        "username": "werner-autor",
-        "first_name": "werner",
-        "last_name": "autor",
-        "email": "werner@autor.com",
-        "is_active": true,
-        "is_staff": false,
-        "date_joined": "2024-09-10T23:28:27.081",
-        "pfp": "",
-        "groups": [
-            2
-        ],
-        "user_permissions": [
-            33,
-            35
-        ]
-    }
-},
-{
-    "model": "members.member",
-    "pk": 10,
-    "fields": {
-        "password": "pbkdf2_sha256$870000$fgB5SNiLHrmp0qRwsv68mz$G/2Utmi1+FnzRZh7e/5OsB7lvzWOemw2j8ccs49hR2E=",
-        "last_login": null,
-        "is_superuser": false,
-        "username": "werner-editor",
-        "first_name": "werner",
-        "last_name": "editor",
-        "email": "werner@editor.com",
-        "is_active": true,
-        "is_staff": false,
-        "date_joined": "2024-09-10T23:28:38.785",
-        "pfp": "",
-        "groups": [
-            3
-        ],
-        "user_permissions": [
-            34
-        ]
-    }
-},
-{
-    "model": "members.member",
-    "pk": 11,
-    "fields": {
-        "password": "pbkdf2_sha256$870000$fgB5SNiLHrmp0qRwsv68mz$G/2Utmi1+FnzRZh7e/5OsB7lvzWOemw2j8ccs49hR2E=",
-        "last_login": null,
-        "is_superuser": false,
-        "username": "werner-publicador",
-        "first_name": "werner",
-        "last_name": "publicador",
-        "email": "werner@publicador.com",
-        "is_active": true,
-        "is_staff": false,
-        "date_joined": "2024-09-10T23:28:50.759",
-        "pfp": "",
-        "groups": [
-            4
-        ],
-        "user_permissions": [
-            37
-        ]
-    }
-},
-{
-    "model": "members.member",
-    "pk": 12,
-    "fields": {
-        "password": "pbkdf2_sha256$870000$fgB5SNiLHrmp0qRwsv68mz$G/2Utmi1+FnzRZh7e/5OsB7lvzWOemw2j8ccs49hR2E=",
-        "last_login": null,
-        "is_superuser": false,
-        "username": "amanda-autora",
-        "first_name": "amanda",
-        "last_name": "autora",
-        "email": "amanda@autora.com",
-        "is_active": true,
-        "is_staff": false,
-        "date_joined": "2024-09-10T23:29:13.791",
-        "pfp": "",
-        "groups": [
-            2
-        ],
-        "user_permissions": [
-            33,
-            35
-        ]
-    }
-},
-{
-    "model": "members.member",
-    "pk": 13,
-    "fields": {
-        "password": "pbkdf2_sha256$870000$fgB5SNiLHrmp0qRwsv68mz$G/2Utmi1+FnzRZh7e/5OsB7lvzWOemw2j8ccs49hR2E=",
-        "last_login": null,
-        "is_superuser": false,
-        "username": "amanda-editora",
-        "first_name": "amanda",
-        "last_name": "editora",
-        "email": "amanda@editora.com",
-        "is_active": true,
-        "is_staff": false,
-        "date_joined": "2024-09-10T23:29:26.206",
-        "pfp": "",
-        "groups": [
-            3
-        ],
-        "user_permissions": [
-            34
-        ]
-    }
-},
-{
-    "model": "members.member",
-    "pk": 14,
-    "fields": {
-        "password": "pbkdf2_sha256$870000$fgB5SNiLHrmp0qRwsv68mz$G/2Utmi1+FnzRZh7e/5OsB7lvzWOemw2j8ccs49hR2E=",
-        "last_login": null,
-        "is_superuser": false,
-        "username": "amanda-publicadora",
-        "first_name": "amanda",
-        "last_name": "publicadora",
-        "email": "amanda@publicadora.com",
-        "is_active": true,
-        "is_staff": false,
-        "date_joined": "2024-09-10T23:29:41.462",
-        "pfp": "",
-        "groups": [
-            4
-        ],
-        "user_permissions": [
-            37
-        ]
-    }
-}
 ]

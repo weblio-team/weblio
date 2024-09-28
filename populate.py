@@ -30,6 +30,8 @@ replacements = {
 
 # Función para reemplazar caracteres acentuados por su equivalente sin acento
 def replace_accented_characters(text):
+    if text is None:
+        return ""
     for accented_char, replacement in replacements.items():
         text = text.replace(accented_char, replacement)
     return text

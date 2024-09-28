@@ -1,112 +1,2333 @@
 [
-{
-    "model": "posts.category",
-    "pk": 1,
-    "fields": {
-        "name": "Uncategorized",
-        "description": "lorem ipsum dolor sit amet consectetur adipisicing elit sed do",
-        "alias": "",
-        "price": "0.00",
-        "kind": "free"
+    {
+        "model": "posts.category",
+        "pk": 1,
+        "fields": {
+            "name": "Uncategorized",
+            "description": "lorem ipsum dolor sit amet consectetur adipisicing elit sed do",
+            "alias": "NA",
+            "price": "0.00",
+            "kind": "free"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": 2,
+        "fields": {
+            "name": "Tecnologia",
+            "description": "Explora lo ultimo en tecnologia y avances cientificos",
+            "alias": "TE",
+            "price": "1.78",
+            "kind": "premium"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": 3,
+        "fields": {
+            "name": "Salud",
+            "description": "Consejos para llevar una vida saludable y activa",
+            "alias": "SA",
+            "price": "0.00",
+            "kind": "public"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": 4,
+        "fields": {
+            "name": "Viajes",
+            "description": "Guias y recomendaciones para viajar por el mundo",
+            "alias": "VI",
+            "price": "0.00",
+            "kind": "public"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": 5,
+        "fields": {
+            "name": "Negocios",
+            "description": "Estrategias para el exito en el mundo de los negocios",
+            "alias": "NE",
+            "price": "0.00",
+            "kind": "public"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": 6,
+        "fields": {
+            "name": "Finanzas",
+            "description": "Aprende a gestionar tus finanzas personales y profesionales",
+            "alias": "FI",
+            "price": "0.00",
+            "kind": "public"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": 7,
+        "fields": {
+            "name": "Educacion",
+            "description": "Recursos y herramientas educativas para el aprendizaje",
+            "alias": "ED",
+            "price": "5.30",
+            "kind": "premium"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": 8,
+        "fields": {
+            "name": "Deportes",
+            "description": "Todo sobre los deportes y como mantenerte en forma",
+            "alias": "DE",
+            "price": "0.00",
+            "kind": "public"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": 9,
+        "fields": {
+            "name": "Entretenimiento",
+            "description": "Noticias y tendencias en el mundo del entretenimiento",
+            "alias": "EN",
+            "price": "0.00",
+            "kind": "free"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": 10,
+        "fields": {
+            "name": "Cocina",
+            "description": "Recetas consejos y trucos para mejorar en la cocina",
+            "alias": "CO",
+            "price": "5.67",
+            "kind": "premium"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": 11,
+        "fields": {
+            "name": "Arte",
+            "description": "Explora el mundo del arte y la creatividad",
+            "alias": "AR",
+            "price": "0.00",
+            "kind": "public"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": 12,
+        "fields": {
+            "name": "Moda",
+            "description": "Las ultimas tendencias y consejos sobre moda",
+            "alias": "MO",
+            "price": "3.83",
+            "kind": "premium"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": 13,
+        "fields": {
+            "name": "Ciencia",
+            "description": "Descubre lo mas reciente en el mundo de la ciencia",
+            "alias": "CI",
+            "price": "0.00",
+            "kind": "public"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": 14,
+        "fields": {
+            "name": "Musica",
+            "description": "Todo lo relacionado con la musica desde teoria hasta actualidad",
+            "alias": "MU",
+            "price": "0.00",
+            "kind": "free"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": 15,
+        "fields": {
+            "name": "Cine",
+            "description": "Lo mas reciente del mundo del cine y la television",
+            "alias": "CI",
+            "price": "0.00",
+            "kind": "public"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": 16,
+        "fields": {
+            "name": "Literatura",
+            "description": "Recomendaciones y analisis de libros y literatura clasica",
+            "alias": "LI",
+            "price": "0.00",
+            "kind": "public"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": 17,
+        "fields": {
+            "name": "Desarrollo Personal",
+            "description": "Mejora tu vida con consejos de desarrollo personal",
+            "alias": "DE",
+            "price": "0.00",
+            "kind": "free"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": 18,
+        "fields": {
+            "name": "Medio Ambiente",
+            "description": "Consejos para proteger el medio ambiente y vivir de manera sostenible",
+            "alias": "ME",
+            "price": "0.00",
+            "kind": "public"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": 19,
+        "fields": {
+            "name": "Politica",
+            "description": "Analisis de los temas mas relevantes de la politica",
+            "alias": "PO",
+            "price": "0.00",
+            "kind": "free"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": 20,
+        "fields": {
+            "name": "Historia",
+            "description": "Descubre hechos y analisis profundos de la historia",
+            "alias": "HI",
+            "price": "9.98",
+            "kind": "premium"
+        }
+    },
+    {
+        "model": "posts.category",
+        "pk": 21,
+        "fields": {
+            "name": "Automoviles",
+            "description": "Todo sobre el mundo de los automoviles y motores",
+            "alias": "AU",
+            "price": "0.00",
+            "kind": "public"
+        }
+    },
+    {
+        "model": "posts.post",
+        "pk": 1,
+        "fields": {
+            "title": "The Future of AI in Healthcare",
+            "title_tag": "AI in Healthcare",
+            "summary": "Explore how AI is transforming healthcare, improving diagnosis and treatment.",
+            "body": "Explore how AI is transforming healthcare, improving diagnosis and treatment.Explore how AI is transforming healthcare, improving diagnosis and treatment.Explore how AI is transforming healthcare, improving diagnosis and treatment.Explore how AI is transforming healthcare, improving diagnosis and treatment.Explore how AI is transforming healthcare, improving diagnosis and treatment.",
+            "date_posted": "2024-09-27T21:57:13.839",
+            "date_created": "2024-09-27T21:57:13.839",
+            "author": 12,
+            "status": "to_edit",
+            "category": 5,
+            "keywords": "AI healthcare artificial intelligence",
+            "publish_start_date": null,
+            "publish_end_date": null,
+            "change_reason": null,
+            "thumbnail": "",
+            "priority": null
+        }
+    },
+    {
+        "model": "posts.post",
+        "pk": 2,
+        "fields": {
+            "title": "Top 10 Travel Destinations",
+            "title_tag": "Travel Guide",
+            "summary": "Find out the top travel destinations that you should visit in 2024.",
+            "body": "Find out the top travel destinations that you should visit in 2024.Find out the top travel destinations that you should visit in 2024.Find out the top travel destinations that you should visit in 2024.Find out the top travel destinations that you should visit in 2024.Find out the top travel destinations that you should visit in 2024.",
+            "date_posted": "2024-09-27T21:57:13.839",
+            "date_created": "2024-09-27T21:57:13.839",
+            "author": 12,
+            "status": "draft",
+            "category": 21,
+            "keywords": "travel destinations tourism",
+            "publish_start_date": null,
+            "publish_end_date": null,
+            "change_reason": null,
+            "thumbnail": "",
+            "priority": null
+        }
+    },
+    {
+        "model": "posts.post",
+        "pk": 3,
+        "fields": {
+            "title": "Understanding Stock Markets",
+            "title_tag": "Stock Markets",
+            "summary": "Understand the basics of stock markets and how to invest smartly.",
+            "body": "Understand the basics of stock markets and how to invest smartly.Understand the basics of stock markets and how to invest smartly.Understand the basics of stock markets and how to invest smartly.Understand the basics of stock markets and how to invest smartly.Understand the basics of stock markets and how to invest smartly.",
+            "date_posted": "2024-09-27T21:57:13.839",
+            "date_created": "2024-09-27T21:57:13.839",
+            "author": 6,
+            "status": "to_publish",
+            "category": 16,
+            "keywords": "stocks investing finance",
+            "publish_start_date": null,
+            "publish_end_date": null,
+            "change_reason": null,
+            "thumbnail": "",
+            "priority": null
+        }
+    },
+    {
+        "model": "posts.post",
+        "pk": 4,
+        "fields": {
+            "title": "The Importance of Mental Health",
+            "title_tag": "Mental Health Awareness",
+            "summary": "Learn why mental health is important and how to improve it.",
+            "body": "Learn why mental health is important and how to improve it.Learn why mental health is important and how to improve it.Learn why mental health is important and how to improve it.Learn why mental health is important and how to improve it.Learn why mental health is important and how to improve it.",
+            "date_posted": "2024-09-27T21:57:13.839",
+            "date_created": "2024-09-27T21:57:13.839",
+            "author": 9,
+            "status": "to_publish",
+            "category": 8,
+            "keywords": "mental health wellbeing awareness",
+            "publish_start_date": null,
+            "publish_end_date": null,
+            "change_reason": null,
+            "thumbnail": "",
+            "priority": null
+        }
+    },
+    {
+        "model": "posts.post",
+        "pk": 5,
+        "fields": {
+            "title": "How to Start a Business",
+            "title_tag": "Start a Business",
+            "summary": "Step-by-step guide to starting your own successful business.",
+            "body": "Step-by-step guide to starting your own successful business.Step-by-step guide to starting your own successful business.Step-by-step guide to starting your own successful business.Step-by-step guide to starting your own successful business.Step-by-step guide to starting your own successful business.",
+            "date_posted": "2024-09-27T21:57:13.839",
+            "date_created": "2024-09-27T21:57:13.839",
+            "author": 12,
+            "status": "published",
+            "category": 15,
+            "keywords": "business entrepreneurship startup",
+            "publish_start_date": null,
+            "publish_end_date": null,
+            "change_reason": null,
+            "thumbnail": "",
+            "priority": null
+        }
+    },
+    {
+        "model": "posts.post",
+        "pk": 6,
+        "fields": {
+            "title": "Fitness Tips for a Healthy Life",
+            "title_tag": "Fitness and Health",
+            "summary": "Get the best fitness tips for staying healthy and active.",
+            "body": "Get the best fitness tips for staying healthy and active.Get the best fitness tips for staying healthy and active.Get the best fitness tips for staying healthy and active.Get the best fitness tips for staying healthy and active.Get the best fitness tips for staying healthy and active.",
+            "date_posted": "2024-09-27T21:57:13.839",
+            "date_created": "2024-09-27T21:57:13.839",
+            "author": 3,
+            "status": "to_edit",
+            "category": 1,
+            "keywords": "fitness health exercise",
+            "publish_start_date": null,
+            "publish_end_date": null,
+            "change_reason": null,
+            "thumbnail": "",
+            "priority": null
+        }
+    },
+    {
+        "model": "posts.post",
+        "pk": 7,
+        "fields": {
+            "title": "How to Learn a New Language",
+            "title_tag": "Language Learning",
+            "summary": "Effective strategies to learn a new language quickly.",
+            "body": "Effective strategies to learn a new language quickly.Effective strategies to learn a new language quickly.Effective strategies to learn a new language quickly.Effective strategies to learn a new language quickly.Effective strategies to learn a new language quickly.",
+            "date_posted": "2024-09-27T21:57:13.839",
+            "date_created": "2024-09-27T21:57:13.839",
+            "author": 6,
+            "status": "to_edit",
+            "category": 21,
+            "keywords": "language learning linguistics education",
+            "publish_start_date": null,
+            "publish_end_date": null,
+            "change_reason": null,
+            "thumbnail": "",
+            "priority": null
+        }
+    },
+    {
+        "model": "posts.post",
+        "pk": 8,
+        "fields": {
+            "title": "Best Practices in Web Development",
+            "title_tag": "Web Development Tips",
+            "summary": "Learn the best practices for web development and coding.",
+            "body": "Learn the best practices for web development and coding.Learn the best practices for web development and coding.Learn the best practices for web development and coding.Learn the best practices for web development and coding.Learn the best practices for web development and coding.",
+            "date_posted": "2024-09-27T21:57:13.839",
+            "date_created": "2024-09-27T21:57:13.839",
+            "author": 9,
+            "status": "draft",
+            "category": 16,
+            "keywords": "web development coding programming",
+            "publish_start_date": null,
+            "publish_end_date": null,
+            "change_reason": null,
+            "thumbnail": "",
+            "priority": null
+        }
+    },
+    {
+        "model": "posts.post",
+        "pk": 9,
+        "fields": {
+            "title": "Essential Skills for Data Science",
+            "title_tag": "Data Science Skills",
+            "summary": "Key skills to succeed in the data science industry.",
+            "body": "Key skills to succeed in the data science industry.Key skills to succeed in the data science industry.Key skills to succeed in the data science industry.Key skills to succeed in the data science industry.Key skills to succeed in the data science industry.",
+            "date_posted": "2024-09-27T21:57:13.839",
+            "date_created": "2024-09-27T21:57:13.839",
+            "author": 9,
+            "status": "to_publish",
+            "category": 8,
+            "keywords": "data science analytics machine learning",
+            "publish_start_date": null,
+            "publish_end_date": null,
+            "change_reason": null,
+            "thumbnail": "",
+            "priority": null
+        }
+    },
+    {
+        "model": "posts.post",
+        "pk": 10,
+        "fields": {
+            "title": "The Rise of Blockchain Technology",
+            "title_tag": "Blockchain Tech",
+            "summary": "A deep dive into blockchain technology and its uses.",
+            "body": "A deep dive into blockchain technology and its uses.A deep dive into blockchain technology and its uses.A deep dive into blockchain technology and its uses.A deep dive into blockchain technology and its uses.A deep dive into blockchain technology and its uses.",
+            "date_posted": "2024-09-27T21:57:13.839",
+            "date_created": "2024-09-27T21:57:13.839",
+            "author": 3,
+            "status": "draft",
+            "category": 19,
+            "keywords": "blockchain cryptocurrency decentralized",
+            "publish_start_date": null,
+            "publish_end_date": null,
+            "change_reason": null,
+            "thumbnail": "",
+            "priority": null
+        }
+    },
+    {
+        "model": "posts.post",
+        "pk": 11,
+        "fields": {
+            "title": "Digital Marketing Strategies",
+            "title_tag": "Digital Marketing",
+            "summary": "Proven strategies to boost your digital marketing efforts.",
+            "body": "Proven strategies to boost your digital marketing efforts.Proven strategies to boost your digital marketing efforts.Proven strategies to boost your digital marketing efforts.Proven strategies to boost your digital marketing efforts.Proven strategies to boost your digital marketing efforts.",
+            "date_posted": "2024-09-27T21:57:13.839",
+            "date_created": "2024-09-27T21:57:13.839",
+            "author": 3,
+            "status": "to_edit",
+            "category": 3,
+            "keywords": "digital marketing online business SEO",
+            "publish_start_date": null,
+            "publish_end_date": null,
+            "change_reason": null,
+            "thumbnail": "",
+            "priority": null
+        }
+    },
+    {
+        "model": "posts.post",
+        "pk": 12,
+        "fields": {
+            "title": "Tips for Remote Work Success",
+            "title_tag": "Remote Work",
+            "summary": "Tips for succeeding while working remotely.",
+            "body": "Tips for succeeding while working remotely.Tips for succeeding while working remotely.Tips for succeeding while working remotely.Tips for succeeding while working remotely.Tips for succeeding while working remotely.",
+            "date_posted": "2024-09-27T21:57:13.839",
+            "date_created": "2024-09-27T21:57:13.839",
+            "author": 9,
+            "status": "draft",
+            "category": 20,
+            "keywords": "remote work telecommuting work from home",
+            "publish_start_date": null,
+            "publish_end_date": null,
+            "change_reason": null,
+            "thumbnail": "",
+            "priority": null
+        }
+    },
+    {
+        "model": "posts.post",
+        "pk": 13,
+        "fields": {
+            "title": "How to Manage Personal Finances",
+            "title_tag": "Personal Finance",
+            "summary": "Learn how to manage your personal finances and save money.",
+            "body": "Learn how to manage your personal finances and save money.Learn how to manage your personal finances and save money.Learn how to manage your personal finances and save money.Learn how to manage your personal finances and save money.Learn how to manage your personal finances and save money.",
+            "date_posted": "2024-09-27T21:57:13.839",
+            "date_created": "2024-09-27T21:57:13.839",
+            "author": 12,
+            "status": "to_edit",
+            "category": 9,
+            "keywords": "personal finance savings budgeting",
+            "publish_start_date": null,
+            "publish_end_date": null,
+            "change_reason": null,
+            "thumbnail": "",
+            "priority": null
+        }
+    },
+    {
+        "model": "posts.post",
+        "pk": 14,
+        "fields": {
+            "title": "Exploring the Solar System",
+            "title_tag": "Space Exploration",
+            "summary": "An exciting exploration of the solar system and its planets.",
+            "body": "An exciting exploration of the solar system and its planets.An exciting exploration of the solar system and its planets.An exciting exploration of the solar system and its planets.An exciting exploration of the solar system and its planets.An exciting exploration of the solar system and its planets.",
+            "date_posted": "2024-09-27T21:57:13.839",
+            "date_created": "2024-09-27T21:57:13.839",
+            "author": 6,
+            "status": "to_edit",
+            "category": 1,
+            "keywords": "space exploration planets solar system",
+            "publish_start_date": null,
+            "publish_end_date": null,
+            "change_reason": null,
+            "thumbnail": "",
+            "priority": null
+        }
+    },
+    {
+        "model": "posts.post",
+        "pk": 15,
+        "fields": {
+            "title": "How to Build a Personal Brand",
+            "title_tag": "Personal Branding",
+            "summary": "Build a strong personal brand with these tips.",
+            "body": "Build a strong personal brand with these tips.Build a strong personal brand with these tips.Build a strong personal brand with these tips.Build a strong personal brand with these tips.Build a strong personal brand with these tips.",
+            "date_posted": "2024-09-27T21:57:13.839",
+            "date_created": "2024-09-27T21:57:13.839",
+            "author": 3,
+            "status": "draft",
+            "category": 2,
+            "keywords": "personal branding career success",
+            "publish_start_date": null,
+            "publish_end_date": null,
+            "change_reason": null,
+            "thumbnail": "",
+            "priority": null
+        }
+    },
+    {
+        "model": "posts.post",
+        "pk": 16,
+        "fields": {
+            "title": "The Impact of Climate Change",
+            "title_tag": "Climate Change",
+            "summary": "The impact of climate change on our planet and solutions.",
+            "body": "The impact of climate change on our planet and solutions.The impact of climate change on our planet and solutions.The impact of climate change on our planet and solutions.The impact of climate change on our planet and solutions.The impact of climate change on our planet and solutions.",
+            "date_posted": "2024-09-27T21:57:13.839",
+            "date_created": "2024-09-27T21:57:13.839",
+            "author": 6,
+            "status": "draft",
+            "category": 3,
+            "keywords": "climate change environment sustainability",
+            "publish_start_date": null,
+            "publish_end_date": null,
+            "change_reason": null,
+            "thumbnail": "",
+            "priority": null
+        }
+    },
+    {
+        "model": "posts.post",
+        "pk": 17,
+        "fields": {
+            "title": "Best BudgetFriendly Gadgets",
+            "title_tag": "Tech Gadgets",
+            "summary": "The best budget-friendly tech gadgets you can buy.",
+            "body": "The best budget-friendly tech gadgets you can buy.The best budget-friendly tech gadgets you can buy.The best budget-friendly tech gadgets you can buy.The best budget-friendly tech gadgets you can buy.The best budget-friendly tech gadgets you can buy.",
+            "date_posted": "2024-09-27T21:57:13.839",
+            "date_created": "2024-09-27T21:57:13.839",
+            "author": 3,
+            "status": "to_publish",
+            "category": 21,
+            "keywords": "tech gadgets budget electronics",
+            "publish_start_date": null,
+            "publish_end_date": null,
+            "change_reason": null,
+            "thumbnail": "",
+            "priority": null
+        }
+    },
+    {
+        "model": "posts.post",
+        "pk": 18,
+        "fields": {
+            "title": "How to Meditate Effectively",
+            "title_tag": "Meditation Guide",
+            "summary": "Learn how to meditate and improve mental clarity.",
+            "body": "Learn how to meditate and improve mental clarity.Learn how to meditate and improve mental clarity.Learn how to meditate and improve mental clarity.Learn how to meditate and improve mental clarity.Learn how to meditate and improve mental clarity.",
+            "date_posted": "2024-09-27T21:57:13.839",
+            "date_created": "2024-09-27T21:57:13.839",
+            "author": 3,
+            "status": "published",
+            "category": 16,
+            "keywords": "meditation mindfulness relaxation",
+            "publish_start_date": null,
+            "publish_end_date": null,
+            "change_reason": null,
+            "thumbnail": "",
+            "priority": null
+        }
+    },
+    {
+        "model": "posts.post",
+        "pk": 19,
+        "fields": {
+            "title": "Latest Trends in Machine Learning",
+            "title_tag": "Machine Learning",
+            "summary": "Explore the latest trends in machine learning and AI.",
+            "body": "Explore the latest trends in machine learning and AI.Explore the latest trends in machine learning and AI.Explore the latest trends in machine learning and AI.Explore the latest trends in machine learning and AI.Explore the latest trends in machine learning and AI.",
+            "date_posted": "2024-09-27T21:57:13.839",
+            "date_created": "2024-09-27T21:57:13.839",
+            "author": 6,
+            "status": "to_edit",
+            "category": 1,
+            "keywords": "machine learning AI technology",
+            "publish_start_date": null,
+            "publish_end_date": null,
+            "change_reason": null,
+            "thumbnail": "",
+            "priority": null
+        }
+    },
+    {
+        "model": "posts.post",
+        "pk": 20,
+        "fields": {
+            "title": "How to Boost Your Productivity",
+            "title_tag": "Productivity Tips",
+            "summary": "Discover effective ways to boost productivity and manage your time better.",
+            "body": "Discover effective ways to boost productivity and manage your time better.Discover effective ways to boost productivity and manage your time better.Discover effective ways to boost productivity and manage your time better.Discover effective ways to boost productivity and manage your time better.Discover effective ways to boost productivity and manage your time better.",
+            "date_posted": "2024-09-27T21:57:13.839",
+            "date_created": "2024-09-27T21:57:13.839",
+            "author": 12,
+            "status": "published",
+            "category": 18,
+            "keywords": "productivity time management efficiency",
+            "publish_start_date": null,
+            "publish_end_date": null,
+            "change_reason": null,
+            "thumbnail": "",
+            "priority": null
+        }
+    },
+    {
+        "model": "posts.post",
+        "pk": 21,
+        "fields": {
+            "title": "The Future of AI in Healthcare",
+            "title_tag": "AI in Healthcare",
+            "summary": "Explore how AI is transforming healthcare, improving diagnosis and treatment.",
+            "body": "Explore how AI is transforming healthcare, improving diagnosis and treatment.Explore how AI is transforming healthcare, improving diagnosis and treatment.Explore how AI is transforming healthcare, improving diagnosis and treatment.Explore how AI is transforming healthcare, improving diagnosis and treatment.Explore how AI is transforming healthcare, improving diagnosis and treatment.",
+            "date_posted": "2024-09-27T21:57:13.839",
+            "date_created": "2024-09-27T21:57:13.839",
+            "author": 3,
+            "status": "published",
+            "category": 5,
+            "keywords": "AI healthcare artificial intelligence",
+            "publish_start_date": null,
+            "publish_end_date": null,
+            "change_reason": null,
+            "thumbnail": "",
+            "priority": null
+        }
+    },
+    {
+        "model": "posts.post",
+        "pk": 22,
+        "fields": {
+            "title": "Top 10 Travel Destinations",
+            "title_tag": "Travel Guide",
+            "summary": "Find out the top travel destinations that you should visit in 2024.",
+            "body": "Find out the top travel destinations that you should visit in 2024.Find out the top travel destinations that you should visit in 2024.Find out the top travel destinations that you should visit in 2024.Find out the top travel destinations that you should visit in 2024.Find out the top travel destinations that you should visit in 2024.",
+            "date_posted": "2024-09-27T21:57:13.839",
+            "date_created": "2024-09-27T21:57:13.839",
+            "author": 3,
+            "status": "to_publish",
+            "category": 14,
+            "keywords": "travel destinations tourism",
+            "publish_start_date": null,
+            "publish_end_date": null,
+            "change_reason": null,
+            "thumbnail": "",
+            "priority": null
+        }
+    },
+    {
+        "model": "posts.post",
+        "pk": 23,
+        "fields": {
+            "title": "Understanding Stock Markets",
+            "title_tag": "Stock Markets",
+            "summary": "Understand the basics of stock markets and how to invest smartly.",
+            "body": "Understand the basics of stock markets and how to invest smartly.Understand the basics of stock markets and how to invest smartly.Understand the basics of stock markets and how to invest smartly.Understand the basics of stock markets and how to invest smartly.Understand the basics of stock markets and how to invest smartly.",
+            "date_posted": "2024-09-27T21:57:13.839",
+            "date_created": "2024-09-27T21:57:13.839",
+            "author": 12,
+            "status": "draft",
+            "category": 7,
+            "keywords": "stocks investing finance",
+            "publish_start_date": null,
+            "publish_end_date": null,
+            "change_reason": null,
+            "thumbnail": "",
+            "priority": null
+        }
+    },
+    {
+        "model": "posts.post",
+        "pk": 24,
+        "fields": {
+            "title": "The Importance of Mental Health",
+            "title_tag": "Mental Health Awareness",
+            "summary": "Learn why mental health is important and how to improve it.",
+            "body": "Learn why mental health is important and how to improve it.Learn why mental health is important and how to improve it.Learn why mental health is important and how to improve it.Learn why mental health is important and how to improve it.Learn why mental health is important and how to improve it.",
+            "date_posted": "2024-09-27T21:57:13.839",
+            "date_created": "2024-09-27T21:57:13.839",
+            "author": 9,
+            "status": "to_publish",
+            "category": 17,
+            "keywords": "mental health wellbeing awareness",
+            "publish_start_date": null,
+            "publish_end_date": null,
+            "change_reason": null,
+            "thumbnail": "",
+            "priority": null
+        }
+    },
+    {
+        "model": "posts.post",
+        "pk": 25,
+        "fields": {
+            "title": "How to Start a Business",
+            "title_tag": "Start a Business",
+            "summary": "Step-by-step guide to starting your own successful business.",
+            "body": "Step-by-step guide to starting your own successful business.Step-by-step guide to starting your own successful business.Step-by-step guide to starting your own successful business.Step-by-step guide to starting your own successful business.Step-by-step guide to starting your own successful business.",
+            "date_posted": "2024-09-27T21:57:13.839",
+            "date_created": "2024-09-27T21:57:13.839",
+            "author": 3,
+            "status": "published",
+            "category": 18,
+            "keywords": "business entrepreneurship startup",
+            "publish_start_date": null,
+            "publish_end_date": null,
+            "change_reason": null,
+            "thumbnail": "",
+            "priority": null
+        }
+    },
+    {
+        "model": "posts.post",
+        "pk": 26,
+        "fields": {
+            "title": "Fitness Tips for a Healthy Life",
+            "title_tag": "Fitness and Health",
+            "summary": "Get the best fitness tips for staying healthy and active.",
+            "body": "Get the best fitness tips for staying healthy and active.Get the best fitness tips for staying healthy and active.Get the best fitness tips for staying healthy and active.Get the best fitness tips for staying healthy and active.Get the best fitness tips for staying healthy and active.",
+            "date_posted": "2024-09-27T21:57:13.839",
+            "date_created": "2024-09-27T21:57:13.839",
+            "author": 9,
+            "status": "published",
+            "category": 1,
+            "keywords": "fitness health exercise",
+            "publish_start_date": null,
+            "publish_end_date": null,
+            "change_reason": null,
+            "thumbnail": "",
+            "priority": null
+        }
+    },
+    {
+        "model": "posts.post",
+        "pk": 27,
+        "fields": {
+            "title": "How to Learn a New Language",
+            "title_tag": "Language Learning",
+            "summary": "Effective strategies to learn a new language quickly.",
+            "body": "Effective strategies to learn a new language quickly.Effective strategies to learn a new language quickly.Effective strategies to learn a new language quickly.Effective strategies to learn a new language quickly.Effective strategies to learn a new language quickly.",
+            "date_posted": "2024-09-27T21:57:13.839",
+            "date_created": "2024-09-27T21:57:13.839",
+            "author": 6,
+            "status": "draft",
+            "category": 8,
+            "keywords": "language learning linguistics education",
+            "publish_start_date": null,
+            "publish_end_date": null,
+            "change_reason": null,
+            "thumbnail": "",
+            "priority": null
+        }
+    },
+    {
+        "model": "posts.post",
+        "pk": 28,
+        "fields": {
+            "title": "Best Practices in Web Development",
+            "title_tag": "Web Development Tips",
+            "summary": "Learn the best practices for web development and coding.",
+            "body": "Learn the best practices for web development and coding.Learn the best practices for web development and coding.Learn the best practices for web development and coding.Learn the best practices for web development and coding.Learn the best practices for web development and coding.",
+            "date_posted": "2024-09-27T21:57:13.839",
+            "date_created": "2024-09-27T21:57:13.839",
+            "author": 12,
+            "status": "to_edit",
+            "category": 8,
+            "keywords": "web development coding programming",
+            "publish_start_date": null,
+            "publish_end_date": null,
+            "change_reason": null,
+            "thumbnail": "",
+            "priority": null
+        }
+    },
+    {
+        "model": "posts.post",
+        "pk": 29,
+        "fields": {
+            "title": "Essential Skills for Data Science",
+            "title_tag": "Data Science Skills",
+            "summary": "Key skills to succeed in the data science industry.",
+            "body": "Key skills to succeed in the data science industry.Key skills to succeed in the data science industry.Key skills to succeed in the data science industry.Key skills to succeed in the data science industry.Key skills to succeed in the data science industry.",
+            "date_posted": "2024-09-27T21:57:13.839",
+            "date_created": "2024-09-27T21:57:13.839",
+            "author": 3,
+            "status": "to_publish",
+            "category": 10,
+            "keywords": "data science analytics machine learning",
+            "publish_start_date": null,
+            "publish_end_date": null,
+            "change_reason": null,
+            "thumbnail": "",
+            "priority": null
+        }
+    },
+    {
+        "model": "posts.post",
+        "pk": 30,
+        "fields": {
+            "title": "The Rise of Blockchain Technology",
+            "title_tag": "Blockchain Tech",
+            "summary": "A deep dive into blockchain technology and its uses.",
+            "body": "A deep dive into blockchain technology and its uses.A deep dive into blockchain technology and its uses.A deep dive into blockchain technology and its uses.A deep dive into blockchain technology and its uses.A deep dive into blockchain technology and its uses.",
+            "date_posted": "2024-09-27T21:57:13.839",
+            "date_created": "2024-09-27T21:57:13.839",
+            "author": 12,
+            "status": "to_edit",
+            "category": 4,
+            "keywords": "blockchain cryptocurrency decentralized",
+            "publish_start_date": null,
+            "publish_end_date": null,
+            "change_reason": null,
+            "thumbnail": "",
+            "priority": null
+        }
+    },
+    {
+        "model": "posts.post",
+        "pk": 31,
+        "fields": {
+            "title": "Digital Marketing Strategies",
+            "title_tag": "Digital Marketing",
+            "summary": "Proven strategies to boost your digital marketing efforts.",
+            "body": "Proven strategies to boost your digital marketing efforts.Proven strategies to boost your digital marketing efforts.Proven strategies to boost your digital marketing efforts.Proven strategies to boost your digital marketing efforts.Proven strategies to boost your digital marketing efforts.",
+            "date_posted": "2024-09-27T21:57:13.839",
+            "date_created": "2024-09-27T21:57:13.839",
+            "author": 3,
+            "status": "to_publish",
+            "category": 21,
+            "keywords": "digital marketing online business SEO",
+            "publish_start_date": null,
+            "publish_end_date": null,
+            "change_reason": null,
+            "thumbnail": "",
+            "priority": null
+        }
+    },
+    {
+        "model": "posts.post",
+        "pk": 32,
+        "fields": {
+            "title": "Tips for Remote Work Success",
+            "title_tag": "Remote Work",
+            "summary": "Tips for succeeding while working remotely.",
+            "body": "Tips for succeeding while working remotely.Tips for succeeding while working remotely.Tips for succeeding while working remotely.Tips for succeeding while working remotely.Tips for succeeding while working remotely.",
+            "date_posted": "2024-09-27T21:57:13.839",
+            "date_created": "2024-09-27T21:57:13.839",
+            "author": 3,
+            "status": "published",
+            "category": 20,
+            "keywords": "remote work telecommuting work from home",
+            "publish_start_date": null,
+            "publish_end_date": null,
+            "change_reason": null,
+            "thumbnail": "",
+            "priority": null
+        }
+    },
+    {
+        "model": "posts.post",
+        "pk": 33,
+        "fields": {
+            "title": "How to Manage Personal Finances",
+            "title_tag": "Personal Finance",
+            "summary": "Learn how to manage your personal finances and save money.",
+            "body": "Learn how to manage your personal finances and save money.Learn how to manage your personal finances and save money.Learn how to manage your personal finances and save money.Learn how to manage your personal finances and save money.Learn how to manage your personal finances and save money.",
+            "date_posted": "2024-09-27T21:57:13.839",
+            "date_created": "2024-09-27T21:57:13.839",
+            "author": 6,
+            "status": "draft",
+            "category": 13,
+            "keywords": "personal finance savings budgeting",
+            "publish_start_date": null,
+            "publish_end_date": null,
+            "change_reason": null,
+            "thumbnail": "",
+            "priority": null
+        }
+    },
+    {
+        "model": "posts.post",
+        "pk": 34,
+        "fields": {
+            "title": "Exploring the Solar System",
+            "title_tag": "Space Exploration",
+            "summary": "An exciting exploration of the solar system and its planets.",
+            "body": "An exciting exploration of the solar system and its planets.An exciting exploration of the solar system and its planets.An exciting exploration of the solar system and its planets.An exciting exploration of the solar system and its planets.An exciting exploration of the solar system and its planets.",
+            "date_posted": "2024-09-27T21:57:13.839",
+            "date_created": "2024-09-27T21:57:13.839",
+            "author": 9,
+            "status": "to_publish",
+            "category": 19,
+            "keywords": "space exploration planets solar system",
+            "publish_start_date": null,
+            "publish_end_date": null,
+            "change_reason": null,
+            "thumbnail": "",
+            "priority": null
+        }
+    },
+    {
+        "model": "posts.post",
+        "pk": 35,
+        "fields": {
+            "title": "How to Build a Personal Brand",
+            "title_tag": "Personal Branding",
+            "summary": "Build a strong personal brand with these tips.",
+            "body": "Build a strong personal brand with these tips.Build a strong personal brand with these tips.Build a strong personal brand with these tips.Build a strong personal brand with these tips.Build a strong personal brand with these tips.",
+            "date_posted": "2024-09-27T21:57:13.839",
+            "date_created": "2024-09-27T21:57:13.839",
+            "author": 3,
+            "status": "published",
+            "category": 9,
+            "keywords": "personal branding career success",
+            "publish_start_date": null,
+            "publish_end_date": null,
+            "change_reason": null,
+            "thumbnail": "",
+            "priority": null
+        }
+    },
+    {
+        "model": "posts.post",
+        "pk": 36,
+        "fields": {
+            "title": "The Impact of Climate Change",
+            "title_tag": "Climate Change",
+            "summary": "The impact of climate change on our planet and solutions.",
+            "body": "The impact of climate change on our planet and solutions.The impact of climate change on our planet and solutions.The impact of climate change on our planet and solutions.The impact of climate change on our planet and solutions.The impact of climate change on our planet and solutions.",
+            "date_posted": "2024-09-27T21:57:13.839",
+            "date_created": "2024-09-27T21:57:13.839",
+            "author": 12,
+            "status": "to_edit",
+            "category": 18,
+            "keywords": "climate change environment sustainability",
+            "publish_start_date": null,
+            "publish_end_date": null,
+            "change_reason": null,
+            "thumbnail": "",
+            "priority": null
+        }
+    },
+    {
+        "model": "posts.post",
+        "pk": 37,
+        "fields": {
+            "title": "Best BudgetFriendly Gadgets",
+            "title_tag": "Tech Gadgets",
+            "summary": "The best budget-friendly tech gadgets you can buy.",
+            "body": "The best budget-friendly tech gadgets you can buy.The best budget-friendly tech gadgets you can buy.The best budget-friendly tech gadgets you can buy.The best budget-friendly tech gadgets you can buy.The best budget-friendly tech gadgets you can buy.",
+            "date_posted": "2024-09-27T21:57:13.839",
+            "date_created": "2024-09-27T21:57:13.839",
+            "author": 12,
+            "status": "to_publish",
+            "category": 8,
+            "keywords": "tech gadgets budget electronics",
+            "publish_start_date": null,
+            "publish_end_date": null,
+            "change_reason": null,
+            "thumbnail": "",
+            "priority": null
+        }
+    },
+    {
+        "model": "posts.post",
+        "pk": 38,
+        "fields": {
+            "title": "How to Meditate Effectively",
+            "title_tag": "Meditation Guide",
+            "summary": "Learn how to meditate and improve mental clarity.",
+            "body": "Learn how to meditate and improve mental clarity.Learn how to meditate and improve mental clarity.Learn how to meditate and improve mental clarity.Learn how to meditate and improve mental clarity.Learn how to meditate and improve mental clarity.",
+            "date_posted": "2024-09-27T21:57:13.839",
+            "date_created": "2024-09-27T21:57:13.839",
+            "author": 9,
+            "status": "draft",
+            "category": 11,
+            "keywords": "meditation mindfulness relaxation",
+            "publish_start_date": null,
+            "publish_end_date": null,
+            "change_reason": null,
+            "thumbnail": "",
+            "priority": null
+        }
+    },
+    {
+        "model": "posts.post",
+        "pk": 39,
+        "fields": {
+            "title": "Latest Trends in Machine Learning",
+            "title_tag": "Machine Learning",
+            "summary": "Explore the latest trends in machine learning and AI.",
+            "body": "Explore the latest trends in machine learning and AI.Explore the latest trends in machine learning and AI.Explore the latest trends in machine learning and AI.Explore the latest trends in machine learning and AI.Explore the latest trends in machine learning and AI.",
+            "date_posted": "2024-09-27T21:57:13.839",
+            "date_created": "2024-09-27T21:57:13.839",
+            "author": 12,
+            "status": "to_publish",
+            "category": 1,
+            "keywords": "machine learning AI technology",
+            "publish_start_date": null,
+            "publish_end_date": null,
+            "change_reason": null,
+            "thumbnail": "",
+            "priority": null
+        }
+    },
+    {
+        "model": "posts.post",
+        "pk": 40,
+        "fields": {
+            "title": "How to Boost Your Productivity",
+            "title_tag": "Productivity Tips",
+            "summary": "Discover effective ways to boost productivity and manage your time better.",
+            "body": "Discover effective ways to boost productivity and manage your time better.Discover effective ways to boost productivity and manage your time better.Discover effective ways to boost productivity and manage your time better.Discover effective ways to boost productivity and manage your time better.Discover effective ways to boost productivity and manage your time better.",
+            "date_posted": "2024-09-27T21:57:13.839",
+            "date_created": "2024-09-27T21:57:13.839",
+            "author": 9,
+            "status": "published",
+            "category": 15,
+            "keywords": "productivity time management efficiency",
+            "publish_start_date": null,
+            "publish_end_date": null,
+            "change_reason": null,
+            "thumbnail": "",
+            "priority": null
+        }
+    },
+    {
+        "model": "posts.post",
+        "pk": 41,
+        "fields": {
+            "title": "The Future of AI in Healthcare",
+            "title_tag": "AI in Healthcare",
+            "summary": "Explore how AI is transforming healthcare, improving diagnosis and treatment.",
+            "body": "Explore how AI is transforming healthcare, improving diagnosis and treatment.Explore how AI is transforming healthcare, improving diagnosis and treatment.Explore how AI is transforming healthcare, improving diagnosis and treatment.Explore how AI is transforming healthcare, improving diagnosis and treatment.Explore how AI is transforming healthcare, improving diagnosis and treatment.",
+            "date_posted": "2024-09-27T21:57:13.839",
+            "date_created": "2024-09-27T21:57:13.839",
+            "author": 9,
+            "status": "to_edit",
+            "category": 14,
+            "keywords": "AI healthcare artificial intelligence",
+            "publish_start_date": null,
+            "publish_end_date": null,
+            "change_reason": null,
+            "thumbnail": "",
+            "priority": null
+        }
+    },
+    {
+        "model": "posts.post",
+        "pk": 42,
+        "fields": {
+            "title": "Top 10 Travel Destinations",
+            "title_tag": "Travel Guide",
+            "summary": "Find out the top travel destinations that you should visit in 2024.",
+            "body": "Find out the top travel destinations that you should visit in 2024.Find out the top travel destinations that you should visit in 2024.Find out the top travel destinations that you should visit in 2024.Find out the top travel destinations that you should visit in 2024.Find out the top travel destinations that you should visit in 2024.",
+            "date_posted": "2024-09-27T21:57:13.839",
+            "date_created": "2024-09-27T21:57:13.839",
+            "author": 12,
+            "status": "to_edit",
+            "category": 8,
+            "keywords": "travel destinations tourism",
+            "publish_start_date": null,
+            "publish_end_date": null,
+            "change_reason": null,
+            "thumbnail": "",
+            "priority": null
+        }
+    },
+    {
+        "model": "posts.post",
+        "pk": 43,
+        "fields": {
+            "title": "Understanding Stock Markets",
+            "title_tag": "Stock Markets",
+            "summary": "Understand the basics of stock markets and how to invest smartly.",
+            "body": "Understand the basics of stock markets and how to invest smartly.Understand the basics of stock markets and how to invest smartly.Understand the basics of stock markets and how to invest smartly.Understand the basics of stock markets and how to invest smartly.Understand the basics of stock markets and how to invest smartly.",
+            "date_posted": "2024-09-27T21:57:13.839",
+            "date_created": "2024-09-27T21:57:13.839",
+            "author": 9,
+            "status": "to_publish",
+            "category": 21,
+            "keywords": "stocks investing finance",
+            "publish_start_date": null,
+            "publish_end_date": null,
+            "change_reason": null,
+            "thumbnail": "",
+            "priority": null
+        }
+    },
+    {
+        "model": "posts.post",
+        "pk": 44,
+        "fields": {
+            "title": "The Importance of Mental Health",
+            "title_tag": "Mental Health Awareness",
+            "summary": "Learn why mental health is important and how to improve it.",
+            "body": "Learn why mental health is important and how to improve it.Learn why mental health is important and how to improve it.Learn why mental health is important and how to improve it.Learn why mental health is important and how to improve it.Learn why mental health is important and how to improve it.",
+            "date_posted": "2024-09-27T21:57:13.839",
+            "date_created": "2024-09-27T21:57:13.839",
+            "author": 3,
+            "status": "published",
+            "category": 5,
+            "keywords": "mental health wellbeing awareness",
+            "publish_start_date": null,
+            "publish_end_date": null,
+            "change_reason": null,
+            "thumbnail": "",
+            "priority": null
+        }
+    },
+    {
+        "model": "posts.post",
+        "pk": 45,
+        "fields": {
+            "title": "How to Start a Business",
+            "title_tag": "Start a Business",
+            "summary": "Step-by-step guide to starting your own successful business.",
+            "body": "Step-by-step guide to starting your own successful business.Step-by-step guide to starting your own successful business.Step-by-step guide to starting your own successful business.Step-by-step guide to starting your own successful business.Step-by-step guide to starting your own successful business.",
+            "date_posted": "2024-09-27T21:57:13.839",
+            "date_created": "2024-09-27T21:57:13.839",
+            "author": 12,
+            "status": "draft",
+            "category": 11,
+            "keywords": "business entrepreneurship startup",
+            "publish_start_date": null,
+            "publish_end_date": null,
+            "change_reason": null,
+            "thumbnail": "",
+            "priority": null
+        }
+    },
+    {
+        "model": "posts.post",
+        "pk": 46,
+        "fields": {
+            "title": "Fitness Tips for a Healthy Life",
+            "title_tag": "Fitness and Health",
+            "summary": "Get the best fitness tips for staying healthy and active.",
+            "body": "Get the best fitness tips for staying healthy and active.Get the best fitness tips for staying healthy and active.Get the best fitness tips for staying healthy and active.Get the best fitness tips for staying healthy and active.Get the best fitness tips for staying healthy and active.",
+            "date_posted": "2024-09-27T21:57:13.839",
+            "date_created": "2024-09-27T21:57:13.839",
+            "author": 9,
+            "status": "published",
+            "category": 3,
+            "keywords": "fitness health exercise",
+            "publish_start_date": null,
+            "publish_end_date": null,
+            "change_reason": null,
+            "thumbnail": "",
+            "priority": null
+        }
+    },
+    {
+        "model": "posts.post",
+        "pk": 47,
+        "fields": {
+            "title": "How to Learn a New Language",
+            "title_tag": "Language Learning",
+            "summary": "Effective strategies to learn a new language quickly.",
+            "body": "Effective strategies to learn a new language quickly.Effective strategies to learn a new language quickly.Effective strategies to learn a new language quickly.Effective strategies to learn a new language quickly.Effective strategies to learn a new language quickly.",
+            "date_posted": "2024-09-27T21:57:13.839",
+            "date_created": "2024-09-27T21:57:13.839",
+            "author": 6,
+            "status": "to_edit",
+            "category": 8,
+            "keywords": "language learning linguistics education",
+            "publish_start_date": null,
+            "publish_end_date": null,
+            "change_reason": null,
+            "thumbnail": "",
+            "priority": null
+        }
+    },
+    {
+        "model": "posts.post",
+        "pk": 48,
+        "fields": {
+            "title": "Best Practices in Web Development",
+            "title_tag": "Web Development Tips",
+            "summary": "Learn the best practices for web development and coding.",
+            "body": "Learn the best practices for web development and coding.Learn the best practices for web development and coding.Learn the best practices for web development and coding.Learn the best practices for web development and coding.Learn the best practices for web development and coding.",
+            "date_posted": "2024-09-27T21:57:13.839",
+            "date_created": "2024-09-27T21:57:13.839",
+            "author": 12,
+            "status": "published",
+            "category": 21,
+            "keywords": "web development coding programming",
+            "publish_start_date": null,
+            "publish_end_date": null,
+            "change_reason": null,
+            "thumbnail": "",
+            "priority": null
+        }
+    },
+    {
+        "model": "posts.post",
+        "pk": 49,
+        "fields": {
+            "title": "Essential Skills for Data Science",
+            "title_tag": "Data Science Skills",
+            "summary": "Key skills to succeed in the data science industry.",
+            "body": "Key skills to succeed in the data science industry.Key skills to succeed in the data science industry.Key skills to succeed in the data science industry.Key skills to succeed in the data science industry.Key skills to succeed in the data science industry.",
+            "date_posted": "2024-09-27T21:57:13.839",
+            "date_created": "2024-09-27T21:57:13.839",
+            "author": 9,
+            "status": "draft",
+            "category": 13,
+            "keywords": "data science analytics machine learning",
+            "publish_start_date": null,
+            "publish_end_date": null,
+            "change_reason": null,
+            "thumbnail": "",
+            "priority": null
+        }
+    },
+    {
+        "model": "posts.post",
+        "pk": 50,
+        "fields": {
+            "title": "The Rise of Blockchain Technology",
+            "title_tag": "Blockchain Tech",
+            "summary": "A deep dive into blockchain technology and its uses.",
+            "body": "A deep dive into blockchain technology and its uses.A deep dive into blockchain technology and its uses.A deep dive into blockchain technology and its uses.A deep dive into blockchain technology and its uses.A deep dive into blockchain technology and its uses.",
+            "date_posted": "2024-09-27T21:57:13.839",
+            "date_created": "2024-09-27T21:57:13.839",
+            "author": 9,
+            "status": "published",
+            "category": 11,
+            "keywords": "blockchain cryptocurrency decentralized",
+            "publish_start_date": null,
+            "publish_end_date": null,
+            "change_reason": null,
+            "thumbnail": "",
+            "priority": null
+        }
+    },
+    {
+        "model": "posts.post",
+        "pk": 51,
+        "fields": {
+            "title": "Digital Marketing Strategies",
+            "title_tag": "Digital Marketing",
+            "summary": "Proven strategies to boost your digital marketing efforts.",
+            "body": "Proven strategies to boost your digital marketing efforts.Proven strategies to boost your digital marketing efforts.Proven strategies to boost your digital marketing efforts.Proven strategies to boost your digital marketing efforts.Proven strategies to boost your digital marketing efforts.",
+            "date_posted": "2024-09-27T21:57:13.839",
+            "date_created": "2024-09-27T21:57:13.839",
+            "author": 3,
+            "status": "to_publish",
+            "category": 2,
+            "keywords": "digital marketing online business SEO",
+            "publish_start_date": null,
+            "publish_end_date": null,
+            "change_reason": null,
+            "thumbnail": "",
+            "priority": null
+        }
+    },
+    {
+        "model": "posts.post",
+        "pk": 52,
+        "fields": {
+            "title": "Tips for Remote Work Success",
+            "title_tag": "Remote Work",
+            "summary": "Tips for succeeding while working remotely.",
+            "body": "Tips for succeeding while working remotely.Tips for succeeding while working remotely.Tips for succeeding while working remotely.Tips for succeeding while working remotely.Tips for succeeding while working remotely.",
+            "date_posted": "2024-09-27T21:57:13.839",
+            "date_created": "2024-09-27T21:57:13.839",
+            "author": 12,
+            "status": "to_edit",
+            "category": 13,
+            "keywords": "remote work telecommuting work from home",
+            "publish_start_date": null,
+            "publish_end_date": null,
+            "change_reason": null,
+            "thumbnail": "",
+            "priority": null
+        }
+    },
+    {
+        "model": "posts.post",
+        "pk": 53,
+        "fields": {
+            "title": "How to Manage Personal Finances",
+            "title_tag": "Personal Finance",
+            "summary": "Learn how to manage your personal finances and save money.",
+            "body": "Learn how to manage your personal finances and save money.Learn how to manage your personal finances and save money.Learn how to manage your personal finances and save money.Learn how to manage your personal finances and save money.Learn how to manage your personal finances and save money.",
+            "date_posted": "2024-09-27T21:57:13.839",
+            "date_created": "2024-09-27T21:57:13.839",
+            "author": 9,
+            "status": "draft",
+            "category": 5,
+            "keywords": "personal finance savings budgeting",
+            "publish_start_date": null,
+            "publish_end_date": null,
+            "change_reason": null,
+            "thumbnail": "",
+            "priority": null
+        }
+    },
+    {
+        "model": "posts.post",
+        "pk": 54,
+        "fields": {
+            "title": "Exploring the Solar System",
+            "title_tag": "Space Exploration",
+            "summary": "An exciting exploration of the solar system and its planets.",
+            "body": "An exciting exploration of the solar system and its planets.An exciting exploration of the solar system and its planets.An exciting exploration of the solar system and its planets.An exciting exploration of the solar system and its planets.An exciting exploration of the solar system and its planets.",
+            "date_posted": "2024-09-27T21:57:13.839",
+            "date_created": "2024-09-27T21:57:13.839",
+            "author": 3,
+            "status": "to_edit",
+            "category": 10,
+            "keywords": "space exploration planets solar system",
+            "publish_start_date": null,
+            "publish_end_date": null,
+            "change_reason": null,
+            "thumbnail": "",
+            "priority": null
+        }
+    },
+    {
+        "model": "posts.post",
+        "pk": 55,
+        "fields": {
+            "title": "How to Build a Personal Brand",
+            "title_tag": "Personal Branding",
+            "summary": "Build a strong personal brand with these tips.",
+            "body": "Build a strong personal brand with these tips.Build a strong personal brand with these tips.Build a strong personal brand with these tips.Build a strong personal brand with these tips.Build a strong personal brand with these tips.",
+            "date_posted": "2024-09-27T21:57:13.839",
+            "date_created": "2024-09-27T21:57:13.839",
+            "author": 6,
+            "status": "draft",
+            "category": 3,
+            "keywords": "personal branding career success",
+            "publish_start_date": null,
+            "publish_end_date": null,
+            "change_reason": null,
+            "thumbnail": "",
+            "priority": null
+        }
+    },
+    {
+        "model": "posts.post",
+        "pk": 56,
+        "fields": {
+            "title": "The Impact of Climate Change",
+            "title_tag": "Climate Change",
+            "summary": "The impact of climate change on our planet and solutions.",
+            "body": "The impact of climate change on our planet and solutions.The impact of climate change on our planet and solutions.The impact of climate change on our planet and solutions.The impact of climate change on our planet and solutions.The impact of climate change on our planet and solutions.",
+            "date_posted": "2024-09-27T21:57:13.839",
+            "date_created": "2024-09-27T21:57:13.839",
+            "author": 9,
+            "status": "to_publish",
+            "category": 1,
+            "keywords": "climate change environment sustainability",
+            "publish_start_date": null,
+            "publish_end_date": null,
+            "change_reason": null,
+            "thumbnail": "",
+            "priority": null
+        }
+    },
+    {
+        "model": "posts.post",
+        "pk": 57,
+        "fields": {
+            "title": "Best BudgetFriendly Gadgets",
+            "title_tag": "Tech Gadgets",
+            "summary": "The best budget-friendly tech gadgets you can buy.",
+            "body": "The best budget-friendly tech gadgets you can buy.The best budget-friendly tech gadgets you can buy.The best budget-friendly tech gadgets you can buy.The best budget-friendly tech gadgets you can buy.The best budget-friendly tech gadgets you can buy.",
+            "date_posted": "2024-09-27T21:57:13.839",
+            "date_created": "2024-09-27T21:57:13.839",
+            "author": 6,
+            "status": "draft",
+            "category": 2,
+            "keywords": "tech gadgets budget electronics",
+            "publish_start_date": null,
+            "publish_end_date": null,
+            "change_reason": null,
+            "thumbnail": "",
+            "priority": null
+        }
+    },
+    {
+        "model": "posts.post",
+        "pk": 58,
+        "fields": {
+            "title": "How to Meditate Effectively",
+            "title_tag": "Meditation Guide",
+            "summary": "Learn how to meditate and improve mental clarity.",
+            "body": "Learn how to meditate and improve mental clarity.Learn how to meditate and improve mental clarity.Learn how to meditate and improve mental clarity.Learn how to meditate and improve mental clarity.Learn how to meditate and improve mental clarity.",
+            "date_posted": "2024-09-27T21:57:13.839",
+            "date_created": "2024-09-27T21:57:13.839",
+            "author": 9,
+            "status": "to_publish",
+            "category": 5,
+            "keywords": "meditation mindfulness relaxation",
+            "publish_start_date": null,
+            "publish_end_date": null,
+            "change_reason": null,
+            "thumbnail": "",
+            "priority": null
+        }
+    },
+    {
+        "model": "posts.post",
+        "pk": 59,
+        "fields": {
+            "title": "Latest Trends in Machine Learning",
+            "title_tag": "Machine Learning",
+            "summary": "Explore the latest trends in machine learning and AI.",
+            "body": "Explore the latest trends in machine learning and AI.Explore the latest trends in machine learning and AI.Explore the latest trends in machine learning and AI.Explore the latest trends in machine learning and AI.Explore the latest trends in machine learning and AI.",
+            "date_posted": "2024-09-27T21:57:13.839",
+            "date_created": "2024-09-27T21:57:13.839",
+            "author": 12,
+            "status": "draft",
+            "category": 11,
+            "keywords": "machine learning AI technology",
+            "publish_start_date": null,
+            "publish_end_date": null,
+            "change_reason": null,
+            "thumbnail": "",
+            "priority": null
+        }
+    },
+    {
+        "model": "posts.post",
+        "pk": 60,
+        "fields": {
+            "title": "How to Boost Your Productivity",
+            "title_tag": "Productivity Tips",
+            "summary": "Discover effective ways to boost productivity and manage your time better.",
+            "body": "Discover effective ways to boost productivity and manage your time better.Discover effective ways to boost productivity and manage your time better.Discover effective ways to boost productivity and manage your time better.Discover effective ways to boost productivity and manage your time better.Discover effective ways to boost productivity and manage your time better.",
+            "date_posted": "2024-09-27T21:57:13.839",
+            "date_created": "2024-09-27T21:57:13.839",
+            "author": 6,
+            "status": "draft",
+            "category": 9,
+            "keywords": "productivity time management efficiency",
+            "publish_start_date": null,
+            "publish_end_date": null,
+            "change_reason": null,
+            "thumbnail": "",
+            "priority": null
+        }
+    },
+    {
+        "model": "posts.post",
+        "pk": 61,
+        "fields": {
+            "title": "The Future of AI in Healthcare",
+            "title_tag": "AI in Healthcare",
+            "summary": "Explore how AI is transforming healthcare, improving diagnosis and treatment.",
+            "body": "Explore how AI is transforming healthcare, improving diagnosis and treatment.Explore how AI is transforming healthcare, improving diagnosis and treatment.Explore how AI is transforming healthcare, improving diagnosis and treatment.Explore how AI is transforming healthcare, improving diagnosis and treatment.Explore how AI is transforming healthcare, improving diagnosis and treatment.",
+            "date_posted": "2024-09-27T21:57:13.839",
+            "date_created": "2024-09-27T21:57:13.839",
+            "author": 12,
+            "status": "to_edit",
+            "category": 10,
+            "keywords": "AI healthcare artificial intelligence",
+            "publish_start_date": null,
+            "publish_end_date": null,
+            "change_reason": null,
+            "thumbnail": "",
+            "priority": null
+        }
+    },
+    {
+        "model": "posts.post",
+        "pk": 62,
+        "fields": {
+            "title": "Top 10 Travel Destinations",
+            "title_tag": "Travel Guide",
+            "summary": "Find out the top travel destinations that you should visit in 2024.",
+            "body": "Find out the top travel destinations that you should visit in 2024.Find out the top travel destinations that you should visit in 2024.Find out the top travel destinations that you should visit in 2024.Find out the top travel destinations that you should visit in 2024.Find out the top travel destinations that you should visit in 2024.",
+            "date_posted": "2024-09-27T21:57:13.839",
+            "date_created": "2024-09-27T21:57:13.839",
+            "author": 9,
+            "status": "draft",
+            "category": 19,
+            "keywords": "travel destinations tourism",
+            "publish_start_date": null,
+            "publish_end_date": null,
+            "change_reason": null,
+            "thumbnail": "",
+            "priority": null
+        }
+    },
+    {
+        "model": "posts.post",
+        "pk": 63,
+        "fields": {
+            "title": "Understanding Stock Markets",
+            "title_tag": "Stock Markets",
+            "summary": "Understand the basics of stock markets and how to invest smartly.",
+            "body": "Understand the basics of stock markets and how to invest smartly.Understand the basics of stock markets and how to invest smartly.Understand the basics of stock markets and how to invest smartly.Understand the basics of stock markets and how to invest smartly.Understand the basics of stock markets and how to invest smartly.",
+            "date_posted": "2024-09-27T21:57:13.839",
+            "date_created": "2024-09-27T21:57:13.839",
+            "author": 3,
+            "status": "to_edit",
+            "category": 8,
+            "keywords": "stocks investing finance",
+            "publish_start_date": null,
+            "publish_end_date": null,
+            "change_reason": null,
+            "thumbnail": "",
+            "priority": null
+        }
+    },
+    {
+        "model": "posts.post",
+        "pk": 64,
+        "fields": {
+            "title": "The Importance of Mental Health",
+            "title_tag": "Mental Health Awareness",
+            "summary": "Learn why mental health is important and how to improve it.",
+            "body": "Learn why mental health is important and how to improve it.Learn why mental health is important and how to improve it.Learn why mental health is important and how to improve it.Learn why mental health is important and how to improve it.Learn why mental health is important and how to improve it.",
+            "date_posted": "2024-09-27T21:57:13.839",
+            "date_created": "2024-09-27T21:57:13.839",
+            "author": 3,
+            "status": "to_edit",
+            "category": 21,
+            "keywords": "mental health wellbeing awareness",
+            "publish_start_date": null,
+            "publish_end_date": null,
+            "change_reason": null,
+            "thumbnail": "",
+            "priority": null
+        }
+    },
+    {
+        "model": "posts.post",
+        "pk": 65,
+        "fields": {
+            "title": "How to Start a Business",
+            "title_tag": "Start a Business",
+            "summary": "Step-by-step guide to starting your own successful business.",
+            "body": "Step-by-step guide to starting your own successful business.Step-by-step guide to starting your own successful business.Step-by-step guide to starting your own successful business.Step-by-step guide to starting your own successful business.Step-by-step guide to starting your own successful business.",
+            "date_posted": "2024-09-27T21:57:13.839",
+            "date_created": "2024-09-27T21:57:13.839",
+            "author": 12,
+            "status": "published",
+            "category": 9,
+            "keywords": "business entrepreneurship startup",
+            "publish_start_date": null,
+            "publish_end_date": null,
+            "change_reason": null,
+            "thumbnail": "",
+            "priority": null
+        }
+    },
+    {
+        "model": "posts.post",
+        "pk": 66,
+        "fields": {
+            "title": "Fitness Tips for a Healthy Life",
+            "title_tag": "Fitness and Health",
+            "summary": "Get the best fitness tips for staying healthy and active.",
+            "body": "Get the best fitness tips for staying healthy and active.Get the best fitness tips for staying healthy and active.Get the best fitness tips for staying healthy and active.Get the best fitness tips for staying healthy and active.Get the best fitness tips for staying healthy and active.",
+            "date_posted": "2024-09-27T21:57:13.839",
+            "date_created": "2024-09-27T21:57:13.839",
+            "author": 9,
+            "status": "published",
+            "category": 14,
+            "keywords": "fitness health exercise",
+            "publish_start_date": null,
+            "publish_end_date": null,
+            "change_reason": null,
+            "thumbnail": "",
+            "priority": null
+        }
+    },
+    {
+        "model": "posts.post",
+        "pk": 67,
+        "fields": {
+            "title": "How to Learn a New Language",
+            "title_tag": "Language Learning",
+            "summary": "Effective strategies to learn a new language quickly.",
+            "body": "Effective strategies to learn a new language quickly.Effective strategies to learn a new language quickly.Effective strategies to learn a new language quickly.Effective strategies to learn a new language quickly.Effective strategies to learn a new language quickly.",
+            "date_posted": "2024-09-27T21:57:13.839",
+            "date_created": "2024-09-27T21:57:13.839",
+            "author": 12,
+            "status": "to_publish",
+            "category": 16,
+            "keywords": "language learning linguistics education",
+            "publish_start_date": null,
+            "publish_end_date": null,
+            "change_reason": null,
+            "thumbnail": "",
+            "priority": null
+        }
+    },
+    {
+        "model": "posts.post",
+        "pk": 68,
+        "fields": {
+            "title": "Best Practices in Web Development",
+            "title_tag": "Web Development Tips",
+            "summary": "Learn the best practices for web development and coding.",
+            "body": "Learn the best practices for web development and coding.Learn the best practices for web development and coding.Learn the best practices for web development and coding.Learn the best practices for web development and coding.Learn the best practices for web development and coding.",
+            "date_posted": "2024-09-27T21:57:13.839",
+            "date_created": "2024-09-27T21:57:13.839",
+            "author": 9,
+            "status": "draft",
+            "category": 13,
+            "keywords": "web development coding programming",
+            "publish_start_date": null,
+            "publish_end_date": null,
+            "change_reason": null,
+            "thumbnail": "",
+            "priority": null
+        }
+    },
+    {
+        "model": "posts.post",
+        "pk": 69,
+        "fields": {
+            "title": "Essential Skills for Data Science",
+            "title_tag": "Data Science Skills",
+            "summary": "Key skills to succeed in the data science industry.",
+            "body": "Key skills to succeed in the data science industry.Key skills to succeed in the data science industry.Key skills to succeed in the data science industry.Key skills to succeed in the data science industry.Key skills to succeed in the data science industry.",
+            "date_posted": "2024-09-27T21:57:13.839",
+            "date_created": "2024-09-27T21:57:13.839",
+            "author": 9,
+            "status": "draft",
+            "category": 19,
+            "keywords": "data science analytics machine learning",
+            "publish_start_date": null,
+            "publish_end_date": null,
+            "change_reason": null,
+            "thumbnail": "",
+            "priority": null
+        }
+    },
+    {
+        "model": "posts.post",
+        "pk": 70,
+        "fields": {
+            "title": "The Rise of Blockchain Technology",
+            "title_tag": "Blockchain Tech",
+            "summary": "A deep dive into blockchain technology and its uses.",
+            "body": "A deep dive into blockchain technology and its uses.A deep dive into blockchain technology and its uses.A deep dive into blockchain technology and its uses.A deep dive into blockchain technology and its uses.A deep dive into blockchain technology and its uses.",
+            "date_posted": "2024-09-27T21:57:13.839",
+            "date_created": "2024-09-27T21:57:13.839",
+            "author": 3,
+            "status": "published",
+            "category": 2,
+            "keywords": "blockchain cryptocurrency decentralized",
+            "publish_start_date": null,
+            "publish_end_date": null,
+            "change_reason": null,
+            "thumbnail": "",
+            "priority": null
+        }
+    },
+    {
+        "model": "posts.post",
+        "pk": 71,
+        "fields": {
+            "title": "Digital Marketing Strategies",
+            "title_tag": "Digital Marketing",
+            "summary": "Proven strategies to boost your digital marketing efforts.",
+            "body": "Proven strategies to boost your digital marketing efforts.Proven strategies to boost your digital marketing efforts.Proven strategies to boost your digital marketing efforts.Proven strategies to boost your digital marketing efforts.Proven strategies to boost your digital marketing efforts.",
+            "date_posted": "2024-09-27T21:57:13.839",
+            "date_created": "2024-09-27T21:57:13.839",
+            "author": 3,
+            "status": "published",
+            "category": 14,
+            "keywords": "digital marketing online business SEO",
+            "publish_start_date": null,
+            "publish_end_date": null,
+            "change_reason": null,
+            "thumbnail": "",
+            "priority": null
+        }
+    },
+    {
+        "model": "posts.post",
+        "pk": 72,
+        "fields": {
+            "title": "Tips for Remote Work Success",
+            "title_tag": "Remote Work",
+            "summary": "Tips for succeeding while working remotely.",
+            "body": "Tips for succeeding while working remotely.Tips for succeeding while working remotely.Tips for succeeding while working remotely.Tips for succeeding while working remotely.Tips for succeeding while working remotely.",
+            "date_posted": "2024-09-27T21:57:13.839",
+            "date_created": "2024-09-27T21:57:13.839",
+            "author": 3,
+            "status": "draft",
+            "category": 21,
+            "keywords": "remote work telecommuting work from home",
+            "publish_start_date": null,
+            "publish_end_date": null,
+            "change_reason": null,
+            "thumbnail": "",
+            "priority": null
+        }
+    },
+    {
+        "model": "posts.post",
+        "pk": 73,
+        "fields": {
+            "title": "How to Manage Personal Finances",
+            "title_tag": "Personal Finance",
+            "summary": "Learn how to manage your personal finances and save money.",
+            "body": "Learn how to manage your personal finances and save money.Learn how to manage your personal finances and save money.Learn how to manage your personal finances and save money.Learn how to manage your personal finances and save money.Learn how to manage your personal finances and save money.",
+            "date_posted": "2024-09-27T21:57:13.839",
+            "date_created": "2024-09-27T21:57:13.839",
+            "author": 12,
+            "status": "to_edit",
+            "category": 21,
+            "keywords": "personal finance savings budgeting",
+            "publish_start_date": null,
+            "publish_end_date": null,
+            "change_reason": null,
+            "thumbnail": "",
+            "priority": null
+        }
+    },
+    {
+        "model": "posts.post",
+        "pk": 74,
+        "fields": {
+            "title": "Exploring the Solar System",
+            "title_tag": "Space Exploration",
+            "summary": "An exciting exploration of the solar system and its planets.",
+            "body": "An exciting exploration of the solar system and its planets.An exciting exploration of the solar system and its planets.An exciting exploration of the solar system and its planets.An exciting exploration of the solar system and its planets.An exciting exploration of the solar system and its planets.",
+            "date_posted": "2024-09-27T21:57:13.839",
+            "date_created": "2024-09-27T21:57:13.839",
+            "author": 12,
+            "status": "to_publish",
+            "category": 4,
+            "keywords": "space exploration planets solar system",
+            "publish_start_date": null,
+            "publish_end_date": null,
+            "change_reason": null,
+            "thumbnail": "",
+            "priority": null
+        }
+    },
+    {
+        "model": "posts.post",
+        "pk": 75,
+        "fields": {
+            "title": "How to Build a Personal Brand",
+            "title_tag": "Personal Branding",
+            "summary": "Build a strong personal brand with these tips.",
+            "body": "Build a strong personal brand with these tips.Build a strong personal brand with these tips.Build a strong personal brand with these tips.Build a strong personal brand with these tips.Build a strong personal brand with these tips.",
+            "date_posted": "2024-09-27T21:57:13.839",
+            "date_created": "2024-09-27T21:57:13.839",
+            "author": 6,
+            "status": "to_publish",
+            "category": 20,
+            "keywords": "personal branding career success",
+            "publish_start_date": null,
+            "publish_end_date": null,
+            "change_reason": null,
+            "thumbnail": "",
+            "priority": null
+        }
+    },
+    {
+        "model": "posts.post",
+        "pk": 76,
+        "fields": {
+            "title": "The Impact of Climate Change",
+            "title_tag": "Climate Change",
+            "summary": "The impact of climate change on our planet and solutions.",
+            "body": "The impact of climate change on our planet and solutions.The impact of climate change on our planet and solutions.The impact of climate change on our planet and solutions.The impact of climate change on our planet and solutions.The impact of climate change on our planet and solutions.",
+            "date_posted": "2024-09-27T21:57:13.839",
+            "date_created": "2024-09-27T21:57:13.839",
+            "author": 6,
+            "status": "to_publish",
+            "category": 19,
+            "keywords": "climate change environment sustainability",
+            "publish_start_date": null,
+            "publish_end_date": null,
+            "change_reason": null,
+            "thumbnail": "",
+            "priority": null
+        }
+    },
+    {
+        "model": "posts.post",
+        "pk": 77,
+        "fields": {
+            "title": "Best BudgetFriendly Gadgets",
+            "title_tag": "Tech Gadgets",
+            "summary": "The best budget-friendly tech gadgets you can buy.",
+            "body": "The best budget-friendly tech gadgets you can buy.The best budget-friendly tech gadgets you can buy.The best budget-friendly tech gadgets you can buy.The best budget-friendly tech gadgets you can buy.The best budget-friendly tech gadgets you can buy.",
+            "date_posted": "2024-09-27T21:57:13.839",
+            "date_created": "2024-09-27T21:57:13.839",
+            "author": 12,
+            "status": "to_publish",
+            "category": 18,
+            "keywords": "tech gadgets budget electronics",
+            "publish_start_date": null,
+            "publish_end_date": null,
+            "change_reason": null,
+            "thumbnail": "",
+            "priority": null
+        }
+    },
+    {
+        "model": "posts.post",
+        "pk": 78,
+        "fields": {
+            "title": "How to Meditate Effectively",
+            "title_tag": "Meditation Guide",
+            "summary": "Learn how to meditate and improve mental clarity.",
+            "body": "Learn how to meditate and improve mental clarity.Learn how to meditate and improve mental clarity.Learn how to meditate and improve mental clarity.Learn how to meditate and improve mental clarity.Learn how to meditate and improve mental clarity.",
+            "date_posted": "2024-09-27T21:57:13.839",
+            "date_created": "2024-09-27T21:57:13.839",
+            "author": 3,
+            "status": "to_publish",
+            "category": 20,
+            "keywords": "meditation mindfulness relaxation",
+            "publish_start_date": null,
+            "publish_end_date": null,
+            "change_reason": null,
+            "thumbnail": "",
+            "priority": null
+        }
+    },
+    {
+        "model": "posts.post",
+        "pk": 79,
+        "fields": {
+            "title": "Latest Trends in Machine Learning",
+            "title_tag": "Machine Learning",
+            "summary": "Explore the latest trends in machine learning and AI.",
+            "body": "Explore the latest trends in machine learning and AI.Explore the latest trends in machine learning and AI.Explore the latest trends in machine learning and AI.Explore the latest trends in machine learning and AI.Explore the latest trends in machine learning and AI.",
+            "date_posted": "2024-09-27T21:57:13.839",
+            "date_created": "2024-09-27T21:57:13.839",
+            "author": 12,
+            "status": "draft",
+            "category": 16,
+            "keywords": "machine learning AI technology",
+            "publish_start_date": null,
+            "publish_end_date": null,
+            "change_reason": null,
+            "thumbnail": "",
+            "priority": null
+        }
+    },
+    {
+        "model": "posts.post",
+        "pk": 80,
+        "fields": {
+            "title": "How to Boost Your Productivity",
+            "title_tag": "Productivity Tips",
+            "summary": "Discover effective ways to boost productivity and manage your time better.",
+            "body": "Discover effective ways to boost productivity and manage your time better.Discover effective ways to boost productivity and manage your time better.Discover effective ways to boost productivity and manage your time better.Discover effective ways to boost productivity and manage your time better.Discover effective ways to boost productivity and manage your time better.",
+            "date_posted": "2024-09-27T21:57:13.839",
+            "date_created": "2024-09-27T21:57:13.839",
+            "author": 6,
+            "status": "published",
+            "category": 17,
+            "keywords": "productivity time management efficiency",
+            "publish_start_date": null,
+            "publish_end_date": null,
+            "change_reason": null,
+            "thumbnail": "",
+            "priority": null
+        }
+    },
+    {
+        "model": "posts.post",
+        "pk": 81,
+        "fields": {
+            "title": "The Future of AI in Healthcare",
+            "title_tag": "AI in Healthcare",
+            "summary": "Explore how AI is transforming healthcare, improving diagnosis and treatment.",
+            "body": "Explore how AI is transforming healthcare, improving diagnosis and treatment.Explore how AI is transforming healthcare, improving diagnosis and treatment.Explore how AI is transforming healthcare, improving diagnosis and treatment.Explore how AI is transforming healthcare, improving diagnosis and treatment.Explore how AI is transforming healthcare, improving diagnosis and treatment.",
+            "date_posted": "2024-09-27T21:57:13.839",
+            "date_created": "2024-09-27T21:57:13.839",
+            "author": 9,
+            "status": "published",
+            "category": 19,
+            "keywords": "AI healthcare artificial intelligence",
+            "publish_start_date": null,
+            "publish_end_date": null,
+            "change_reason": null,
+            "thumbnail": "",
+            "priority": null
+        }
+    },
+    {
+        "model": "posts.post",
+        "pk": 82,
+        "fields": {
+            "title": "Top 10 Travel Destinations",
+            "title_tag": "Travel Guide",
+            "summary": "Find out the top travel destinations that you should visit in 2024.",
+            "body": "Find out the top travel destinations that you should visit in 2024.Find out the top travel destinations that you should visit in 2024.Find out the top travel destinations that you should visit in 2024.Find out the top travel destinations that you should visit in 2024.Find out the top travel destinations that you should visit in 2024.",
+            "date_posted": "2024-09-27T21:57:13.839",
+            "date_created": "2024-09-27T21:57:13.839",
+            "author": 12,
+            "status": "to_publish",
+            "category": 19,
+            "keywords": "travel destinations tourism",
+            "publish_start_date": null,
+            "publish_end_date": null,
+            "change_reason": null,
+            "thumbnail": "",
+            "priority": null
+        }
+    },
+    {
+        "model": "posts.post",
+        "pk": 83,
+        "fields": {
+            "title": "Understanding Stock Markets",
+            "title_tag": "Stock Markets",
+            "summary": "Understand the basics of stock markets and how to invest smartly.",
+            "body": "Understand the basics of stock markets and how to invest smartly.Understand the basics of stock markets and how to invest smartly.Understand the basics of stock markets and how to invest smartly.Understand the basics of stock markets and how to invest smartly.Understand the basics of stock markets and how to invest smartly.",
+            "date_posted": "2024-09-27T21:57:13.839",
+            "date_created": "2024-09-27T21:57:13.839",
+            "author": 9,
+            "status": "published",
+            "category": 2,
+            "keywords": "stocks investing finance",
+            "publish_start_date": null,
+            "publish_end_date": null,
+            "change_reason": null,
+            "thumbnail": "",
+            "priority": null
+        }
+    },
+    {
+        "model": "posts.post",
+        "pk": 84,
+        "fields": {
+            "title": "The Importance of Mental Health",
+            "title_tag": "Mental Health Awareness",
+            "summary": "Learn why mental health is important and how to improve it.",
+            "body": "Learn why mental health is important and how to improve it.Learn why mental health is important and how to improve it.Learn why mental health is important and how to improve it.Learn why mental health is important and how to improve it.Learn why mental health is important and how to improve it.",
+            "date_posted": "2024-09-27T21:57:13.839",
+            "date_created": "2024-09-27T21:57:13.839",
+            "author": 6,
+            "status": "published",
+            "category": 14,
+            "keywords": "mental health wellbeing awareness",
+            "publish_start_date": null,
+            "publish_end_date": null,
+            "change_reason": null,
+            "thumbnail": "",
+            "priority": null
+        }
+    },
+    {
+        "model": "posts.post",
+        "pk": 85,
+        "fields": {
+            "title": "How to Start a Business",
+            "title_tag": "Start a Business",
+            "summary": "Step-by-step guide to starting your own successful business.",
+            "body": "Step-by-step guide to starting your own successful business.Step-by-step guide to starting your own successful business.Step-by-step guide to starting your own successful business.Step-by-step guide to starting your own successful business.Step-by-step guide to starting your own successful business.",
+            "date_posted": "2024-09-27T21:57:13.839",
+            "date_created": "2024-09-27T21:57:13.839",
+            "author": 12,
+            "status": "to_publish",
+            "category": 11,
+            "keywords": "business entrepreneurship startup",
+            "publish_start_date": null,
+            "publish_end_date": null,
+            "change_reason": null,
+            "thumbnail": "",
+            "priority": null
+        }
+    },
+    {
+        "model": "posts.post",
+        "pk": 86,
+        "fields": {
+            "title": "Fitness Tips for a Healthy Life",
+            "title_tag": "Fitness and Health",
+            "summary": "Get the best fitness tips for staying healthy and active.",
+            "body": "Get the best fitness tips for staying healthy and active.Get the best fitness tips for staying healthy and active.Get the best fitness tips for staying healthy and active.Get the best fitness tips for staying healthy and active.Get the best fitness tips for staying healthy and active.",
+            "date_posted": "2024-09-27T21:57:13.839",
+            "date_created": "2024-09-27T21:57:13.839",
+            "author": 12,
+            "status": "draft",
+            "category": 21,
+            "keywords": "fitness health exercise",
+            "publish_start_date": null,
+            "publish_end_date": null,
+            "change_reason": null,
+            "thumbnail": "",
+            "priority": null
+        }
+    },
+    {
+        "model": "posts.post",
+        "pk": 87,
+        "fields": {
+            "title": "How to Learn a New Language",
+            "title_tag": "Language Learning",
+            "summary": "Effective strategies to learn a new language quickly.",
+            "body": "Effective strategies to learn a new language quickly.Effective strategies to learn a new language quickly.Effective strategies to learn a new language quickly.Effective strategies to learn a new language quickly.Effective strategies to learn a new language quickly.",
+            "date_posted": "2024-09-27T21:57:13.839",
+            "date_created": "2024-09-27T21:57:13.839",
+            "author": 3,
+            "status": "to_publish",
+            "category": 9,
+            "keywords": "language learning linguistics education",
+            "publish_start_date": null,
+            "publish_end_date": null,
+            "change_reason": null,
+            "thumbnail": "",
+            "priority": null
+        }
+    },
+    {
+        "model": "posts.post",
+        "pk": 88,
+        "fields": {
+            "title": "Best Practices in Web Development",
+            "title_tag": "Web Development Tips",
+            "summary": "Learn the best practices for web development and coding.",
+            "body": "Learn the best practices for web development and coding.Learn the best practices for web development and coding.Learn the best practices for web development and coding.Learn the best practices for web development and coding.Learn the best practices for web development and coding.",
+            "date_posted": "2024-09-27T21:57:13.839",
+            "date_created": "2024-09-27T21:57:13.839",
+            "author": 9,
+            "status": "draft",
+            "category": 18,
+            "keywords": "web development coding programming",
+            "publish_start_date": null,
+            "publish_end_date": null,
+            "change_reason": null,
+            "thumbnail": "",
+            "priority": null
+        }
+    },
+    {
+        "model": "posts.post",
+        "pk": 89,
+        "fields": {
+            "title": "Essential Skills for Data Science",
+            "title_tag": "Data Science Skills",
+            "summary": "Key skills to succeed in the data science industry.",
+            "body": "Key skills to succeed in the data science industry.Key skills to succeed in the data science industry.Key skills to succeed in the data science industry.Key skills to succeed in the data science industry.Key skills to succeed in the data science industry.",
+            "date_posted": "2024-09-27T21:57:13.839",
+            "date_created": "2024-09-27T21:57:13.839",
+            "author": 9,
+            "status": "to_edit",
+            "category": 6,
+            "keywords": "data science analytics machine learning",
+            "publish_start_date": null,
+            "publish_end_date": null,
+            "change_reason": null,
+            "thumbnail": "",
+            "priority": null
+        }
+    },
+    {
+        "model": "posts.post",
+        "pk": 90,
+        "fields": {
+            "title": "The Rise of Blockchain Technology",
+            "title_tag": "Blockchain Tech",
+            "summary": "A deep dive into blockchain technology and its uses.",
+            "body": "A deep dive into blockchain technology and its uses.A deep dive into blockchain technology and its uses.A deep dive into blockchain technology and its uses.A deep dive into blockchain technology and its uses.A deep dive into blockchain technology and its uses.",
+            "date_posted": "2024-09-27T21:57:13.839",
+            "date_created": "2024-09-27T21:57:13.839",
+            "author": 6,
+            "status": "draft",
+            "category": 10,
+            "keywords": "blockchain cryptocurrency decentralized",
+            "publish_start_date": null,
+            "publish_end_date": null,
+            "change_reason": null,
+            "thumbnail": "",
+            "priority": null
+        }
+    },
+    {
+        "model": "posts.post",
+        "pk": 91,
+        "fields": {
+            "title": "Digital Marketing Strategies",
+            "title_tag": "Digital Marketing",
+            "summary": "Proven strategies to boost your digital marketing efforts.",
+            "body": "Proven strategies to boost your digital marketing efforts.Proven strategies to boost your digital marketing efforts.Proven strategies to boost your digital marketing efforts.Proven strategies to boost your digital marketing efforts.Proven strategies to boost your digital marketing efforts.",
+            "date_posted": "2024-09-27T21:57:13.839",
+            "date_created": "2024-09-27T21:57:13.839",
+            "author": 12,
+            "status": "published",
+            "category": 16,
+            "keywords": "digital marketing online business SEO",
+            "publish_start_date": null,
+            "publish_end_date": null,
+            "change_reason": null,
+            "thumbnail": "",
+            "priority": null
+        }
+    },
+    {
+        "model": "posts.post",
+        "pk": 92,
+        "fields": {
+            "title": "Tips for Remote Work Success",
+            "title_tag": "Remote Work",
+            "summary": "Tips for succeeding while working remotely.",
+            "body": "Tips for succeeding while working remotely.Tips for succeeding while working remotely.Tips for succeeding while working remotely.Tips for succeeding while working remotely.Tips for succeeding while working remotely.",
+            "date_posted": "2024-09-27T21:57:13.839",
+            "date_created": "2024-09-27T21:57:13.839",
+            "author": 9,
+            "status": "to_publish",
+            "category": 1,
+            "keywords": "remote work telecommuting work from home",
+            "publish_start_date": null,
+            "publish_end_date": null,
+            "change_reason": null,
+            "thumbnail": "",
+            "priority": null
+        }
+    },
+    {
+        "model": "posts.post",
+        "pk": 93,
+        "fields": {
+            "title": "How to Manage Personal Finances",
+            "title_tag": "Personal Finance",
+            "summary": "Learn how to manage your personal finances and save money.",
+            "body": "Learn how to manage your personal finances and save money.Learn how to manage your personal finances and save money.Learn how to manage your personal finances and save money.Learn how to manage your personal finances and save money.Learn how to manage your personal finances and save money.",
+            "date_posted": "2024-09-27T21:57:13.839",
+            "date_created": "2024-09-27T21:57:13.839",
+            "author": 3,
+            "status": "published",
+            "category": 3,
+            "keywords": "personal finance savings budgeting",
+            "publish_start_date": null,
+            "publish_end_date": null,
+            "change_reason": null,
+            "thumbnail": "",
+            "priority": null
+        }
+    },
+    {
+        "model": "posts.post",
+        "pk": 94,
+        "fields": {
+            "title": "Exploring the Solar System",
+            "title_tag": "Space Exploration",
+            "summary": "An exciting exploration of the solar system and its planets.",
+            "body": "An exciting exploration of the solar system and its planets.An exciting exploration of the solar system and its planets.An exciting exploration of the solar system and its planets.An exciting exploration of the solar system and its planets.An exciting exploration of the solar system and its planets.",
+            "date_posted": "2024-09-27T21:57:13.839",
+            "date_created": "2024-09-27T21:57:13.839",
+            "author": 3,
+            "status": "draft",
+            "category": 7,
+            "keywords": "space exploration planets solar system",
+            "publish_start_date": null,
+            "publish_end_date": null,
+            "change_reason": null,
+            "thumbnail": "",
+            "priority": null
+        }
+    },
+    {
+        "model": "posts.post",
+        "pk": 95,
+        "fields": {
+            "title": "How to Build a Personal Brand",
+            "title_tag": "Personal Branding",
+            "summary": "Build a strong personal brand with these tips.",
+            "body": "Build a strong personal brand with these tips.Build a strong personal brand with these tips.Build a strong personal brand with these tips.Build a strong personal brand with these tips.Build a strong personal brand with these tips.",
+            "date_posted": "2024-09-27T21:57:13.839",
+            "date_created": "2024-09-27T21:57:13.839",
+            "author": 12,
+            "status": "published",
+            "category": 5,
+            "keywords": "personal branding career success",
+            "publish_start_date": null,
+            "publish_end_date": null,
+            "change_reason": null,
+            "thumbnail": "",
+            "priority": null
+        }
+    },
+    {
+        "model": "posts.post",
+        "pk": 96,
+        "fields": {
+            "title": "The Impact of Climate Change",
+            "title_tag": "Climate Change",
+            "summary": "The impact of climate change on our planet and solutions.",
+            "body": "The impact of climate change on our planet and solutions.The impact of climate change on our planet and solutions.The impact of climate change on our planet and solutions.The impact of climate change on our planet and solutions.The impact of climate change on our planet and solutions.",
+            "date_posted": "2024-09-27T21:57:13.839",
+            "date_created": "2024-09-27T21:57:13.839",
+            "author": 9,
+            "status": "published",
+            "category": 14,
+            "keywords": "climate change environment sustainability",
+            "publish_start_date": null,
+            "publish_end_date": null,
+            "change_reason": null,
+            "thumbnail": "",
+            "priority": null
+        }
+    },
+    {
+        "model": "posts.post",
+        "pk": 97,
+        "fields": {
+            "title": "Best BudgetFriendly Gadgets",
+            "title_tag": "Tech Gadgets",
+            "summary": "The best budget-friendly tech gadgets you can buy.",
+            "body": "The best budget-friendly tech gadgets you can buy.The best budget-friendly tech gadgets you can buy.The best budget-friendly tech gadgets you can buy.The best budget-friendly tech gadgets you can buy.The best budget-friendly tech gadgets you can buy.",
+            "date_posted": "2024-09-27T21:57:13.839",
+            "date_created": "2024-09-27T21:57:13.839",
+            "author": 3,
+            "status": "to_edit",
+            "category": 17,
+            "keywords": "tech gadgets budget electronics",
+            "publish_start_date": null,
+            "publish_end_date": null,
+            "change_reason": null,
+            "thumbnail": "",
+            "priority": null
+        }
+    },
+    {
+        "model": "posts.post",
+        "pk": 98,
+        "fields": {
+            "title": "How to Meditate Effectively",
+            "title_tag": "Meditation Guide",
+            "summary": "Learn how to meditate and improve mental clarity.",
+            "body": "Learn how to meditate and improve mental clarity.Learn how to meditate and improve mental clarity.Learn how to meditate and improve mental clarity.Learn how to meditate and improve mental clarity.Learn how to meditate and improve mental clarity.",
+            "date_posted": "2024-09-27T21:57:13.839",
+            "date_created": "2024-09-27T21:57:13.839",
+            "author": 9,
+            "status": "to_publish",
+            "category": 3,
+            "keywords": "meditation mindfulness relaxation",
+            "publish_start_date": null,
+            "publish_end_date": null,
+            "change_reason": null,
+            "thumbnail": "",
+            "priority": null
+        }
+    },
+    {
+        "model": "posts.post",
+        "pk": 99,
+        "fields": {
+            "title": "Latest Trends in Machine Learning",
+            "title_tag": "Machine Learning",
+            "summary": "Explore the latest trends in machine learning and AI.",
+            "body": "Explore the latest trends in machine learning and AI.Explore the latest trends in machine learning and AI.Explore the latest trends in machine learning and AI.Explore the latest trends in machine learning and AI.Explore the latest trends in machine learning and AI.",
+            "date_posted": "2024-09-27T21:57:13.839",
+            "date_created": "2024-09-27T21:57:13.839",
+            "author": 3,
+            "status": "to_edit",
+            "category": 8,
+            "keywords": "machine learning AI technology",
+            "publish_start_date": null,
+            "publish_end_date": null,
+            "change_reason": null,
+            "thumbnail": "",
+            "priority": null
+        }
+    },
+    {
+        "model": "posts.post",
+        "pk": 100,
+        "fields": {
+            "title": "How to Boost Your Productivity",
+            "title_tag": "Productivity Tips",
+            "summary": "Discover effective ways to boost productivity and manage your time better.",
+            "body": "Discover effective ways to boost productivity and manage your time better.Discover effective ways to boost productivity and manage your time better.Discover effective ways to boost productivity and manage your time better.Discover effective ways to boost productivity and manage your time better.Discover effective ways to boost productivity and manage your time better.",
+            "date_posted": "2024-09-27T21:57:13.839",
+            "date_created": "2024-09-27T21:57:13.839",
+            "author": 6,
+            "status": "to_edit",
+            "category": 18,
+            "keywords": "productivity time management efficiency",
+            "publish_start_date": null,
+            "publish_end_date": null,
+            "change_reason": null,
+            "thumbnail": "",
+            "priority": null
+        }
     }
-},
-{
-    "model": "posts.category",
-    "pk": 2,
-    "fields": {
-        "name": "Tecnologia",
-        "description": "Categoría de artículos sobre tecnología",
-        "alias": "TC",
-        "price": "0.00",
-        "kind": "free"
-    }
-},
-{
-    "model": "posts.category",
-    "pk": 3,
-    "fields": {
-        "name": "Desarrollo",
-        "description": "Posts sobre desarrollo de software y programación",
-        "alias": "DS",
-        "price": "0.00",
-        "kind": "public"
-    }
-},
-{
-    "model": "posts.category",
-    "pk": 4,
-    "fields": {
-        "name": "Marketing",
-        "description": "Artículos sobre estrategias de marketing",
-        "alias": "MK",
-        "price": "15.99",
-        "kind": "premium"
-    }
-},
-{
-    "model": "posts.category",
-    "pk": 6,
-    "fields": {
-        "name": "Negocios",
-        "description": "Contenido relacionado con emprendimientos y negocios",
-        "alias": "NB",
-        "price": null,
-        "kind": "public"
-    }
-},
-{
-    "model": "posts.category",
-    "pk": 7,
-    "fields": {
-        "name": "Ciencia",
-        "description": "Publicaciones sobre avances y descubrimientos científicos",
-        "alias": "CI",
-        "price": "0.00",
-        "kind": "free"
-    }
-},
-{
-    "model": "posts.category",
-    "pk": 8,
-    "fields": {
-        "name": "Salud",
-        "description": "Artículos sobre bienestar y salud",
-        "alias": "SL",
-        "price": "7.50",
-        "kind": "premium"
-    }
-},
-{
-    "model": "posts.category",
-    "pk": 9,
-    "fields": {
-        "name": "Deportes",
-        "description": "Categoría para artículos sobre deportes y fitness",
-        "alias": "DP",
-        "price": "0.00",
-        "kind": "free"
-    }
-},
-{
-    "model": "posts.category",
-    "pk": 10,
-    "fields": {
-        "name": "Cultura",
-        "description": "Publicaciones relacionadas con arte y cultura",
-        "alias": "CL",
-        "price": null,
-        "kind": "public"
-    }
-},
-{
-    "model": "posts.category",
-    "pk": 11,
-    "fields": {
-        "name": "Viajes",
-        "description": "Consejos y experiencias de viaje",
-        "alias": "VJ",
-        "price": "5.99",
-        "kind": "premium"
-    }
-}
 ]
