@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import SearchPostView, SuscriberPostsView, SuscriberPostDetailView, UpdatePostsStatusView
+from .views import SearchPostView, SuscriberExplorePostsView, SuscriberFeedPostsView, SuscriberPostDetailView, UpdatePostsStatusView
 from .views import CategoriesView, CategoryAddView, CategoryDetailView, CategoryEditView, CategoryDeleteView
 from .views import ToEditView, ToEditPostView
 from .views import ToPublishView, ToPublishPostView
@@ -19,7 +19,8 @@ urlpatterns = [
     
     # urls for suscribers
     path('search/', SearchPostView.as_view(), name='post_search'),
-    path('all/', SuscriberPostsView.as_view(), name='posts'),
+    path('all/', SuscriberExplorePostsView.as_view(), name='posts'),
+    path('feed/', SuscriberFeedPostsView.as_view(), name='feed'),
     path('<int:pk>/<slug:category>/<str:month>/<str:year>/<slug:title>/', SuscriberPostDetailView.as_view(), name='post'),
     
     # urls for authors

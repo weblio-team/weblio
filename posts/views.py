@@ -747,7 +747,7 @@ class ToPublishPostView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView)
 
 # views for subscribers
 
-class SuscriberPostsView(ListView):
+class SuscriberExplorePostsView(ListView):
     """
     Vista para listar todas las publicaciones disponibles para suscriptores.
 
@@ -757,7 +757,7 @@ class SuscriberPostsView(ListView):
         ordering (list): Lista que define el orden de los resultados.
     """
     model = Post
-    template_name = 'suscribers/posts.html'
+    template_name = 'suscribers/explore.html'
     ordering = ['-date_posted']
     
     def get_queryset(self):
@@ -783,6 +783,47 @@ class SuscriberPostsView(ListView):
         [setattr(post, 'height', random.randint(250, 450)) for post in context['object_list']]
         return context
 
+class SuscriberFeedPostsView(ListView):
+    """
+    Vista para listar todas las publicaciones disponibles para suscriptores.
+
+    Atributos:
+        model (Post): El modelo que se utilizará para obtener los datos.
+        template_name (str): La plantilla que se utilizará para renderizar la vista.
+        ordering (list): Lista que define el orden de los resultados.
+    """
+    model = Post
+    template_name = 'suscribers/feed.html'
+    ordering = ['-date_posted']
+    
+    def get_queryset(self):
+        # Obtener la hora actual en UTC
+        now = timezone.now()
+        
+        # Condición 1: Si publish_start_date y publish_end_date no son nulos y la fecha actual está en el rango
+        programmed = Q(publish_start_date__lte=now, publish_end_date__gte=now, publish_start_date__isnull=False, publish_end_date__isnull=False)
+
+        # Condición 2: Si publish_start_date y publish_end_date son nulos
+        regular = Q(publish_start_date__isnull=True, publish_end_date__isnull=True)
+
+        # Obtener el usuario autenticado
+        user = self.request.user
+
+        # Obtener las categorías compradas por el usuario
+        purchased_categories = user.purchased_categories.all()
+
+        # Filtrar los posts con status 'published' que cumplan cualquiera de las dos condiciones
+        return Post.objects.filter(
+            Q(status='published') & (programmed | regular) & Q(category__in=purchased_categories)
+        ).order_by('-date_posted')
+    
+    def get_context_data(self, **kwargs):
+        """Añade información adicional al contexto, como la lista de categorías."""
+        context = super().get_context_data(**kwargs)
+        context['categories'] = Category.objects.all()
+        # Generar una altura aleatoria para cada post en la lista de objetos (object_list)
+        [setattr(post, 'height', random.randint(250, 450)) for post in context['object_list']]
+        return context
 
 class SearchPostView(ListView):
     """
