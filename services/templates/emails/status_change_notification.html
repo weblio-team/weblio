@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Notificación de inicio de sesión</title>
+    <title>Notificación de cambio de estado</title>
     <style>
         /* Estilos básicos para asegurar que el diseño sea responsivo */
         @media only screen and (max-width: 600px) {
@@ -43,11 +43,10 @@
             font-size: 28px;
         }
 
-        p, li {
+        p {
             color: #fff;
             margin-bottom: 20px;
             line-height: 1.6;
-            text-align: left;
         }
 
         strong {
@@ -89,28 +88,27 @@
 <body>
     <div class="container">
         <!-- Título -->
-        <h2>Notificación de inicio de sesión</h2>
+        <h2>Cambio en el estado de tu artículo</h2>
 
         <!-- Mensaje principal -->
-        <p>Hola <strong>{{ username }}</strong>,</p>
-        <p>Has iniciado sesión en tu cuenta con los siguientes detalles:</p>
+        <p>Hola <strong>{{ post.author.first_name }}</strong>,</p>
+        <p>El estado de tu artículo "<strong>{{ post.title }}</strong>" ha sido cambiado de 
+        <strong>{{ old_status }}</strong> a <strong>{{ new_status }}</strong>.</p>
 
-        <!-- Lista de detalles -->
-        <ul>
-            <li><strong>Fecha y hora:</strong> {{ login_time }}</li>
-            <li><strong>Dirección IP:</strong> {{ ip_address }}</li>
-            <li><strong>Dispositivo:</strong> {{ device }}</li>
-        </ul>
-
-        <!-- Mensaje de seguridad -->
-        <p>Si no has sido tú, por favor contacta con el administrador de inmediato.</p>
+        <!-- Detalles del cambio -->
+        <p><strong>Razón del cambio:</strong> {{ change_reason }}</p>
+        <p><strong>Cambiado por:</strong> {{ changed_by.first_name }} {{ changed_by.last_name }}</p>
+        <p><strong>Fecha del cambio:</strong> {{ change_date }}</p>
 
         <!-- Botón de acción -->
-        <a href="#" class="btn">Ver más detalles</a>
+        <a href="{{ post_url }}" class="btn">Ver artículo</a>
+
+        <!-- Separador -->
+        <div class="divider"></div>
 
         <!-- Footer -->
         <footer>
-            <p>&copy; 2024 Weblio. Todos los derechos reservados.</p>
+            <p>Gracias,<br>El equipo de Weblio</p>
         </footer>
     </div>
 </body>

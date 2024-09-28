@@ -31,6 +31,7 @@ INSTALLED_APPS = [
     'storages',
     'simple_history',
     'django_social_share',
+    'django.contrib.sites',
 ]
 
 MIDDLEWARE = [
@@ -69,6 +70,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'weblio.wsgi.application'
 
+SITE_ID = 1
 
 # Database
 DATABASES = {

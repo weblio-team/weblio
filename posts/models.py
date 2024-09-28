@@ -9,6 +9,10 @@ from members.models import Member
 import requests
 from simple_history.models import HistoricalRecords
 from django.utils import timezone
+from django.template.loader import render_to_string
+from django.core.mail import EmailMultiAlternatives
+from django.contrib.sites.models import Site
+from django.conf import settings
 
 # Create your models here.
 class Category(models.Model):
@@ -128,4 +132,64 @@ class Post(models.Model):
         """
         if self.status == 'published' and self.date_posted is None:
             self.date_posted = timezone.now()
+        
+        # Verificar si el status ha cambiado
+        old_status = None
+        if self.pk:
+            old_post = Post.objects.get(pk=self.pk)
+            old_status = old_post.status
+
         super().save(*args, **kwargs)
+
+        # Enviar correo si el estado ha cambiado
+        if not settings.DEBUG and old_status != self.status and old_status == 'draft' and self.status != 'to_edit':
+            self.send_status_change_email(old_status)
+
+    def send_status_change_email(self, old_status):
+        # Recuperar el último historial
+        last_history = self.history.all().last()
+        changed_by = last_history.history_user
+        change_reason = self.change_reason or "Sin razón proporcionada"
+        change_date = last_history.history_date
+
+        # Crear la URL absoluta del post
+        current_site = Site.objects.get_current()
+        post_url = f"http://{current_site.domain}/my-posts/{self.pk}/"
+
+        # Obtener el estado anterior y el nuevo estado con traducción
+        old_status_translated = self.get_status_display(old_status)
+        new_status_translated = self.get_status_display(self.status)
+
+        # Preparar el contexto para el correo
+        context = {
+            'post': self,
+            'old_status': old_status_translated,
+            'new_status': new_status_translated,
+            'changed_by': changed_by,
+            'change_reason': change_reason,
+            'change_date': change_date,
+            'post_url': post_url,
+        }
+
+        # Renderizar el HTML del correo
+        subject = f"Cambio de estado de tu artículo: {self.title}"
+        from_email = settings.EMAIL_HOST_USER
+        to_email = self.author.email
+        html_content = render_to_string('emails/status_change_notification.html', context)
+
+        # Crear y enviar el correo
+        msg = EmailMultiAlternatives(subject, '', from_email, [to_email])
+        msg.attach_alternative(html_content, "text/html")
+        msg.send()
+
+    def get_status_display(self, status_value):
+        """
+        Traducir el valor del estado a una versión legible (en español).
+        """
+        status_dict = {
+            'draft': 'Borrador',
+            'to_edit': 'Edición',
+            'to_publish': 'Publicar',
+            'published': 'Publicado'
+        }
+        return status_dict.get(status_value, 'Desconocido')
