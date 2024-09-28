@@ -15,13 +15,13 @@
             <a class="nav-link" id="informacion-adicional-tab" data-bs-toggle="tab" href="#informacion-adicional"
                 role="tab" aria-controls="informacion-adicional" aria-selected="false">Información adicional</a>
         </li>
-        <li class="nav-item"></li>
-        <a class="nav-link" id="vista-portada-tab" data-bs-toggle="tab" href="#vista-portada" role="tab"
-            aria-controls="vista-portada" aria-selected="false">Vista de la portada</a>
+        <li class="nav-item">
+            <a class="nav-link" id="vista-portada-tab" data-bs-toggle="tab" href="#vista-portada" role="tab"
+                aria-controls="vista-portada" aria-selected="false">Vista de la portada</a>
         </li>
-        <li class="nav-item"></li>
-        <a class="nav-link" id="observaciones-tab" data-bs-toggle="tab" href="#observaciones" role="tab"
-            aria-controls="observaciones" aria-selected="false">Observaciones</a>
+        <li class="nav-item">
+            <a class="nav-link" id="observaciones-tab" data-bs-toggle="tab" href="#observaciones" role="tab"
+                aria-controls="observaciones" aria-selected="false">Observaciones</a>
         </li>
     </ul>
 
@@ -39,19 +39,6 @@
                 <small>Autor: {{ post.author.first_name }} {{ post.author.last_name }}</small><br>
                 <small>Categoría: {{ post.category }}</small><br>
                 <small>Etiquetas: {{ post.keywords }}</small><br>
-
-                <div class="d-flex justify-content-between py-4">
-                    <a href="{% url 'to-publish' %}" class="btn btn-light">Volver</a>
-                    <div>
-                        <form method="post" action="{% url 'publish-a-post' post.pk %}" id="post-form" class="d-inline">
-                            {% csrf_token %}
-                            <button type="button" class="btn btn-secondary my-0" data-bs-toggle="modal"
-                                data-bs-target="#changeReasonEditModal">Mandar a edición</button>
-                            <button type="submit" name="status" value="published"
-                                class="btn btn-primary">Publicar</button>
-                        </form>
-                    </div>
-                </div>
             </div>
         </div>
 
@@ -106,7 +93,7 @@
                                 <h5 class="card-title">Foto de portada</h5>
                                 <div class="card-thumbnail-container">
                                     {% if post.thumbnail %}
-                                    <img src="{{ post.thumbnail.url }}" class="img-fluid rounded-start" alt="{{ post.title }}">
+                                    <img src="{{ post.thumbnail.url }}" class="img-fluid rounded" alt="{{ post.title }}">
                                     {% else %}
                                     <p>No hay una foto de portada subida.</p>
                                     {% endif %}
@@ -126,8 +113,7 @@
                         <div class="col-md-3">
                             <div class="thumbnail-container">
                                 {% if post.thumbnail %}
-                                <img src="{{ post.thumbnail.url }}" class="thumbnail-img rounded-start"
-                                    alt="{{ post.title }}">
+                                <img src="{{ post.thumbnail.url }}" class="thumbnail-img rounded" alt="{{ post.title }}">
                                 {% else %}
                                 <p>No hay una foto de portada subida.</p>
                                 {% endif %}
@@ -213,6 +199,19 @@
         </div>
     </div>
 
+    <!-- Botones al final visibles en todas las pestañas -->
+    <div class="d-flex justify-content-between py-4">
+        <a href="{% url 'to-publish' %}" class="btn btn-light">Volver</a>
+        <div>
+            <form method="post" action="{% url 'publish-a-post' post.pk %}" id="post-form" class="d-inline">
+                {% csrf_token %}
+                <button type="button" class="btn btn-secondary my-0" data-bs-toggle="modal"
+                    data-bs-target="#changeReasonEditModal">Mandar a edición</button>
+                <button type="submit" name="status" value="published" class="btn btn-primary">Publicar</button>
+            </form>
+        </div>
+    </div>
+
     <!-- Modal for Change Reason Edit -->
     <div class="modal fade" id="changeReasonEditModal" tabindex="-1" role="dialog"
         aria-labelledby="changeReasonEditLabel" aria-hidden="true">
@@ -235,9 +234,7 @@
             </div>
         </div>
     </div>
-</main>
-
-
+</main>       
 <!-- Incluir JavaScript de Bootstrap -->
 <script>
     document.addEventListener('DOMContentLoaded', function () {
