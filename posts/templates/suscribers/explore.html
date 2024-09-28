@@ -1,47 +1,134 @@
 {% extends "base.html" %}
 {% block content %}
     <main class="container py-4">
-        <h1 class="text-center">Artículos</h1>
-        <div class="row" id="masonry-grid" data-masonry='{"percentPosition": true }'>
-            {% for post in object_list %}
-            <div class="col-sm-6 col-md-4 mb-4 d-flex align-items-stretch">
-                <div class="card w-100 h-100" style="height: {{ post.height }}px;">
-                    {% if post.thumbnail %}
-                        <!-- Mostrar imagen solo si existe -->
-                        <img src="{{ post.thumbnail.url }}" class="img-fluid rounded-top" alt="{{ post.title }}" style="object-fit: cover; width: 100%; height: {{ post.height }}px;">
-                    {% endif %}
-                    <div class="card-body d-flex flex-column">
-                        <h5 class="card-title">
-                            <a href="{% url 'post' post.pk post.category.name|slugify post.date_posted|date:'m' post.date_posted|date:'Y' post.title|slugify %}">
-                                {{ post.title }}
-                            </a>
-                        </h5>
-                        <p class="card-text flex-grow-1">{{ post.summary|safe }}</p>
-                        <div class="mt-auto">
-                            <p class="card-text">
-                                <small class="text-muted">Autor: {{ post.author.first_name }} {{ post.author.last_name }}</small>
-                            </p>
-                            <p class="card-text">
-                                <small class="text-muted">Categoría: {{ post.category }}</small>
-                            </p>
+        <h1>Explorar Artículos</h1>
+        <div class="row">
+            <div class="col-md-9">
+                <div class="row" id="masonry-grid" data-masonry='{"percentPosition": true }'>
+                    {% for post in object_list %}
+                    <div class="col-md-4 mb-4">
+                        <div class="card w-100 h-100" style="height: {{ post.height }}px;">
+                            {% if post.thumbnail %}
+                                <!-- Mostrar imagen solo si existe -->
+                                <img src="{{ post.thumbnail.url }}" class="img-fluid rounded-top" alt="{{ post.title }}" style="object-fit: cover; width: 100%; height: {{ post.height }}px;">
+                            {% endif %}
+                            <div class="card-body d-flex flex-column">
+                                <h5 class="card-title">
+                                    <a href="{% url 'post' post.pk post.category.name|slugify post.date_posted|date:'m' post.date_posted|date:'Y' post.title|slugify %}">
+                                        {{ post.title }}
+                                    </a>
+                                </h5>
+                                <p class="card-text text-muted flex-grow-1">{{ post.summary|safe }}</p>
+                                <div class="mt-auto">
+                                    <p class="card-text">
+                                        <small class="text-muted">Autor: {{ post.author.first_name }} {{ post.author.last_name }}</small>
+                                    </p>
+                                    <p class="card-text">
+                                        <small class="text-muted">Categoría: {{ post.category }}</small>
+                                    </p>
+                                </div>
+                            </div>
                         </div>
+                    </div>
+                    {% empty %}
+                        <p>No se encontraron artículos.</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Barra lateral con las categorías en modo oscuro minimalista -->
+            <div class="col-md-3">
+                <div class="card bg-dark text-light position-sticky" style="top: 4rem; border: none; border-radius: 0;">
+                    <div class="card-body px-3 py-3">
+                        <h5 class="card-title text-light border-bottom pb-3" style="border-color: rgba(255, 255, 255, 0.1); font-weight: 500;">Categorías</h5>
+                        <ul class="list-group list-group-flush">
+                            {% for category in categories %}
+                                {% if category.name != 'Uncategorized' %}
+                                    <!-- Flexbox para alinear correctamente el nombre a la izquierda y el contador a la derecha -->
+                                    <li class="list-group-item bg-dark border-0 px-0 py-2 d-flex justify-content-between align-items-center">
+                                        <!-- Contenedor del nombre y tipo de categoría -->
+                                        <div class="d-flex align-items-center">
+                                            <a href="{% url 'category' pk=category.pk name=category.name|slugify %}" class="text-light" style="text-decoration: none; font-weight: 300; font-size: 0.9rem;">
+                                                {{ category.name }}
+                                            </a>
+                                            <!-- Insignia del tipo de categoría pegada al nombre -->
+                                            {% if category.kind == 'free' %}
+                                                <span class="badge badge-free ml-3">
+                                                    <i class="bi bi-gift"></i> Gratis
+                                                </span>
+                                            {% elif category.kind == 'public' %}
+                                                <span class="badge badge-public ml-3">
+                                                    <i class="bi bi-globe"></i> Público
+                                                </span>
+                                            {% elif category.kind == 'premium' %}
+                                                <span class="badge badge-premium ml-3">
+                                                    <i class="bi bi-star"></i> Premium
+                                                </span>
+                                            {% endif %}
+                                        </div>
+                                        <!-- Contador de publicaciones con ícono -->
+                                        <span class="category-count">
+                                            <i class="bi bi-list"></i> {{ category.post_set.count }}
+                                        </span>
+                                    </li>
+                                {% endif %}
+                            {% empty %}
+                                <li class="list-group-item bg-dark text-light border-0">No hay categorías disponibles.</li>
+                            {% endfor %}
+                            <li class="list-group-item bg-dark border-0 px-0 py-2">
+                                <a href="{% url 'categories' %}" class="text-light" style="text-decoration: none; font-weight: 300; font-size: 0.9rem;">Todas las categorías</a>
+                            </li>
+                        </ul>
                     </div>
                 </div>
             </div>
-            {% empty %}
-                <p>No se encontraron artículos.</p>
-            {% endfor %}
         </div>
     </main>
 
-    <!-- Masonry JS -->
+    <style>
+        /* Estilos personalizados para las insignias minimalistas */
+        .badge {
+            font-size: 0.7rem;
+            padding: 0.2em 0.4em;
+            border-radius: 0.2rem;
+        }
+        /* Colores minimalistas y suaves para las diferentes etiquetas */
+        .badge-free {
+            background-color: #e6f5ea; /* Verde grisáceo suave */
+            color: #2d6a4f; /* Verde oscuro */
+        }
+        .badge-public {
+            background-color: #e7f0fa; /* Azul grisáceo suave */
+            color: #1e3a8a; /* Azul oscuro */
+        }
+        .badge-premium {
+            background-color: #fff8e5; /* Amarillo grisáceo suave */
+            color: #7d5800; /* Marrón oscuro */
+        }
+
+        /* Contador de publicaciones como texto sin fondo */
+        .category-count {
+            color: #ffffff; /* Color blanco para que destaque en el fondo oscuro */
+            font-weight: 400;
+            font-size: 0.9rem;
+        }
+
+        /* Aumentando el espacio entre el nombre de la categoría y el badge del tipo */
+        .ml-3 {
+            margin-left: 0.75rem !important; /* Ajuste del margen izquierdo */
+        }
+    </style>
+
+    <!-- Agregar el enlace a Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.8.1/font/bootstrap-icons.min.css">
+
     <script>
         // Inicializa Masonry después de cargar las imágenes para asegurar que funcione correctamente
         document.addEventListener('DOMContentLoaded', function () {
             var grid = document.querySelector('#masonry-grid');
             var imgLoad = imagesLoaded(grid, function() {
                 new Masonry(grid, {
-                    itemSelector: '.col-md-4',
+                    itemSelector: '.col-md-4', // Cambia el selector según tu grid
                     percentPosition: true
                 });
             });
