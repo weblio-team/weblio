@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import SearchPostView, SuscriberExplorePostsView, SuscriberFeedPostsView, SuscriberPostDetailView, UpdatePostsStatusView
+from .views import SearchExplorePostView, SearchFeedPostView, SuscriberExplorePostsView, SuscriberFeedPostsView, SuscriberPostDetailView, UpdatePostsStatusView
 from .views import CategoriesView, CategoryAddView, CategoryDetailView, CategoryEditView, CategoryDeleteView
 from .views import ToEditView, ToEditPostView
 from .views import ToPublishView, ToPublishPostView
@@ -18,7 +18,8 @@ urlpatterns = [
     path('category/<int:pk>/<str:name>/delete/', CategoryDeleteView.as_view(), name='category_delete'),
     
     # urls for suscribers
-    path('search/', SearchPostView.as_view(), name='post_search'),
+    path('all/search/', SearchExplorePostView.as_view(), name='post_search_explore'),
+    path('feed/search/', SearchFeedPostView.as_view(), name='post_search_feed'),
     path('all/', SuscriberExplorePostsView.as_view(), name='posts'),
     path('feed/', SuscriberFeedPostsView.as_view(), name='feed'),
     path('<int:pk>/<slug:category>/<str:month>/<str:year>/<slug:title>/', SuscriberPostDetailView.as_view(), name='post'),

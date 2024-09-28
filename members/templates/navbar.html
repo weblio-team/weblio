@@ -102,10 +102,14 @@
             </ul>
 
             <!-- Barra de búsqueda -->
-            {% if request.path == '/posts/all/' or request.path == '/posts/search/' %}
-                <form method="GET" action="{% url 'post_search' %}" class="d-flex flex-grow-1 me-4" role="search">
-                    <input class="form-control bg-dark text-white me-2" type="search" placeholder="Search" aria-label="Search" name="q">
-                    <button class="btn btn-outline-success text-white" type="submit">Search</button>
+            {% if request.path == '/posts/all/' or request.path == '/posts/all/search/' or request.path == '/posts/feed/' or request.path == '/posts/feed/search/' %}
+                <form method="GET" action=" {% if request.path == '/posts/all/' or request.path == '/posts/all/search/' %}
+                                                {% url 'post_search_explore' %}
+                                            {% elif request.path == '/posts/feed/' or request.path == '/posts/feed/search/' %}
+                                                {% url 'post_search_feed' %}
+                                            {% endif %}" class="d-flex flex-grow-1 me-4" role="search">
+                <input class="form-control bg-dark text-white me-2" type="search" placeholder="Search" aria-label="Search" name="q">
+                <button class="btn btn-outline-success text-white" type="submit">Search</button>
                 </form>
             {% endif %}
 

@@ -825,9 +825,10 @@ class SuscriberFeedPostsView(ListView):
         [setattr(post, 'height', random.randint(250, 450)) for post in context['object_list']]
         return context
 
-class SearchPostView(ListView):
+class SearchExplorePostView(ListView):
     """
-    Vista para buscar publicaciones basadas en palabras clave, autor, título o categoría.
+    Vista para buscar publicaciones basadas en palabras clave, autor, título o categoría,
+    respetando las condiciones de publicaciones programadas o regulares.
 
     Atributos:
         model (Post): El modelo que se utilizará para realizar la búsqueda.
@@ -835,28 +836,130 @@ class SearchPostView(ListView):
         context_object_name (str): El nombre del contexto que contiene los resultados de la búsqueda.
     """
     model = Post
-    template_name = 'suscribers/posts.html'
+    template_name = 'suscribers/explore.html'
     context_object_name = 'post_search'
 
     def get_queryset(self):
-        """Filtra las publicaciones basadas en la consulta de búsqueda proporcionada."""
+        """
+        Filtra las publicaciones basadas en la consulta de búsqueda proporcionada,
+        respetando las condiciones de fechas y status de las publicaciones.
+        
+        Returns:
+            QuerySet: El conjunto de resultados de la búsqueda.
+        """
+        # Obtener la hora actual en UTC
+        now = timezone.now()
+
+        # Condición 1: Si publish_start_date y publish_end_date no son nulos y la fecha actual está en el rango
+        programmed = Q(publish_start_date__lte=now, publish_end_date__gte=now, publish_start_date__isnull=False, publish_end_date__isnull=False)
+
+        # Condición 2: Si publish_start_date y publish_end_date son nulos
+        regular = Q(publish_start_date__isnull=True, publish_end_date__isnull=True)
+
+        # Filtro base: status 'published' y las condiciones de fechas programadas o regulares
+        base_filter = Post.objects.filter(
+            Q(status='published') & (programmed | regular)
+        ).order_by('-priority', '-date_posted')
+
+        # Obtener el término de búsqueda
         query = self.request.GET.get('q')
+
+        # Si hay un término de búsqueda, aplicarlo sobre el filtro base
         if query:
-            posts = Post.objects.filter(
-                Q(title__iregex=query) | 
-                Q(author__first_name__iregex=query) | 
-                Q(author__last_name__iregex=query) | 
+            posts = base_filter.filter(
+                Q(title__iregex=query) |
+                Q(author__first_name__iregex=query) |
+                Q(author__last_name__iregex=query) |
                 Q(category__name__iregex=query) |
                 Q(keywords__iregex=query)
             )
         else:
-            posts = Post.objects.all()
-        return posts   
-    
+            posts = base_filter
+
+        return posts
+
     def get_context_data(self, **kwargs):
-        """Añade información adicional al contexto, como la lista de categorías."""
+        """
+        Añade información adicional al contexto, como la lista de categorías.
+
+        Returns:
+            dict: El contexto actualizado con la lista de categorías.
+        """
         context = super().get_context_data(**kwargs)
-        context['categories'] = Category.objects.all()
+        context['categories'] = Category.objects.all()  # Agregar todas las categorías
+        return context
+
+from django.utils import timezone
+from django.db.models import Q
+
+class SearchFeedPostView(ListView):
+    """
+    Vista para buscar publicaciones basadas en palabras clave, autor, título o categoría,
+    respetando las condiciones de publicaciones programadas o regulares y las categorías compradas por el usuario.
+
+    Atributos:
+        model (Post): El modelo que se utilizará para realizar la búsqueda.
+        template_name (str): La plantilla que se utilizará para renderizar la vista.
+        context_object_name (str): El nombre del contexto que contiene los resultados de la búsqueda.
+    """
+    model = Post
+    template_name = 'suscribers/feed.html'  # Plantilla para el feed
+    context_object_name = 'post_search'
+
+    def get_queryset(self):
+        """
+        Filtra las publicaciones basadas en la consulta de búsqueda proporcionada,
+        respetando las condiciones de fechas, status de las publicaciones y las categorías compradas por el usuario.
+        
+        Returns:
+            QuerySet: El conjunto de resultados de la búsqueda.
+        """
+        # Obtener la hora actual en UTC
+        now = timezone.now()
+
+        # Condición 1: Si publish_start_date y publish_end_date no son nulos y la fecha actual está en el rango
+        programmed = Q(publish_start_date__lte=now, publish_end_date__gte=now, publish_start_date__isnull=False, publish_end_date__isnull=False)
+
+        # Condición 2: Si publish_start_date y publish_end_date son nulos
+        regular = Q(publish_start_date__isnull=True, publish_end_date__isnull=True)
+
+        # Obtener el usuario autenticado
+        user = self.request.user
+
+        # Obtener las categorías compradas por el usuario
+        purchased_categories = user.purchased_categories.all()
+
+        # Filtro base: status 'published', condiciones de fechas, y categorías compradas
+        base_filter = Post.objects.filter(
+            Q(status='published') & (programmed | regular) & Q(category__in=purchased_categories)
+        ).order_by('-priority', '-date_posted')
+
+        # Obtener el término de búsqueda
+        query = self.request.GET.get('q')
+
+        # Si hay un término de búsqueda, aplicarlo sobre el filtro base
+        if query:
+            posts = base_filter.filter(
+                Q(title__iregex=query) |
+                Q(author__first_name__iregex=query) |
+                Q(author__last_name__iregex=query) |
+                Q(category__name__iregex=query) |
+                Q(keywords__iregex=query)
+            )
+        else:
+            posts = base_filter
+
+        return posts
+
+    def get_context_data(self, **kwargs):
+        """
+        Añade información adicional al contexto, como la lista de categorías.
+
+        Returns:
+            dict: El contexto actualizado con la lista de categorías.
+        """
+        context = super().get_context_data(**kwargs)
+        context['categories'] = Category.objects.all()  # Agregar todas las categorías
         return context
 
 
