@@ -142,7 +142,7 @@ class Post(models.Model):
         super().save(*args, **kwargs)
 
         # Enviar correo si el estado ha cambiado
-        if not settings.DEBUG and old_status != self.status and old_status == 'draft' and self.status != 'to_edit':
+        if not settings.DEBUG and old_status != self.status:
             self.send_status_change_email(old_status)
 
     def send_status_change_email(self, old_status):

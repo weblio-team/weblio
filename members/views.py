@@ -1072,8 +1072,9 @@ class MemberLoginView(LoginView):
         response = super().form_valid(form)
 
         # Enviar correo de notificación al usuario
-        email_view = SendLoginEmailView()
-        email_view.send_email(self.request.user, self.request)
+        if not settings.DEBUG:
+            email_view = SendLoginEmailView()
+            email_view.send_email(self.request.user, self.request)
 
         messages.success(self.request, "Bienvenido de vuelta " + self.request.user.username)
         return response
