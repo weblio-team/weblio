@@ -147,7 +147,7 @@ class Post(models.Model):
 
     def send_status_change_email(self, old_status):
         # Recuperar el último historial
-        last_history = self.history.all().last()
+        last_history = self.history.order_by('-history_date').first()  # Ordenar por fecha descendente y obtener el primer registro
         changed_by = last_history.history_user
         change_reason = self.change_reason or "Sin razón proporcionada"
         change_date = last_history.history_date
