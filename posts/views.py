@@ -1,8 +1,7 @@
 import json
 from django.http import Http404, HttpResponseForbidden, HttpResponseRedirect, JsonResponse
-import datetime
 from django.shortcuts import get_object_or_404, redirect, render
-from django.urls import reverse, reverse_lazy
+from django.urls import reverse_lazy
 from django.contrib.auth.mixins import PermissionRequiredMixin, LoginRequiredMixin
 from django.utils.decorators import method_decorator
 from django.views import View
@@ -13,11 +12,11 @@ from django.db.models import Q, OuterRef, Subquery
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib import messages
 from django.utils import timezone
-from simple_history.models import HistoricalRecords
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.core.exceptions import PermissionDenied
 from django.conf import settings
 from simple_history.utils import update_change_reason
+import random
 
 
 def update_change_reason(instance, reason):
@@ -763,6 +762,8 @@ class SuscriberPostsView(ListView):
         """Añade información adicional al contexto, como la lista de categorías."""
         context = super().get_context_data(**kwargs)
         context['categories'] = Category.objects.all()
+        # Generar una altura aleatoria para cada post en la lista de objetos (object_list)
+        [setattr(post, 'height', random.randint(250, 450)) for post in context['object_list']]
         return context
 
 
