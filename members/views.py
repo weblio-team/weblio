@@ -1,6 +1,6 @@
 from pyexpat.errors import messages
 from django.views.generic import FormView, TemplateView,  CreateView, UpdateView
-from django.urls import reverse_lazy
+from django.urls import reverse_lazy, reverse
 
 from django.contrib.auth.models import Group
 from django.contrib.auth.views import LoginView, PasswordChangeView
@@ -15,16 +15,38 @@ from .forms import MemberRegisterForm, MemberJoinForm, MemberLoginForm
 from .forms import PasswordChangingForm
 from .forms import EditProfileForm
 from django.contrib import messages
-from django.http import HttpResponseRedirect 
+from django.http import HttpResponseRedirect, JsonResponse
 from django.contrib.auth import authenticate
 from django.contrib.auth.mixins import PermissionRequiredMixin, LoginRequiredMixin
 from django.utils.translation import gettext_lazy as _
+from django.contrib.auth.decorators import login_required
 from django.db.models import Count, Prefetch
-
 from django.contrib.auth.models import Permission
 from django.utils.translation import gettext as _
 from django.conf import settings
 from services.views import SendLoginEmailView
+
+@login_required
+def edit_profile(request):
+    if request.method == 'POST':
+        form = EditProfileForm(request.POST, request.FILES, instance=request.user)
+        if form.is_valid():
+            form.save()
+            return JsonResponse({'success': True, 'redirect_url': reverse('profile')})
+        else:
+            return JsonResponse({'success': False, 'errors': form.errors})
+    else:
+        form = EditProfileForm(instance=request.user)
+    return render(request, 'members/edit_profile.html', {'form': form})
+
+@login_required
+def update_profile_picture(request):
+    if request.method == 'POST' and request.FILES.get('profile-pic'):
+        request.user.pfp = request.FILES['profile-pic']
+        request.user.save()
+        return JsonResponse({'success': True, 'redirect_url': reverse('profile')})
+    return JsonResponse({'success': False})
+
 
 class HomeView(TemplateView):
     """
@@ -1261,15 +1283,12 @@ class Error403View(TemplateView):
     
 class UserEditView(UpdateView):
     """
-    Vista basada en clases para la edición del perfil de usuario.
+    Vista para editar el perfil del usuario.
 
     Atributos:
-        form_class: El formulario que se utilizará para editar el perfil del usuario.
-        template_name: La plantilla que se utilizará para renderizar la vista.
-        success_url: La URL a la que se redirigirá después de que el formulario se haya enviado con éxito.
-
-    Métodos:
-        get_object: Obtiene el objeto que se va a editar (el usuario actual).
+        form_class (EditProfileForm): El formulario utilizado para editar el perfil.
+        template_name (str): La plantilla utilizada para renderizar la vista.
+        success_url (str): La URL a la que redirigir después de una edición exitosa.
     """
     form_class = EditProfileForm
     template_name = 'members/edit_profile.html'
@@ -1277,13 +1296,48 @@ class UserEditView(UpdateView):
 
     def get_object(self):
         """
-        Obtiene el objeto que se va a editar.
+        Obtener el objeto del usuario actual.
 
         Returns:
-            User: El usuario actual que está autenticado.
+            User: El usuario actual.
         """
         return self.request.user
 
+    def form_valid(self, form):
+        """
+        Guardar la foto de perfil si se ha subido una y el formulario es válido.
+
+        Args:
+            form (EditProfileForm): El formulario de edición de perfil.
+
+        Returns:
+            HttpResponse: La respuesta HTTP después de procesar el formulario.
+        """
+        response = super().form_valid(form)
+        if 'profile-pic-upload' in self.request.FILES:
+            self.request.user.pfp = self.request.FILES['profile-pic-upload']
+            self.request.user.save()
+        return response
+
+    def post(self, request, *args, **kwargs):
+        """
+        Manejar la solicitud POST para eliminar la foto de perfil.
+
+        Args:
+            request (HttpRequest): La solicitud HTTP.
+            *args: Argumentos adicionales.
+            **kwargs: Argumentos clave adicionales.
+
+        Returns:
+            HttpResponse: La respuesta HTTP después de procesar la solicitud.
+        """
+        if 'delete-photo' in request.POST:
+            user = self.get_object()
+            user.pfp.delete()
+            user.save()
+            return redirect('profile')
+        return super().post(request, *args, **kwargs)
+        
 class ProfileView(LoginRequiredMixin, TemplateView):
     """
     Vista basada en clases para mostrar el perfil del usuario.

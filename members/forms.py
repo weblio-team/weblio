@@ -633,11 +633,15 @@ class EditProfileForm(UserChangeForm):
         widget=forms.TextInput(attrs={'class': 'form-control'}),
         label='Usuario'
     )
-    password = forms.CharField(widget=forms.HiddenInput(), required=False)
+    pfp = forms.ImageField(
+        required=False,
+        widget=forms.ClearableFileInput(attrs={'class': 'form-control d-none', 'id': 'profile-pic-input'}),
+        label='' 
+    )
 
     class Meta:
         model = Member
-        fields = ( 'username', 'first_name', 'last_name', 'email', 'password')
+        fields = ( 'username', 'first_name', 'last_name', 'email', 'pfp')
 
 class PasswordChangingForm(PasswordChangeForm):
     """
