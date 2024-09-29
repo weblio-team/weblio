@@ -2,8 +2,8 @@
 {% block title %}{{ post.title_tag }}{% endblock %}
 {% block content %}
 <main role="main" class="container py-4">
-    {% if post.thumbnail %}
-    <img src="{{ post.thumbnail.url }}" class="img-fluid rounded-start" alt="Thumbnail Image" style="width: 100%;">
+    {% if thumbnail_url %}
+        <img src="{{ thumbnail_url }}" class="img-fluid rounded-start" alt="Thumbnail Image" style="width: 25%;">
     {% endif %}
     <hr>
     <small>Fecha de inicio de publicación: {{ post.publish_start_date }}</small><br>
@@ -29,13 +29,9 @@
         <!-- Right aligned 'Restaurar esta versión' button -->
         <form method="post" action="{% if user == post.author %}{% url 'edit-my-post' post_pk %}{% else %}{% url 'edit-a-post' post_pk %}{% endif %}">
             {% csrf_token %}
-            <input type="hidden" name="restore_version" value="true">
-            <input type="hidden" name="title" value="{{ post.title }}">
-            <input type="hidden" name="title_tag" value="{{ post.title_tag }}">
-            <input type="hidden" name="summary" value="{{ post.summary }}">
-            <input type="hidden" name="body" value="{{ post.body }}">
-            <input type="hidden" name="category" value="{{ post.category }}">
-            <input type="hidden" name="keywords" value="{{ post.keywords }}">
+            <input type="hidden" name="operation" value="restore">
+            <input type="hidden" name="post_id" value="{{ post.id }}">
+            <input type="hidden" name="history_id" value="{{ post.pk }}">
             <button type="submit" class="btn btn-primary" value="restore">Restaurar esta versión</button>
         </form>
     </div>

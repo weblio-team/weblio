@@ -17,6 +17,7 @@ from django.core.exceptions import PermissionDenied
 from django.conf import settings
 from simple_history.utils import update_change_reason
 import random
+from django.core.files.storage import default_storage
 
 
 def update_change_reason(instance, reason):
@@ -249,7 +250,16 @@ class MyPostEditView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
 
         context['post_history_page'] = post_history_page
         context['post_history_with_reason_page'] = post_history_with_reason_page
-        context['current_thumbnail_url'] = post.thumbnail.url if post.thumbnail else ''
+        
+        # Obtener la versión específica de la imagen si se solicita restaurar
+        if self.request.POST.get('operation') == 'restore':
+            post_version = get_object_or_404(get_object_or_404(Post, pk=self.request.POST.get('post_id')).history, pk=self.request.POST.get('history_id'))
+            context['current_thumbnail_url'] = default_storage.url(post_version.thumbnail)
+            context['post_id'] = self.request.POST.get('post_id')
+            context['history_id'] = self.request.POST.get('history_id')
+        # Si no se solicita restaurar una versión anterior, mostrar la imagen actual del objeto
+        else:
+            context['current_thumbnail_url'] = post.thumbnail.url if post.thumbnail else None
 
         if self.request.POST:
             context['gen_form'] = MyPostEditGeneralForm(self.request.POST, instance=post)
@@ -277,24 +287,29 @@ class MyPostEditView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
         thumbnail_form = None
         program_form = None
 
-        if 'restore_version' in post_data:
+        # Comprobar si se solicita restaurar una versión anterior
+        if post_data.get('operation') == 'restore':
+            post_version = get_object_or_404(get_object_or_404(Post, pk=post_data.get('post_id')).history, pk=post_data.get('history_id'))
+            
             gen_form = MyPostEditGeneralForm(initial={
-                'title': post_data.get('title'),
-                'title_tag': post_data.get('title_tag'),
-                'summary': post_data.get('summary'),
-                'category': post_data.get('category'),
-                'keywords': post_data.get('keywords')
+                'title': post_version.title,
+                'title_tag': post_version.title_tag,
+                'summary': post_version.summary,
+                'category': post_version.category.name,
+                'keywords': post_version.keywords,
             })
             body_form = MyPostEditBodyForm(initial={
-                'body': post_data.get('body')
+                'body': post_version.body
             })
             program_form = MyPostEditProgramForm(initial={
-                'publish_start_date': self.object.publish_start_date,
-                'publish_end_date': self.object.publish_end_date
+                'publish_start_date': post_version.publish_start_date,
+                'publish_end_date': post_version.publish_end_date
             })
             thumbnail_form = MyPostEditThumbnailForm(initial={
-                'thumbnail': self.object.thumbnail
+                'thumbnail': post_version.thumbnail
             })
+        
+        # Si no se solicita restaurar una versión anterior o se está guardando una nueva versión o se está guardando una versión anterior
         else:
             # Check if 'status' is missing and set it to the existing status from the post instance
             if 'status' not in post_data:
@@ -303,6 +318,11 @@ class MyPostEditView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
             # Create the forms with the modified data
             gen_form = MyPostEditGeneralForm(post_data, instance=self.object)
             body_form = MyPostEditBodyForm(post_data, instance=self.object)
+
+            # Comprobar si se está restaurando una versión anterior
+            if post_data.get('post_id') != '' and post_data.get('history_id') != '':  # Si se está restaurando una versión anterior
+                post_version = get_object_or_404(get_object_or_404(Post, pk=post_data.get('post_id')).history, pk=post_data.get('history_id'))
+                self.object.thumbnail = post_version.thumbnail
             thumbnail_form = MyPostEditThumbnailForm(post_data, request.FILES, instance=self.object)
             program_form = MyPostEditProgramForm(post_data, instance=self.object)
 
@@ -889,9 +909,6 @@ class SearchExplorePostView(ListView):
         context['categories'] = Category.objects.all()  # Agregar todas las categorías
         return context
 
-from django.utils import timezone
-from django.db.models import Q
-
 class SearchFeedPostView(ListView):
     """
     Vista para buscar publicaciones basadas en palabras clave, autor, título o categoría,
@@ -1164,4 +1181,5 @@ class HistoryView(DetailView):
         context = super().get_context_data(**kwargs)
         context['post'] = self.get_object()
         context['post_pk'] = self.kwargs.get('pk')
+        context['thumbnail_url'] = default_storage.url(context['post'].thumbnail) if context['post'].thumbnail else None
         return context
