@@ -9,22 +9,67 @@
 <div class="container d-flex justify-content-center">
     <div class="form-group col-md-6">
         <div class="d-flex justify-content-center mb-4">
-            <div class="profile-pic-container">
+            <div class="profile-pic-container" id="profile-pic-container">
                 {% if user.pfp %}
-                    <img src="{{ user.pfp.url }}" alt="Foto de perfil" class="img-fluid rounded-circle" style="width: 150px; height: 150px; object-fit: cover;">
+                    <img src="{{ user.pfp.url }}" alt="Foto de perfil" class="img-fluid rounded-circle" id="profile-pic">
                 {% else %}
-                    <img src="https://picsum.photos/seed/picsum/150" alt="Foto de perfil" class="img-fluid rounded-circle" style="width: 150px; height: 150px; object-fit: cover;">
-                {% endif %}            
+                    <img src="https://picsum.photos/seed/picsum/150" alt="Foto de perfil" class="img-fluid rounded-circle" id="profile-pic">
+                {% endif %}
+                <div class="overlay"></div>
+                <label for="profile-pic-upload" class="upload-label text-center" id="change-photo-btn" data-has-photo="{{ user.pfp|yesno:'true,false' }}">
+                    {{ user.pfp|yesno:'Cambiar foto del perfil,Agregar foto del perfil' }}
+                </label>
             </div>
         </div>
-        <form method="POST">
+        <form method="post" enctype="multipart/form-data">
             {% csrf_token %}
-            {{ form.as_p }}
+            <div class="d-none">
+                {{ form.pfp }}
+            </div>
+            <div class="mb-3">
+                {{ form.username.label_tag }}
+                {{ form.username }}
+            </div>
+            <div class="mb-3">
+                {{ form.first_name.label_tag }}
+                {{ form.first_name }}
+            </div>
+            <div class="mb-3">
+                {{ form.last_name.label_tag }}
+                {{ form.last_name }}
+            </div>
+            <div class="mb-3">
+                {{ form.email.label_tag }}
+                {{ form.email }}
+            </div>
+            <div class="mb-3">
+                <input type="file" id="profile-pic-upload" name="profile-pic-upload" class="profile-pic-upload d-none" accept="image/*">
+            </div>
             <div class="d-flex justify-content-between py-4">
-                <button class="btn btn-primary me-2 w-50">Guardar Cambios</button>
+                <button type="submit" class="btn btn-primary me-2 w-50" id="save-button">Guardar Cambios</button>
                 <a href="{% url 'profile' %}" class="btn btn-secondary w-50">Cancelar</a>
             </div>
         </form>
+    </div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" data-bs-theme="dark" id="photoModal" tabindex="-1" aria-labelledby="photoModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-center" id="photoModalLabel">Cambiar Foto de Perfil</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <button class="btn btn-primary w-100 mb-2" id="upload-new-photo">Subir Nueva Foto</button>
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <button class="btn btn-danger w-100 mb-2" name="delete-photo" value="true">Eliminar Foto Actual</button>
+                </form>
+                <button class="btn btn-secondary w-100" data-bs-dismiss="modal">Cancelar</button>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -32,11 +77,13 @@
     .profile-pic-container {
         width: 150px;
         height: 150px;
-        background-color: #e0e0e0; 
+        background-color: #e0e0e0;
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
+        position: relative;
+        cursor: pointer;
     }
 
     .profile-pic-container img {
@@ -45,6 +92,42 @@
         height: 100%;
         object-fit: cover;
         border-radius: 50%;
+    }
+
+    .overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        border-radius: 50%;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .profile-pic-container:hover .overlay {
+        opacity: 1;
+    }
+
+    .profile-pic-upload {
+        display: none;
+    }
+
+    .upload-label {
+        position: absolute;
+        color: white;
+        background-color: transparent;
+        cursor: pointer;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        font-size: 1.1em;
+        padding: 5px 10px;
+        border-radius: 5px;
+    }
+
+    .profile-pic-container:hover .upload-label {
+        opacity: 1;
     }
 
     .reset-link {
@@ -56,6 +139,62 @@
         text-decoration: underline;
         color: #0056b3;
     }
+
+    .d-none {
+        display: none !important;
+    }
+
+    .hidden-label {
+        display: none;
+    }
+
+    .clearable-file-input {
+        display: none;
+    }
+
+    #profile-pic-input {
+        display: none;
+    }
 </style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const profilePicUpload = document.getElementById('profile-pic-upload');
+        const changePhotoBtn = document.getElementById('change-photo-btn');
+
+        // Handle click on the "Cambiar foto del perfil" button
+        changePhotoBtn.addEventListener('click', function (event) {
+            const hasPhoto = changePhotoBtn.dataset.hasPhoto === 'true';
+
+            if (hasPhoto) {
+                // Prevent default file input opening
+                event.preventDefault();
+                const modal = new bootstrap.Modal(document.getElementById('photoModal'));
+                modal.show();
+            } 
+            // If the user doesn't have a photo, the browser will handle the file input opening natively via the label click
+        });
+
+        // Handle file input change (for both with or without photo cases)
+        profilePicUpload.addEventListener('change', function (event) {
+            const file = event.target.files[0];
+
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    document.getElementById('profile-pic').src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Modal handler for "Subir Nueva Foto" button (inside the modal)
+        document.getElementById('upload-new-photo').addEventListener('click', function () {
+            profilePicUpload.click();
+            const modal = bootstrap.Modal.getInstance(document.getElementById('photoModal'));
+            modal.hide();
+        });
+    });
+</script>
 
 {% endblock %}
