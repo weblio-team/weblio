@@ -542,7 +542,15 @@ class ToEditPostView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
 
         context['publish_start_date'] = self.object.publish_start_date
         context['publish_end_date'] = self.object.publish_end_date
-        context['current_thumbnail_url'] = self.object.thumbnail.url if self.object.thumbnail else None
+        # Obtener la versión específica de la imagen si se solicita restaurar
+        if self.request.POST.get('operation') == 'restore':
+            post_version = get_object_or_404(get_object_or_404(Post, pk=self.request.POST.get('post_id')).history, pk=self.request.POST.get('history_id'))
+            context['current_thumbnail_url'] = default_storage.url(post_version.thumbnail)
+            context['post_id'] = self.request.POST.get('post_id')
+            context['history_id'] = self.request.POST.get('history_id')
+        # Si no se solicita restaurar una versión anterior, mostrar la imagen actual del objeto
+        else:
+            context['current_thumbnail_url'] = self.object.thumbnail.url if self.object.thumbnail else None
         context['state_mapping'] = state_mapping
         return context
 
@@ -558,28 +566,44 @@ class ToEditPostView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
         thumbnail_form = None
         program_form = None
 
-        if 'restore_version' in post_data:
-            gen_form = ToEditPostGeneralForm(initial={
-                'title': post_data.get('title'),
-                'title_tag': post_data.get('title_tag'),
-                'summary': post_data.get('summary'),
-                'category': post_data.get('category'),
-                'keywords': post_data.get('keywords'),
-                'status': post_data.get('status'),
+        # Comprobar si se solicita restaurar una versión anterior
+        if post_data.get('operation') == 'restore':
+            post_version = get_object_or_404(get_object_or_404(Post, pk=post_data.get('post_id')).history, pk=post_data.get('history_id'))
+            gen_form = MyPostEditGeneralForm(initial={
+                'title': post_version.title,
+                'title_tag': post_version.title_tag,
+                'summary': post_version.summary,
+                'category': post_version.category.name,
+                'keywords': post_version.keywords,
             })
-            body_form = ToEditPostBodyForm(initial={
-                'body': post_data.get('body')
+            body_form = MyPostEditBodyForm(initial={
+                'body': post_version.body
             })
+            program_form = MyPostEditProgramForm(initial={
+                'publish_start_date': post_version.publish_start_date,
+                'publish_end_date': post_version.publish_end_date
+            })
+            thumbnail_form = MyPostEditThumbnailForm(initial={
+                'thumbnail': post_version.thumbnail
+            })
+
         else:
             # Check if 'status' is missing and set it to the existing status from the post instance
             if 'status' not in post_data:
                 post_data['status'] = self.object.status
 
             # Create the forms with the modified data
-            gen_form = ToEditPostGeneralForm(post_data, instance=self.object)
-            body_form = ToEditPostBodyForm(post_data, instance=self.object)
+            gen_form = MyPostEditGeneralForm(post_data, instance=self.object)
+            body_form = MyPostEditBodyForm(post_data, instance=self.object)
 
-        if gen_form.is_valid() and body_form.is_valid():
+            # Comprobar si se está restaurando una versión anterior
+            if post_data.get('post_id') != '' and post_data.get('history_id') != '':  # Si se está restaurando una versión anterior
+                post_version = get_object_or_404(get_object_or_404(Post, pk=post_data.get('post_id')).history, pk=post_data.get('history_id'))
+                self.object.thumbnail = post_version.thumbnail
+            thumbnail_form = MyPostEditThumbnailForm(post_data, request.FILES, instance=self.object)
+            program_form = MyPostEditProgramForm(post_data, instance=self.object)
+
+        if gen_form.is_valid() and body_form.is_valid() and thumbnail_form.is_valid() and program_form.is_valid():
             post = gen_form.save(commit=False)
             post.body = body_form.cleaned_data['body']
             post.publish_start_date = self.object.publish_start_date
