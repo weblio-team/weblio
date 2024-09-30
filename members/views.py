@@ -1,6 +1,6 @@
 from pyexpat.errors import messages
 from django.views.generic import FormView, TemplateView,  CreateView, UpdateView
-from django.urls import reverse_lazy
+from django.urls import reverse_lazy, reverse
 
 from django.contrib.auth.models import Group
 from django.contrib.auth.views import LoginView, PasswordChangeView
@@ -13,18 +13,41 @@ from .forms import CreateGroupForm, MemberEditGroupForm, MemberEditPermissionFor
 from .models import Member
 from .forms import MemberRegisterForm, MemberJoinForm, MemberLoginForm
 from .forms import PasswordChangingForm
-from .forms import EditProfileForm
+from .forms import EditProfileForm, UserAddRoleForm
 from django.contrib import messages
-from django.http import HttpResponseRedirect 
+from django.http import HttpResponseRedirect, JsonResponse
 from django.contrib.auth import authenticate
 from django.contrib.auth.mixins import PermissionRequiredMixin, LoginRequiredMixin
 from django.utils.translation import gettext_lazy as _
+from django.contrib.auth.decorators import login_required
 from django.db.models import Count, Prefetch
-
 from django.contrib.auth.models import Permission
 from django.utils.translation import gettext as _
 from django.conf import settings
 from services.views import SendLoginEmailView
+from dicts import translated_module_dict, translated_submodule_dict, translated_permission_dict
+
+@login_required
+def edit_profile(request):
+    if request.method == 'POST':
+        form = EditProfileForm(request.POST, request.FILES, instance=request.user)
+        if form.is_valid():
+            form.save()
+            return JsonResponse({'success': True, 'redirect_url': reverse('profile')})
+        else:
+            return JsonResponse({'success': False, 'errors': form.errors})
+    else:
+        form = EditProfileForm(instance=request.user)
+    return render(request, 'members/edit_profile.html', {'form': form})
+
+@login_required
+def update_profile_picture(request):
+    if request.method == 'POST' and request.FILES.get('profile-pic'):
+        request.user.pfp = request.FILES['profile-pic']
+        request.user.save()
+        return JsonResponse({'success': True, 'redirect_url': reverse('profile')})
+    return JsonResponse({'success': False})
+
 
 class HomeView(TemplateView):
     """
@@ -80,45 +103,13 @@ class GroupListView(LoginRequiredMixin, PermissionRequiredMixin, TemplateView):
             submodule_name = perm.content_type.model.capitalize()
 
             # Traducción de módulos y submódulos
-            translated_module = {
-                'auth': 'Gestión de roles y permisos',
-                'members': 'Gestión de usuarios',
-                'posts': 'Gestión de Contenido',
-                'categories': 'Categorías',
-            }.get(perm.content_type.app_label, module_name)
+            translated_module = translated_module_dict.get(perm.content_type.app_label, module_name)
 
-            translated_submodule = {
-                'group': 'Roles',
-                'permission': 'Permisos',
-                'post': 'Artículos',
-                'category': 'Categorías',
-                'member': 'Miembros',
-            }.get(perm.content_type.model, submodule_name)
+            # Traducción de submódulos
+            translated_submodule = translated_submodule_dict.get(perm.content_type.model, submodule_name)
 
             # Traducción de permisos
-            translated_permission = {
-                'Can add group': 'Puede agregar rol',
-                'Can change group': 'Puede cambiar rol',
-                'Can delete group': 'Puede eliminar rol',
-                'Can view group': 'Puede ver rol',
-                'Can add permission': 'Puede agregar permiso',
-                'Can change permission': 'Puede cambiar permiso',
-                'Can delete permission': 'Puede eliminar permiso',
-                'Can view permission': 'Puede ver permiso',
-                'Can add post': 'Puede agregar artículo',
-                'Can change post': 'Puede cambiar artículo',
-                'Can delete post': 'Puede eliminar artículo',
-                'Can view post': 'Puede ver artículo',
-                'Can add category': 'Puede agregar categoría',
-                'Can change category': 'Puede cambiar categoría',
-                'Can delete category': 'Puede eliminar categoría',
-                'Can view category': 'Puede ver categoría',
-                'Can add member': 'Puede agregar miembro',
-                'Can change member': 'Puede cambiar miembro',
-                'Can delete member': 'Puede eliminar miembro',
-                'Can view member': 'Puede ver miembro',
-                'Can view dashboard': 'Puede ver dashboard',
-            }.get(perm.name, perm.name)
+            translated_permission = translated_permission_dict.get(perm.name, perm.name)
 
             # Agrupar los permisos traducidos por módulo y submódulo
             if translated_module not in grouped_permissions:
@@ -214,46 +205,13 @@ class GroupEditView(FormView):
             submodule_name = perm.content_type.model.capitalize()
 
             # Traducción de módulos y submódulos
-            translated_module = {
-                'auth': 'Gestión de roles y permisos',
-                'members': 'Gestión de usuarios',
-                'posts': 'Gestión de Contenido',
-                'categories': 'Categorías',
-            }.get(perm.content_type.app_label, module_name)
+            translated_module = translated_module_dict.get(perm.content_type.app_label, module_name)
 
-            translated_submodule = {
-                'group': 'Roles',
-                'permission': 'Permisos',
-                'post': 'Artículos',
-                'category': 'Categorías',
-                'member': 'Miembros',
-            }.get(perm.content_type.model, submodule_name)
+            # Traducción de submódulos
+            translated_submodule = translated_submodule_dict.get(perm.content_type.model, submodule_name)
 
             # Traducción de permisos
-            translated_permission = {
-                'Can add group': 'Puede agregar rol',
-                'Can change group': 'Puede cambiar rol',
-                'Can delete group': 'Puede eliminar rol',
-                'Can view group': 'Puede ver rol',
-                'Can add permission': 'Puede agregar permiso',
-                'Can change permission': 'Puede cambiar permiso',
-                'Can delete permission': 'Puede eliminar permiso',
-                'Can view permission': 'Puede ver permiso',
-                'Can add post': 'Puede agregar artículo',
-                'Can change post': 'Puede cambiar artículo',
-                'Can delete post': 'Puede eliminar artículo',
-                'Can view post': 'Puede ver artículo',
-                'Can publish post': 'Puede publicar artículo',
-                'Can add category': 'Puede agregar categoría',
-                'Can change category': 'Puede cambiar categoría',
-                'Can delete category': 'Puede eliminar categoría',
-                'Can view category': 'Puede ver categoría',
-                'Can add member': 'Puede agregar miembro',
-                'Can change member': 'Puede cambiar miembro',
-                'Can delete member': 'Puede eliminar miembro',
-                'Can view member': 'Puede ver miembro',
-                'Can view dashboard': 'Puede ver dashboard',
-            }.get(perm.name, perm.name)
+            translated_permission = translated_permission_dict.get(perm.name, perm.name)
 
             if translated_module not in grouped_permissions:
                 grouped_permissions[translated_module] = {}
@@ -420,7 +378,7 @@ class CreateGroupView(LoginRequiredMixin, PermissionRequiredMixin, FormView):
         """
         # Excluye los permisos no deseados y selecciona los que pertenecen al grupo
         permissions = Permission.objects.exclude(
-            content_type__model__in=['historicalpost', 'contenttype', 'session', 'logentry']
+            content_type__model__in=['historicalpost', 'contenttype', 'session', 'logentry', 'site']
         ).select_related('content_type').distinct()
 
         grouped_permissions = {}
@@ -429,46 +387,13 @@ class CreateGroupView(LoginRequiredMixin, PermissionRequiredMixin, FormView):
             submodule_name = perm.content_type.model.capitalize()
 
             # Traducción de módulos y submódulos
-            translated_module = {
-                'auth': 'Gestión de roles y permisos',
-                'members': 'Gestión de usuarios',
-                'posts': 'Gestión de Contenido',
-                'categories': 'Categorías',
-            }.get(perm.content_type.app_label, module_name)
+            translated_module = translated_module_dict.get(perm.content_type.app_label, module_name)
 
-            translated_submodule = {
-                'group': 'Roles',
-                'permission': 'Permisos',
-                'post': 'Artículos',
-                'category': 'Categorías',
-                'member': 'Miembros',
-            }.get(perm.content_type.model, submodule_name)
+            # Traducción de submódulos
+            translated_submodule = translated_submodule_dict.get(perm.content_type.model, submodule_name)
 
             # Traducción de permisos
-            translated_permission = {
-                'Can add group': 'Puede agregar rol',
-                'Can change group': 'Puede cambiar rol',
-                'Can delete group': 'Puede eliminar rol',
-                'Can view group': 'Puede ver rol',
-                'Can add permission': 'Puede agregar permiso',
-                'Can change permission': 'Puede cambiar permiso',
-                'Can delete permission': 'Puede eliminar permiso',
-                'Can view permission': 'Puede ver permiso',
-                'Can add post': 'Puede agregar artículo',
-                'Can change post': 'Puede cambiar artículo',
-                'Can delete post': 'Puede eliminar artículo',
-                'Can view post': 'Puede ver artículo',
-                'Can add category': 'Puede agregar categoría',
-                'Can change category': 'Puede cambiar categoría',
-                'Can delete category': 'Puede eliminar categoría',
-                'Can view category': 'Puede ver categoría',
-                'Can add member': 'Puede agregar miembro',
-                'Can change member': 'Puede cambiar miembro',
-                'Can delete member': 'Puede eliminar miembro',
-                'Can view member': 'Puede ver miembro',
-                'Can view dashboard': 'Puede ver dashboard',
-            }.get(perm.name, perm.name)
-
+            translated_permission = translated_permission_dict.get(perm.name, perm.name)
             # Agrupación de permisos
             if translated_module not in grouped_permissions:
                 grouped_permissions[translated_module] = {}
@@ -541,45 +466,13 @@ class MemberListView(LoginRequiredMixin, PermissionRequiredMixin, TemplateView):
                 submodule_name = perm.content_type.model.capitalize()
 
                 # Traducción de módulos y submódulos
-                translated_module = {
-                    'auth': 'Gestión de roles y permisos',
-                    'members': 'Gestión de usuarios',
-                    'posts': 'Gestión de Contenido',
-                    'categories': 'Categorías',
-                }.get(perm.content_type.app_label, module_name)
+                translated_module = translated_module_dict.get(perm.content_type.app_label, module_name)
 
-                translated_submodule = {
-                    'group': 'Roles',
-                    'permission': 'Permisos',
-                    'post': 'Artículos',
-                    'category': 'Categorías',
-                    'member': 'Miembros',
-                }.get(perm.content_type.model, submodule_name)
+                # Traducción de submódulos
+                translated_submodule = translated_submodule_dict.get(perm.content_type.model, submodule_name)
 
                 # Traducción de permisos
-                translated_permission = {
-                    'Can add group': 'Puede agregar rol',
-                    'Can change group': 'Puede cambiar rol',
-                    'Can delete group': 'Puede eliminar rol',
-                    'Can view group': 'Puede ver rol',
-                    'Can add permission': 'Puede agregar permiso',
-                    'Can change permission': 'Puede cambiar permiso',
-                    'Can delete permission': 'Puede eliminar permiso',
-                    'Can view permission': 'Puede ver permiso',
-                    'Can add post': 'Puede agregar artículo',
-                    'Can change post': 'Puede cambiar artículo',
-                    'Can delete post': 'Puede eliminar artículo',
-                    'Can view post': 'Puede ver artículo',
-                    'Can add category': 'Puede agregar categoría',
-                    'Can change category': 'Puede cambiar categoría',
-                    'Can delete category': 'Puede eliminar categoría',
-                    'Can view category': 'Puede ver categoría',
-                    'Can add member': 'Puede agregar miembro',
-                    'Can change member': 'Puede cambiar miembro',
-                    'Can delete member': 'Puede eliminar miembro',
-                    'Can view member': 'Puede ver miembro',
-                    'Can view dashboard': 'Puede ver dashboard',
-                }.get(perm.name, perm.name)
+                translated_permission = translated_permission_dict.get(perm.name, perm.name)
 
                 # Agrupar permisos
                 if translated_module not in grouped_permissions:
@@ -725,45 +618,13 @@ class MemberEditGroupView(LoginRequiredMixin, PermissionRequiredMixin, views.Vie
             submodule_name = perm.content_type.model.capitalize()
 
             # Traducción de módulos y submódulos
-            translated_module = {
-                'auth': 'Gestión de roles y permisos',
-                'members': 'Gestión de usuarios',
-                'posts': 'Gestión de Contenido',
-                'categories': 'Categorías',
-            }.get(perm.content_type.app_label, module_name)
+            translated_module = translated_module_dict.get(perm.content_type.app_label, module_name)
 
-            translated_submodule = {
-                'group': 'Roles',
-                'permission': 'Permisos',
-                'post': 'Artículos',
-                'category': 'Categorías',
-                'member': 'Miembros',
-            }.get(perm.content_type.model, submodule_name)
+            # Traducción de submódulos
+            translated_submodule = translated_submodule_dict.get(perm.content_type.model, submodule_name)
 
             # Traducción de permisos
-            translated_permission = {
-                'Can add group': 'Puede agregar rol',
-                'Can change group': 'Puede cambiar rol',
-                'Can delete group': 'Puede eliminar rol',
-                'Can view group': 'Puede ver rol',
-                'Can add permission': 'Puede agregar permiso',
-                'Can change permission': 'Puede cambiar permiso',
-                'Can delete permission': 'Puede eliminar permiso',
-                'Can view permission': 'Puede ver permiso',
-                'Can add post': 'Puede agregar artículo',
-                'Can change post': 'Puede cambiar artículo',
-                'Can delete post': 'Puede eliminar artículo',
-                'Can view post': 'Puede ver artículo',
-                'Can add category': 'Puede agregar categoría',
-                'Can change category': 'Puede cambiar categoría',
-                'Can delete category': 'Puede eliminar categoría',
-                'Can view category': 'Puede ver categoría',
-                'Can add member': 'Puede agregar miembro',
-                'Can change member': 'Puede cambiar miembro',
-                'Can delete member': 'Puede eliminar miembro',
-                'Can view member': 'Puede ver miembro',
-                'Can view dashboard': 'Puede ver dashboard',
-            }.get(perm.name, perm.name)
+            translated_permission = translated_permission_dict.get(perm.name, perm.name)
 
             # Agrupar los permisos traducidos por módulo y submódulo
             if translated_module not in grouped_permissions:
@@ -845,45 +706,13 @@ class MemberEditPermissionView(LoginRequiredMixin, PermissionRequiredMixin, view
             submodule_name = perm.content_type.model.capitalize()
 
             # Traducción de módulos y submódulos
-            translated_module = {
-                'auth': 'Gestión de roles y permisos',
-                'members': 'Gestión de usuarios',
-                'posts': 'Gestión de Contenido',
-                'categories': 'Categorías',
-            }.get(perm.content_type.app_label, module_name)
+            translated_module = translated_module_dict.get(perm.content_type.app_label, module_name)
 
-            translated_submodule = {
-                'group': 'Roles',
-                'permission': 'Permisos',
-                'post': 'Artículos',
-                'category': 'Categorías',
-                'member': 'Miembros',
-            }.get(perm.content_type.model, submodule_name)
+            # Traducción de submódulos
+            translated_submodule = translated_submodule_dict.get(perm.content_type.model, submodule_name)
 
             # Traducción de permisos
-            translated_permission = {
-                'Can add group': 'Puede agregar rol',
-                'Can change group': 'Puede cambiar rol',
-                'Can delete group': 'Puede eliminar rol',
-                'Can view group': 'Puede ver rol',
-                'Can add permission': 'Puede agregar permiso',
-                'Can change permission': 'Puede cambiar permiso',
-                'Can delete permission': 'Puede eliminar permiso',
-                'Can view permission': 'Puede ver permiso',
-                'Can add post': 'Puede agregar artículo',
-                'Can change post': 'Puede cambiar artículo',
-                'Can delete post': 'Puede eliminar artículo',
-                'Can view post': 'Puede ver artículo',
-                'Can add category': 'Puede agregar categoría',
-                'Can change category': 'Puede cambiar categoría',
-                'Can delete category': 'Puede eliminar categoría',
-                'Can view category': 'Puede ver categoría',
-                'Can add member': 'Puede agregar miembro',
-                'Can change member': 'Puede cambiar miembro',
-                'Can delete member': 'Puede eliminar miembro',
-                'Can view member': 'Puede ver miembro',
-                'Can view dashboard': 'Puede ver dashboard',
-            }.get(perm.name, perm.name)
+            translated_permission = translated_permission_dict.get(perm.name, perm.name)
 
             # Agrupación de permisos
             if translated_module not in grouped_permissions:
@@ -1261,15 +1090,12 @@ class Error403View(TemplateView):
     
 class UserEditView(UpdateView):
     """
-    Vista basada en clases para la edición del perfil de usuario.
+    Vista para editar el perfil del usuario.
 
     Atributos:
-        form_class: El formulario que se utilizará para editar el perfil del usuario.
-        template_name: La plantilla que se utilizará para renderizar la vista.
-        success_url: La URL a la que se redirigirá después de que el formulario se haya enviado con éxito.
-
-    Métodos:
-        get_object: Obtiene el objeto que se va a editar (el usuario actual).
+        form_class (EditProfileForm): El formulario utilizado para editar el perfil.
+        template_name (str): La plantilla utilizada para renderizar la vista.
+        success_url (str): La URL a la que redirigir después de una edición exitosa.
     """
     form_class = EditProfileForm
     template_name = 'members/edit_profile.html'
@@ -1277,13 +1103,48 @@ class UserEditView(UpdateView):
 
     def get_object(self):
         """
-        Obtiene el objeto que se va a editar.
+        Obtener el objeto del usuario actual.
 
         Returns:
-            User: El usuario actual que está autenticado.
+            User: El usuario actual.
         """
         return self.request.user
 
+    def form_valid(self, form):
+        """
+        Guardar la foto de perfil si se ha subido una y el formulario es válido.
+
+        Args:
+            form (EditProfileForm): El formulario de edición de perfil.
+
+        Returns:
+            HttpResponse: La respuesta HTTP después de procesar el formulario.
+        """
+        response = super().form_valid(form)
+        if 'profile-pic-upload' in self.request.FILES:
+            self.request.user.pfp = self.request.FILES['profile-pic-upload']
+            self.request.user.save()
+        return response
+
+    def post(self, request, *args, **kwargs):
+        """
+        Manejar la solicitud POST para eliminar la foto de perfil.
+
+        Args:
+            request (HttpRequest): La solicitud HTTP.
+            *args: Argumentos adicionales.
+            **kwargs: Argumentos clave adicionales.
+
+        Returns:
+            HttpResponse: La respuesta HTTP después de procesar la solicitud.
+        """
+        if 'delete-photo' in request.POST:
+            user = self.get_object()
+            user.pfp.delete()
+            user.save()
+            return redirect('profile')
+        return super().post(request, *args, **kwargs)
+        
 class ProfileView(LoginRequiredMixin, TemplateView):
     """
     Vista basada en clases para mostrar el perfil del usuario.
@@ -1320,3 +1181,63 @@ class PasswordsChangeView(PasswordChangeView):
     """
     form_class = PasswordChangingForm
     success_url = reverse_lazy('profile')
+
+class UserAddRoleView(LoginRequiredMixin, FormView):
+    template_name = 'members/add_role.html'
+    form_class = UserAddRoleForm
+    success_url = reverse_lazy('success_url_name')  # Cambia esto a la URL de éxito deseada
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs
+
+    def get_context_data(self, **kwargs):
+        """
+        Añade los roles disponibles al contexto de la plantilla.
+
+        Parameters:
+        -----------
+        **kwargs : dict
+            Argumentos adicionales de palabras clave.
+
+        Returns:
+        --------
+        dict
+            El contexto actualizado con los roles disponibles.
+        """
+        context = super().get_context_data(**kwargs)
+        roles = Group.objects.exclude(name__icontains='administrador')
+        context['roles'] = roles
+        return context
+
+    def form_valid(self, form):
+        """
+        Asignar el rol al usuario y redirigir a la URL de éxito si el formulario es válido.
+
+        Args:
+            form (AddRoleForm): El formulario utilizado para agregar un rol a un usuario.
+
+        Returns:
+            HttpResponse: La respuesta HTTP después de procesar el formulario.
+        """
+        user = self.request.user
+        group = form.cleaned_data['group']
+
+        if group == 'already_has_role':
+            messages.error(self.request, "Ya tienes el rol seleccionado. Por favor, elige otro.")
+            return self.form_invalid(form)
+        
+        user.groups.add(group)
+
+        # Desactivar todos los permisos del grupo para el usuario
+        for permission in group.permissions.all():
+            user.user_permissions.remove(permission)
+
+        messages.success(self.request, f"Se ha agregado el rol de {group.name} al usuario {user.username}, pero todos los permisos están desactivados por defecto.")
+        return redirect('posts')
+
+    def form_invalid(self, form):
+        if not form.cleaned_data.get('group'):
+            messages.error(self.request, "Por favor, seleccione un rol antes de enviar.")
+        return super().form_invalid(form)

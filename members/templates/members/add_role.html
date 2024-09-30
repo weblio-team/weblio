@@ -1,0 +1,135 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <h1 class="text-center mb-4 mt-3">Solicitar Nuevo Rol</h1>
+    <form action="{% url 'additional_role' %}" method="post">
+        {% csrf_token %}
+        <div class="form-group">
+            <div id="roles-container" class="row">
+                {% for role in roles %}
+                    <div class="col-md-6 mb-4">
+                        <!-- Add role-specific classes for each role name -->
+                        <div class="card role-card text-center role-{{ role.name|lower }}" data-role-id="{{ role.id }}">
+                            <div class="card-body">
+                                <h2 class="card-title">{{ role.name }}</h2>
+                                <p class="card-text role-description" style="display: none;">
+                                    {% if role.name == 'suscriptor' %}
+                                        Los suscriptores pueden leer, comentar, calificar y compartir los artículos. También pueden comprar sus categorías premium favoritas para leerlas cuando quieran.
+                                    {% elif role.name == 'autor' %}
+                                        Los autores pueden crear, editar, y publicar sus propios artículos. También pueden recuperar versiones pasadas de sus artículos y ver estadísticas de los mismos.
+                                    {% elif role.name == 'editor' %}
+                                        Los editores pueden revisar y editar los artículos de los autores. También pueden recuperar versiones pasadas de los artículos y ver estadísticas de los mismos.
+                                    {% elif role.name == 'publicador' %}
+                                        Los publicadores tienen el control final sobre la publicación de los artículos. Pueden publicar o rechazar artículos, y ver estadísticas de los mismos.
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+            <input type="hidden" name="group" id="selected-role">
+        </div>
+        <div class="text-center">
+            <a href="{% url 'profile' %}" class="btn btn-outline-light btn-lg mt-4">Cancelar</a>
+            <button type="submit" class="btn btn-outline-light btn-lg mt-4">Solicitar</button>
+        </div>
+    </form>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const roleCards = document.querySelectorAll('.role-card');
+        const selectedRoleInput = document.getElementById('selected-role');
+
+        roleCards.forEach(card => {
+            card.addEventListener('click', function() {
+                roleCards.forEach(c => c.classList.remove('selected'));
+                card.classList.add('selected');
+                selectedRoleInput.value = card.getAttribute('data-role-id');
+            });
+
+            card.addEventListener('mouseenter', function() {
+                card.querySelector('.role-description').style.display = 'block';
+            });
+
+            card.addEventListener('mouseleave', function() {
+                card.querySelector('.role-description').style.display = 'none';
+            });
+        });
+    });
+</script>
+
+<style>
+    /* General layout */
+    #roles-container {
+        display: flex;
+        flex-wrap: wrap;
+    }
+
+    .role-card {
+        cursor: pointer;
+        transition: transform 0.3s, box-shadow 0.3s;
+        border-radius: 10px;
+        padding: 20px;
+        height: 200px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #ffffff; /* Ensure white text for readability */
+    }
+
+    .role-card:hover {
+        transform: scale(1.02);
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    }
+
+    .role-card.selected {
+        border: 3px solid #ffffff;
+    }
+
+    .role-description {
+        font-size: 1.3rem;
+    }
+
+    /* Specific background colors for each role */
+    .role-suscriptor {
+        background-color: #90CAF9; /* Light Blue */
+    }
+
+    .role-autor {
+        background-color: #42A5F5; /* Blue */
+    }
+
+    .role-editor {
+        background-color: #1976D2; /* Dark Blue */
+    }
+
+    .role-publicador {
+        background-color: #0D47A1; /* Darker Blue */
+    }
+
+    /* Button tweaks */
+    .btn-outline-light {
+        border: 2px solid #ffffff;
+        transition: all 0.3s ease;
+        margin-right: 10px; /* Add margin to space out buttons */
+    }
+
+    .btn-outline-light:hover {
+        background-color: #ffffff;
+        color: #343a40;
+    }
+
+    /* Floating message container */
+    .alert-container {
+        z-index: 1050; /* Ensure it appears above other content */
+    }
+
+    .alert {
+        background-color: #343a40; /* Solid dark background */
+        color: #ffffff;
+    }
+</style>
+{% endblock %}

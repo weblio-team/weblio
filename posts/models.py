@@ -158,7 +158,7 @@ class Post(models.Model):
             old_status = old_post.status
 
         # Calcular la prioridad antes de guardar
-        self.priority = self.calculate_priority()
+        self.priority = self.calculate_priority() if self.priority != 4 else self.priority
 
         super().save(*args, **kwargs)
 

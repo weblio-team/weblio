@@ -92,11 +92,15 @@
                     {% if current_thumbnail_url %}
                         <img id="current-thumbnail" 
                             src="{{ current_thumbnail_url }}" 
-                            alt="Current Thumbnail" 
+                            alt="{{ current_thumbnail_url }}" 
                             style="max-width: 300px;">
                     {% else %}
                         <p id="no-thumbnail-message">No hay una foto de portada subida.</p>
                     {% endif %}
+                    <input type="hidden" name="operation" value="update">
+                    <input type="hidden" name="thumbnail" value="{{ current_thumbnail_url }}">
+                    <input type="hidden" name="post_id" value="{{ post_id }}">
+                    <input type="hidden" name="history_id" value="{{ history_id }}">
                 </div>
               </div>    
             </div>       
