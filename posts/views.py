@@ -1360,26 +1360,17 @@ class ReportedPostsView(View):
         Returns:
             HttpResponse: El objeto de respuesta con la plantilla renderizada.
         """
+        can_delete_post = request.user.has_perm('posts.delete_post')
         reported_posts = Post.objects.annotate(report_count=Count('reports')).filter(report_count__gt=0).order_by('-report_count')
-        author = request.GET.get('author', '')
-        category = request.GET.get('category', '')
-        status = request.GET.get('status', '')
-
-        if author:
-            reported_posts = reported_posts.filter(author__username=author)
-        if category:
-            reported_posts = reported_posts.filter(category__name=category)
-        if status:
-            reported_posts = reported_posts.filter(status=status)
+        if not request.user.has_perm('posts.change_post') and not request.user.has_perm('posts.can_publish'):
+            reported_posts = reported_posts.filter(author=request.user)
 
         return render(request, self.template_name, {
             'reported_posts': reported_posts,
-            'author': author,
-            'category': category,
-            'status': status,
+            'can_delete_post':can_delete_post
         })
     
-class TogglePostStatusView(View):
+class TogglePostStatusView(LoginRequiredMixin, View):
     """
     Vista para alternar el estado de un post entre 'publicado' e 'inactivo'.
 
@@ -1412,17 +1403,4 @@ class TogglePostStatusView(View):
             messages.success(request, 'El post ha sido inactivado.')
         post.save()
 
-        # Preservar los parámetros de filtro
-        author = request.POST.get('author')
-        category = request.POST.get('category')
-        status = request.POST.get('status')
-
-        query_params = '?'
-        if author:
-            query_params += f'author={author}&'
-        if category:
-            query_params += f'category={category}&'
-        if status:
-            query_params += f'status={status}&'
-
-        return redirect(f'{reverse("incidents")}{query_params}')
+        return redirect(f'{reverse("incidents")}')

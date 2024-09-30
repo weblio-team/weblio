@@ -62,6 +62,8 @@
                                 <li><hr class="dropdown-divider"></li>
                                 <li><a class="dropdown-item" href="{% url 'relevant-posts' %}">Artículos relevantes</a></li>
                             {% endif %}
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{% url 'incidents' %}">Incidencias</a></li>
                         </ul>
                     </li>
                 {% endif %}
@@ -101,7 +103,6 @@
                             <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item" href="{% url 'posts_dashboard' %}">Dashboard</a></li>
                             <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="{% url 'incidents' %}">Incidencias</a></li>
                         </ul>
                     </li>
                 {% endif %}
