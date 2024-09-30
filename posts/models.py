@@ -92,7 +92,7 @@ class Post(models.Model):
     date_posted = models.DateTimeField(blank=True, null=True)
     date_created = models.DateTimeField(auto_now_add=True, blank=True, null=True)
     author = models.ForeignKey(Member, on_delete=models.CASCADE)
-    status = models.CharField(max_length=20, choices=(('draft', 'Draft'), ('to_edit', 'To Edit'), ('to_publish', 'To Publish'), ('published', 'Published'),), default='draft')
+    status = models.CharField(max_length=20, choices=(('draft', 'Draft'), ('to_edit', 'To Edit'), ('to_publish', 'To Publish'), ('published', 'Published'), ('inactive', 'Inactive')), default='draft')
     category = models.ForeignKey(Category, on_delete=models.SET_DEFAULT, default=get_default_category)
     keywords = models.CharField(max_length=100, blank=True, null=True)
     history = HistoricalRecords()
@@ -214,3 +214,13 @@ class Post(models.Model):
             'published': 'Publicado'
         }
         return status_dict.get(status_value, 'Desconocido')
+    
+class Report(models.Model):
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='reports')
+    user = models.ForeignKey(Member, on_delete=models.CASCADE, null=True, blank=True)
+    email = models.EmailField(unique=True)
+    reason = models.TextField()
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'Reporte por {self.user or self.email} a {self.post}'

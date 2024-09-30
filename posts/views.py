@@ -1,11 +1,12 @@
 import json
+from django.db import IntegrityError
 from django.http import Http404, HttpResponseForbidden, HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
-from django.urls import reverse_lazy
+from django.urls import reverse_lazy, reverse
 from django.contrib.auth.mixins import PermissionRequiredMixin, LoginRequiredMixin
 from django.utils.decorators import method_decorator
 from django.views import View
-from .models import Category, Post
+from .models import Category, Post, Report, Member
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView, TemplateView
 from .forms import CategoryForm, CategoryEditForm, KanbanBoardForm, MyPostAddBodyForm, MyPostAddGeneralForm, MyPostAddProgramForm, MyPostAddThumbnailForm, MyPostEditGeneralForm, MyPostEditBodyForm, MyPostEditProgramForm, MyPostEditThumbnailForm, ToEditPostGeneralForm, ToEditPostBodyForm, ToPublishPostForm
 from django.db.models import Q, OuterRef, Subquery
@@ -15,6 +16,10 @@ from django.utils import timezone
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.core.exceptions import PermissionDenied
 from django.conf import settings
+from .forms import ReportForm
+from django.utils.text import slugify
+from django.db.models import Count
+
 from simple_history.utils import update_change_reason
 import random
 
@@ -1022,6 +1027,12 @@ class SuscriberPostDetailView(DetailView):
         context['LYKET_API_KEY'] = settings.LYKET_API_KEY
         context['COMMENTBOX_API_KEY'] = settings.COMMENTBOX_API_KEY
         context['DEBUG'] = settings.DEBUG	
+        post = self.get_object()
+        
+        user_email = self.request.user.email if self.request.user.is_authenticated else None
+        report_exists = Report.objects.filter(post=post, email=user_email).exists() if user_email else False
+
+        context['report_exists'] = report_exists
         return context
     
 
@@ -1165,3 +1176,165 @@ class HistoryView(DetailView):
         context['post'] = self.get_object()
         context['post_pk'] = self.kwargs.get('pk')
         return context
+    
+class ReportPostView(View):
+    """
+    Vista para manejar el reporte de un post tanto por usuarios registrados como no registrados.
+
+    Args:
+        request (HttpRequest): El objeto de la solicitud.
+        post_id (int): El ID del post a reportar.
+
+    Returns:
+        HttpResponse: El objeto de respuesta con la plantilla renderizada.
+    """
+    template_name = 'reports/report_post.html'
+
+    def get(self, request, *args, **kwargs):
+        """
+        Maneja las solicitudes GET para mostrar el formulario de reporte.
+
+        Args:
+            request (HttpRequest): El objeto de la solicitud.
+            *args: Argumentos adicionales.
+            **kwargs: Argumentos clave adicionales.
+
+        Returns:
+            HttpResponse: El objeto de respuesta con la plantilla renderizada.
+        """
+        post = get_object_or_404(Post, id=kwargs.get('pk'))
+        form = ReportForm()
+        member = None
+        if request.user.is_authenticated:
+            member = get_object_or_404(Member, username=request.user)
+        return render(request, self.template_name, {'form': form, 'post': post, 'member': member})
+
+    def post(self, request, **kwargs):
+        """
+        Maneja las solicitudes POST para enviar el formulario de reporte.
+
+        Args:
+            request (HttpRequest): El objeto de la solicitud.
+            **kwargs: Argumentos clave adicionales.
+
+        Returns:
+            HttpResponse: Redirige a la URL del post reportado.
+        """
+        post_id = kwargs.get('pk')
+        post = get_object_or_404(Post, id=post_id)
+        
+        form = ReportForm(request.POST)
+        if form.is_valid():
+            report = form.save(commit=False)
+            report.post = post
+            if request.user.is_authenticated:
+                report.member = get_object_or_404(Member, username=request.user)
+                report.email = request.user.email
+            else:
+                report.email = form.cleaned_data.get('email')
+            
+            try:
+                report.save()
+                messages.success(request, 'Tu reporte ha sido enviado.')
+            except IntegrityError:
+                messages.error(request, 'Ya existe un reporte con tu correo.')
+        else:
+            # Imprimir errores del formulario para depuración
+            print(form.errors)
+            if 'email' in form.errors:
+                messages.error(request, form.errors['email'][0])
+            else:
+                messages.error(request, "Hubo un error con tu envío.")
+        
+        return redirect(post.get_absolute_url())
+    
+class ReportedPostsView(View):
+    """
+    Vista para mostrar los posts reportados con opciones de filtrado por autor, categoría y estado.
+
+    Args:
+        request (HttpRequest): El objeto de la solicitud.
+
+    Returns:
+        HttpResponse: El objeto de respuesta con la plantilla renderizada.
+    """
+    template_name = 'reports/incidents.html'
+
+    def get(self, request, *args, **kwargs):
+        """
+        Maneja las solicitudes GET para mostrar los posts reportados.
+
+        Args:
+            request (HttpRequest): El objeto de la solicitud.
+            *args: Argumentos adicionales.
+            **kwargs: Argumentos clave adicionales.
+
+        Returns:
+            HttpResponse: El objeto de respuesta con la plantilla renderizada.
+        """
+        reported_posts = Post.objects.annotate(report_count=Count('reports')).filter(report_count__gt=0).order_by('-report_count')
+        author = request.GET.get('author', '')
+        category = request.GET.get('category', '')
+        status = request.GET.get('status', '')
+
+        if author:
+            reported_posts = reported_posts.filter(author__username=author)
+        if category:
+            reported_posts = reported_posts.filter(category__name=category)
+        if status:
+            reported_posts = reported_posts.filter(status=status)
+
+        return render(request, self.template_name, {
+            'reported_posts': reported_posts,
+            'author': author,
+            'category': category,
+            'status': status,
+        })
+    
+class TogglePostStatusView(View):
+    """
+    Vista para alternar el estado de un post entre 'publicado' e 'inactivo'.
+
+    Args:
+        request (HttpRequest): El objeto de la solicitud.
+        pk (int): El ID del post a alternar.
+
+    Returns:
+        HttpResponse: Redirige a la URL de los posts reportados con los parámetros de filtro preservados.
+    """
+    def post(self, request, pk, *args, **kwargs):
+        """
+        Maneja las solicitudes POST para alternar el estado de un post.
+
+        Args:
+            request (HttpRequest): El objeto de la solicitud.
+            pk (int): El ID del post a alternar.
+            *args: Argumentos adicionales.
+            **kwargs: Argumentos clave adicionales.
+
+        Returns:
+            HttpResponse: Redirige a la URL de los posts reportados con los parámetros de filtro preservados.
+        """
+        post = get_object_or_404(Post, pk=pk)
+        if post.status == 'inactive':
+            post.status = 'published'
+            messages.success(request, 'El post ha sido activado.')
+        else:
+            post.status = 'inactive'
+            messages.success(request, 'El post ha sido inactivado.')
+        post.save()
+
+        # Preservar los parámetros de filtro
+        author = request.POST.get('author')
+        category = request.POST.get('category')
+        status = request.POST.get('status')
+
+        query_params = '?'
+        if author:
+            query_params += f'author={author}&'
+        if category:
+            query_params += f'category={category}&'
+        if status:
+            query_params += f'status={status}&'
+
+        return redirect(f'{reverse("incidents")}{query_params}')

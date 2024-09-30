@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block content %}
+    <div class="container mt-5">
+    <h2 class="mb-4">Reportar Post: {{ post.title }}</h2>
+    <form method="post">
+        {% csrf_token %}
+        {% if not request.user.is_authenticated %}
+            <div class="form-group">
+                <label for="id_email">Email:</label>
+                <input type="email" name="email" id="id_email" class="form-control" required>
+            </div>
+        {% else %}
+            <input type="hidden" name="email" value="{{ request.user.email }}">
+        {% endif %}
+        
+        <div class="form-group">
+            <label for="id_reason">Motivo:</label>
+            <textarea name="reason" id="id_reason" class="form-control" rows="5" required></textarea>
+        </div>
+        
+        <button type="submit" class='btn btn-danger'>Enviar</button>
+    </form>
+    </div>
+{% endblock %}
