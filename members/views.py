@@ -25,6 +25,7 @@ from django.contrib.auth.models import Permission
 from django.utils.translation import gettext as _
 from django.conf import settings
 from services.views import SendLoginEmailView
+from dicts import translated_module_dict, translated_submodule_dict, translated_permission_dict
 
 @login_required
 def edit_profile(request):
@@ -102,45 +103,13 @@ class GroupListView(LoginRequiredMixin, PermissionRequiredMixin, TemplateView):
             submodule_name = perm.content_type.model.capitalize()
 
             # Traducción de módulos y submódulos
-            translated_module = {
-                'auth': 'Gestión de roles y permisos',
-                'members': 'Gestión de usuarios',
-                'posts': 'Gestión de Contenido',
-                'categories': 'Categorías',
-            }.get(perm.content_type.app_label, module_name)
+            translated_module = translated_module_dict.get(perm.content_type.app_label, module_name)
 
-            translated_submodule = {
-                'group': 'Roles',
-                'permission': 'Permisos',
-                'post': 'Artículos',
-                'category': 'Categorías',
-                'member': 'Miembros',
-            }.get(perm.content_type.model, submodule_name)
+            # Traducción de submódulos
+            translated_submodule = translated_submodule_dict.get(perm.content_type.model, submodule_name)
 
             # Traducción de permisos
-            translated_permission = {
-                'Can add group': 'Puede agregar rol',
-                'Can change group': 'Puede cambiar rol',
-                'Can delete group': 'Puede eliminar rol',
-                'Can view group': 'Puede ver rol',
-                'Can add permission': 'Puede agregar permiso',
-                'Can change permission': 'Puede cambiar permiso',
-                'Can delete permission': 'Puede eliminar permiso',
-                'Can view permission': 'Puede ver permiso',
-                'Can add post': 'Puede agregar artículo',
-                'Can change post': 'Puede cambiar artículo',
-                'Can delete post': 'Puede eliminar artículo',
-                'Can view post': 'Puede ver artículo',
-                'Can add category': 'Puede agregar categoría',
-                'Can change category': 'Puede cambiar categoría',
-                'Can delete category': 'Puede eliminar categoría',
-                'Can view category': 'Puede ver categoría',
-                'Can add member': 'Puede agregar miembro',
-                'Can change member': 'Puede cambiar miembro',
-                'Can delete member': 'Puede eliminar miembro',
-                'Can view member': 'Puede ver miembro',
-                'Can view dashboard': 'Puede ver dashboard',
-            }.get(perm.name, perm.name)
+            translated_permission = translated_permission_dict.get(perm.name, perm.name)
 
             # Agrupar los permisos traducidos por módulo y submódulo
             if translated_module not in grouped_permissions:
@@ -236,46 +205,13 @@ class GroupEditView(FormView):
             submodule_name = perm.content_type.model.capitalize()
 
             # Traducción de módulos y submódulos
-            translated_module = {
-                'auth': 'Gestión de roles y permisos',
-                'members': 'Gestión de usuarios',
-                'posts': 'Gestión de Contenido',
-                'categories': 'Categorías',
-            }.get(perm.content_type.app_label, module_name)
+            translated_module = translated_module_dict.get(perm.content_type.app_label, module_name)
 
-            translated_submodule = {
-                'group': 'Roles',
-                'permission': 'Permisos',
-                'post': 'Artículos',
-                'category': 'Categorías',
-                'member': 'Miembros',
-            }.get(perm.content_type.model, submodule_name)
+            # Traducción de submódulos
+            translated_submodule = translated_submodule_dict.get(perm.content_type.model, submodule_name)
 
             # Traducción de permisos
-            translated_permission = {
-                'Can add group': 'Puede agregar rol',
-                'Can change group': 'Puede cambiar rol',
-                'Can delete group': 'Puede eliminar rol',
-                'Can view group': 'Puede ver rol',
-                'Can add permission': 'Puede agregar permiso',
-                'Can change permission': 'Puede cambiar permiso',
-                'Can delete permission': 'Puede eliminar permiso',
-                'Can view permission': 'Puede ver permiso',
-                'Can add post': 'Puede agregar artículo',
-                'Can change post': 'Puede cambiar artículo',
-                'Can delete post': 'Puede eliminar artículo',
-                'Can view post': 'Puede ver artículo',
-                'Can publish post': 'Puede publicar artículo',
-                'Can add category': 'Puede agregar categoría',
-                'Can change category': 'Puede cambiar categoría',
-                'Can delete category': 'Puede eliminar categoría',
-                'Can view category': 'Puede ver categoría',
-                'Can add member': 'Puede agregar miembro',
-                'Can change member': 'Puede cambiar miembro',
-                'Can delete member': 'Puede eliminar miembro',
-                'Can view member': 'Puede ver miembro',
-                'Can view dashboard': 'Puede ver dashboard',
-            }.get(perm.name, perm.name)
+            translated_permission = translated_permission_dict.get(perm.name, perm.name)
 
             if translated_module not in grouped_permissions:
                 grouped_permissions[translated_module] = {}
@@ -442,7 +378,7 @@ class CreateGroupView(LoginRequiredMixin, PermissionRequiredMixin, FormView):
         """
         # Excluye los permisos no deseados y selecciona los que pertenecen al grupo
         permissions = Permission.objects.exclude(
-            content_type__model__in=['historicalpost', 'contenttype', 'session', 'logentry']
+            content_type__model__in=['historicalpost', 'contenttype', 'session', 'logentry', 'site']
         ).select_related('content_type').distinct()
 
         grouped_permissions = {}
@@ -451,46 +387,13 @@ class CreateGroupView(LoginRequiredMixin, PermissionRequiredMixin, FormView):
             submodule_name = perm.content_type.model.capitalize()
 
             # Traducción de módulos y submódulos
-            translated_module = {
-                'auth': 'Gestión de roles y permisos',
-                'members': 'Gestión de usuarios',
-                'posts': 'Gestión de Contenido',
-                'categories': 'Categorías',
-            }.get(perm.content_type.app_label, module_name)
+            translated_module = translated_module_dict.get(perm.content_type.app_label, module_name)
 
-            translated_submodule = {
-                'group': 'Roles',
-                'permission': 'Permisos',
-                'post': 'Artículos',
-                'category': 'Categorías',
-                'member': 'Miembros',
-            }.get(perm.content_type.model, submodule_name)
+            # Traducción de submódulos
+            translated_submodule = translated_submodule_dict.get(perm.content_type.model, submodule_name)
 
             # Traducción de permisos
-            translated_permission = {
-                'Can add group': 'Puede agregar rol',
-                'Can change group': 'Puede cambiar rol',
-                'Can delete group': 'Puede eliminar rol',
-                'Can view group': 'Puede ver rol',
-                'Can add permission': 'Puede agregar permiso',
-                'Can change permission': 'Puede cambiar permiso',
-                'Can delete permission': 'Puede eliminar permiso',
-                'Can view permission': 'Puede ver permiso',
-                'Can add post': 'Puede agregar artículo',
-                'Can change post': 'Puede cambiar artículo',
-                'Can delete post': 'Puede eliminar artículo',
-                'Can view post': 'Puede ver artículo',
-                'Can add category': 'Puede agregar categoría',
-                'Can change category': 'Puede cambiar categoría',
-                'Can delete category': 'Puede eliminar categoría',
-                'Can view category': 'Puede ver categoría',
-                'Can add member': 'Puede agregar miembro',
-                'Can change member': 'Puede cambiar miembro',
-                'Can delete member': 'Puede eliminar miembro',
-                'Can view member': 'Puede ver miembro',
-                'Can view dashboard': 'Puede ver dashboard',
-            }.get(perm.name, perm.name)
-
+            translated_permission = translated_permission_dict.get(perm.name, perm.name)
             # Agrupación de permisos
             if translated_module not in grouped_permissions:
                 grouped_permissions[translated_module] = {}
@@ -563,45 +466,13 @@ class MemberListView(LoginRequiredMixin, PermissionRequiredMixin, TemplateView):
                 submodule_name = perm.content_type.model.capitalize()
 
                 # Traducción de módulos y submódulos
-                translated_module = {
-                    'auth': 'Gestión de roles y permisos',
-                    'members': 'Gestión de usuarios',
-                    'posts': 'Gestión de Contenido',
-                    'categories': 'Categorías',
-                }.get(perm.content_type.app_label, module_name)
+                translated_module = translated_module_dict.get(perm.content_type.app_label, module_name)
 
-                translated_submodule = {
-                    'group': 'Roles',
-                    'permission': 'Permisos',
-                    'post': 'Artículos',
-                    'category': 'Categorías',
-                    'member': 'Miembros',
-                }.get(perm.content_type.model, submodule_name)
+                # Traducción de submódulos
+                translated_submodule = translated_submodule_dict.get(perm.content_type.model, submodule_name)
 
                 # Traducción de permisos
-                translated_permission = {
-                    'Can add group': 'Puede agregar rol',
-                    'Can change group': 'Puede cambiar rol',
-                    'Can delete group': 'Puede eliminar rol',
-                    'Can view group': 'Puede ver rol',
-                    'Can add permission': 'Puede agregar permiso',
-                    'Can change permission': 'Puede cambiar permiso',
-                    'Can delete permission': 'Puede eliminar permiso',
-                    'Can view permission': 'Puede ver permiso',
-                    'Can add post': 'Puede agregar artículo',
-                    'Can change post': 'Puede cambiar artículo',
-                    'Can delete post': 'Puede eliminar artículo',
-                    'Can view post': 'Puede ver artículo',
-                    'Can add category': 'Puede agregar categoría',
-                    'Can change category': 'Puede cambiar categoría',
-                    'Can delete category': 'Puede eliminar categoría',
-                    'Can view category': 'Puede ver categoría',
-                    'Can add member': 'Puede agregar miembro',
-                    'Can change member': 'Puede cambiar miembro',
-                    'Can delete member': 'Puede eliminar miembro',
-                    'Can view member': 'Puede ver miembro',
-                    'Can view dashboard': 'Puede ver dashboard',
-                }.get(perm.name, perm.name)
+                translated_permission = translated_permission_dict.get(perm.name, perm.name)
 
                 # Agrupar permisos
                 if translated_module not in grouped_permissions:
@@ -747,45 +618,13 @@ class MemberEditGroupView(LoginRequiredMixin, PermissionRequiredMixin, views.Vie
             submodule_name = perm.content_type.model.capitalize()
 
             # Traducción de módulos y submódulos
-            translated_module = {
-                'auth': 'Gestión de roles y permisos',
-                'members': 'Gestión de usuarios',
-                'posts': 'Gestión de Contenido',
-                'categories': 'Categorías',
-            }.get(perm.content_type.app_label, module_name)
+            translated_module = translated_module_dict.get(perm.content_type.app_label, module_name)
 
-            translated_submodule = {
-                'group': 'Roles',
-                'permission': 'Permisos',
-                'post': 'Artículos',
-                'category': 'Categorías',
-                'member': 'Miembros',
-            }.get(perm.content_type.model, submodule_name)
+            # Traducción de submódulos
+            translated_submodule = translated_submodule_dict.get(perm.content_type.model, submodule_name)
 
             # Traducción de permisos
-            translated_permission = {
-                'Can add group': 'Puede agregar rol',
-                'Can change group': 'Puede cambiar rol',
-                'Can delete group': 'Puede eliminar rol',
-                'Can view group': 'Puede ver rol',
-                'Can add permission': 'Puede agregar permiso',
-                'Can change permission': 'Puede cambiar permiso',
-                'Can delete permission': 'Puede eliminar permiso',
-                'Can view permission': 'Puede ver permiso',
-                'Can add post': 'Puede agregar artículo',
-                'Can change post': 'Puede cambiar artículo',
-                'Can delete post': 'Puede eliminar artículo',
-                'Can view post': 'Puede ver artículo',
-                'Can add category': 'Puede agregar categoría',
-                'Can change category': 'Puede cambiar categoría',
-                'Can delete category': 'Puede eliminar categoría',
-                'Can view category': 'Puede ver categoría',
-                'Can add member': 'Puede agregar miembro',
-                'Can change member': 'Puede cambiar miembro',
-                'Can delete member': 'Puede eliminar miembro',
-                'Can view member': 'Puede ver miembro',
-                'Can view dashboard': 'Puede ver dashboard',
-            }.get(perm.name, perm.name)
+            translated_permission = translated_permission_dict.get(perm.name, perm.name)
 
             # Agrupar los permisos traducidos por módulo y submódulo
             if translated_module not in grouped_permissions:
@@ -867,45 +706,13 @@ class MemberEditPermissionView(LoginRequiredMixin, PermissionRequiredMixin, view
             submodule_name = perm.content_type.model.capitalize()
 
             # Traducción de módulos y submódulos
-            translated_module = {
-                'auth': 'Gestión de roles y permisos',
-                'members': 'Gestión de usuarios',
-                'posts': 'Gestión de Contenido',
-                'categories': 'Categorías',
-            }.get(perm.content_type.app_label, module_name)
+            translated_module = translated_module_dict.get(perm.content_type.app_label, module_name)
 
-            translated_submodule = {
-                'group': 'Roles',
-                'permission': 'Permisos',
-                'post': 'Artículos',
-                'category': 'Categorías',
-                'member': 'Miembros',
-            }.get(perm.content_type.model, submodule_name)
+            # Traducción de submódulos
+            translated_submodule = translated_submodule_dict.get(perm.content_type.model, submodule_name)
 
             # Traducción de permisos
-            translated_permission = {
-                'Can add group': 'Puede agregar rol',
-                'Can change group': 'Puede cambiar rol',
-                'Can delete group': 'Puede eliminar rol',
-                'Can view group': 'Puede ver rol',
-                'Can add permission': 'Puede agregar permiso',
-                'Can change permission': 'Puede cambiar permiso',
-                'Can delete permission': 'Puede eliminar permiso',
-                'Can view permission': 'Puede ver permiso',
-                'Can add post': 'Puede agregar artículo',
-                'Can change post': 'Puede cambiar artículo',
-                'Can delete post': 'Puede eliminar artículo',
-                'Can view post': 'Puede ver artículo',
-                'Can add category': 'Puede agregar categoría',
-                'Can change category': 'Puede cambiar categoría',
-                'Can delete category': 'Puede eliminar categoría',
-                'Can view category': 'Puede ver categoría',
-                'Can add member': 'Puede agregar miembro',
-                'Can change member': 'Puede cambiar miembro',
-                'Can delete member': 'Puede eliminar miembro',
-                'Can view member': 'Puede ver miembro',
-                'Can view dashboard': 'Puede ver dashboard',
-            }.get(perm.name, perm.name)
+            translated_permission = translated_permission_dict.get(perm.name, perm.name)
 
             # Agrupación de permisos
             if translated_module not in grouped_permissions:

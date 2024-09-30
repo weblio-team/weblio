@@ -6,6 +6,7 @@ from .views import ToPublishView, ToPublishPostView
 from .views import MyPostsView, MyPostEditView, MyPostAddView, MyPostDeleteView
 from .views import KanbanBoardView
 from .views import HistoryView
+from .views import RelevantPostsView
 
 
 urlpatterns = [
@@ -45,4 +46,7 @@ urlpatterns = [
 
     # urls for history
     path('<int:pk>/history/<int:history_id>/', HistoryView.as_view(), name='history'),
+
+    # urls for relevant posts
+    path('relevant-posts/', RelevantPostsView.as_view(), name='relevant-posts'),
 ]

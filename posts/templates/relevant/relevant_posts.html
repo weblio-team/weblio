@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+{% block content %}
+    <main role="main" class="container py-4">
+        <h2 class="text-light">Lista de Publicaciones Relevantes</h2>
+
+        <!-- Tabla responsiva -->
+        <div class="table-responsive">
+            <table 
+                id="postsTable"
+                class="table table-dark table-striped table-bordered"
+                data-toggle="table"
+                data-search="true"
+                data-pagination="true"
+                data-page-size="5"
+                data-page-list="[5, 10, 20, 50]"
+                data-sortable="true"
+                data-locale="es-ES"
+            >
+                <thead class="thead-dark">
+                    <tr>
+                        <th data-field="title" data-sortable="true">Título</th>
+                        <th data-field="author" data-sortable="true">Autor</th>
+                        <th data-field="category" data-sortable="true">Categoría</th>
+                        <th data-field="kind" data-sortable="true">Tipo de Categoría</th>
+                        <th data-field="actions" style="width: 1%;">Acciones</th> <!-- Ajustar el tamaño de la columna -->
+                    </tr>
+                </thead>
+                <tbody id="postsBody">
+                    {% for post in object_list %}
+                    <tr>
+                        <td>{{ post.title }}</td>
+                        <td>{{ post.author }}</td>
+                        <td>{{ post.category.name }}</td>
+                        <td>{% if post.category.kind == 'free' %}
+                            Gratis
+                            {% elif post.category.kind == 'public' %}
+                            Público
+                            {% elif post.category.kind == 'premium' %}
+                            Premium
+                            {% endif %}
+                        </td>
+                        <td class="text-center">
+                            <form method="post" class="d-inline">
+                                {% csrf_token %}
+                                <input type="hidden" name="post_id" value="{{ post.id }}">
+                                
+                                <!-- Mostrar el botón adecuado en función de la relevancia -->
+                                {% if post.priority == 4 %}
+                                <!-- Botón rojo apagado para quitar relevancia -->
+                                <button type="submit" name="action" value="remove_relevance" class="btn btn-remove-relevance btn-sm">Quitar relevancia</button>
+                                {% else %}
+                                <!-- Botón verde apagado para hacer relevante -->
+                                <button type="submit" name="action" value="make_relevant" class="btn btn-make-relevant btn-sm">Hacer relevante</button>
+                                {% endif %}
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <style>
+        /* Modo oscuro para el campo de búsqueda */
+        .bootstrap-table .search input {
+            background-color: #2b2b2b;  /* Fondo oscuro */
+            color: #e0e0e0;  /* Texto claro */
+            border-color: #444;  /* Borde oscuro */
+        }
+
+        /* Texto del placeholder en color gris claro */
+        .bootstrap-table .search input::placeholder {
+            color: #a9a9a9;
+        }
+
+        /* Modo oscuro para el paginador */
+        .pagination li.active a,
+        .pagination li.active a:hover,
+        .pagination li.active a:focus {
+            background-color: #444;  /* Fondo oscuro para la página activa */
+            border-color: #666;  /* Borde oscuro */
+            color: #fff;  /* Texto blanco */
+        }
+
+        .pagination li a {
+            background-color: #333;  /* Fondo oscuro para las páginas normales */
+            color: #fff;  /* Texto blanco */
+            border-color: #444;  /* Borde oscuro */
+        }
+
+        .pagination li a:hover {
+            background-color: #555;  /* Fondo más oscuro al pasar el ratón */
+        }
+
+        /* Ajustes adicionales en modo oscuro */
+        .btn {
+            background-color: #444;  /* Fondo oscuro para los botones */
+            color: #fff;  /* Texto blanco */
+            border-color: #555;  /* Borde oscuro */
+        }
+
+        .btn:hover {
+            background-color: #666;  /* Fondo más oscuro al pasar el ratón */
+        }
+
+        /* Botones personalizados con colores apagados */
+        .btn-make-relevant {
+            background-color: #4CAF50; /* Verde apagado */
+            border-color: #45a049;
+        }
+
+        .btn-make-relevant:hover {
+            background-color: #45a049; /* Verde más oscuro en hover */
+            border-color: #3e8e41;
+        }
+
+        .btn-remove-relevance {
+            background-color: #f44336; /* Rojo apagado */
+            border-color: #e53935;
+        }
+
+        .btn-remove-relevance:hover {
+            background-color: #e53935; /* Rojo más oscuro en hover */
+            border-color: #d32f2f;
+        }
+
+        /* Estilo personalizado para el encabezado de la tabla */
+        .table thead th {
+            background-color: #222;  /* Fondo oscuro para el encabezado */
+            color: #fff;  /* Texto blanco */
+        }
+
+        /* Ajustar color de los íconos y botones de exportación */
+        .fixed-table-toolbar .btn {
+            background-color: #333; /* Fondo oscuro para los botones de exportación */
+            color: #fff;
+        }
+
+        .fixed-table-toolbar .btn:hover {
+            background-color: #555; /* Fondo más oscuro al pasar el ratón */
+        }
+
+    </style>
+{% endblock %}
