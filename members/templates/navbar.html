@@ -58,6 +58,10 @@
                             {% endif %}
                             <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item" href="{% url 'kanban-board' %}">Tablero Kanban</a></li>
+                            {% if perms.posts.make_relevant %}
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="{% url 'relevant-posts' %}">Artículos relevantes</a></li>
+                            {% endif %}
                         </ul>
                     </li>
                 {% endif %}

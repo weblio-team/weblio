@@ -1207,3 +1207,49 @@ class HistoryView(DetailView):
         context['post_pk'] = self.kwargs.get('pk')
         context['thumbnail_url'] = default_storage.url(context['post'].thumbnail) if context['post'].thumbnail else None
         return context
+    
+# views for relevant posts
+class RelevantPostsView(ListView):
+    model = Post
+    template_name = 'relevant/relevant_posts.html'
+    ordering = ['-date_posted']
+
+    def get_queryset(self):
+        now = timezone.now()
+
+        # Condiciones para posts programados o regulares
+        programmed = Q(publish_start_date__lte=now, publish_end_date__gte=now, publish_start_date__isnull=False, publish_end_date__isnull=False)
+        regular = Q(publish_start_date__isnull=True, publish_end_date__isnull=True)
+
+        # Filtrar por status publicado y condiciones de fechas
+        return Post.objects.filter(
+            Q(status='published') & (programmed | regular)
+        ).order_by('-priority', '-date_posted')
+
+    def post(self, request, *args, **kwargs):
+        """Maneja las acciones para hacer relevante o quitar relevancia a una publicación."""
+        post_id = request.POST.get('post_id')
+        action = request.POST.get('action')
+
+        # Verificamos si el post_id y la acción están presentes
+        if not post_id or not action:
+            messages.error(request, "No se pudo realizar la operación.")
+            return redirect('relevant_posts')
+
+        # Obtener el post por su ID
+        post = get_object_or_404(Post, id=post_id)
+
+        # Si la acción es hacer relevante
+        if action == 'make_relevant':
+            post.priority = 4  # Hacer relevante, asignamos prioridad 4
+            post.save()  # Guardamos el cambio en la base de datos
+            messages.success(request, f'El post "{post.title}" ahora es relevante.')
+
+        # Si la acción es quitar relevancia
+        elif action == 'remove_relevance':
+            post.priority = post.calculate_priority()  # Recalcular la prioridad original
+            post.save()  # Guardamos el cambio en la base de datos
+            messages.success(request, f'La relevancia del post "{post.title}" ha sido restablecida.')
+
+        # Redirigir a la página relevante para recargar los posts
+        return redirect('relevant-posts')
