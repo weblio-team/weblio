@@ -22,11 +22,9 @@
                     <p><strong>Nombre:</strong> {{ user.first_name }}</p>
                     <p><strong>Apellido:</strong> {{ user.last_name }}</p>
                     <p><strong>Correo electrónico:</strong> {{ user.email }}</p>
-                    <span class="badge
-                        {% if not user.groups.exists %}
-                            text-bg-secondary
-                        {% else %}
-                            {% for group in user.groups.all %}
+                    {% if user.groups.exists %}
+                        {% for group in user.groups.all %}
+                            <span class="badge 
                                 {% if group.name == 'suscriptor' %}
                                     text-bg-success
                                 {% elif group.name == 'autor' %}
@@ -37,23 +35,24 @@
                                     text-bg-primary
                                 {% elif group.name == 'admin' %}
                                     text-bg-light
-                                {% endif %}
-                            {% endfor %}
-                        {% endif %}">
-                        {% if user.groups.exists %}
-                            {% for group in user.groups.all %}
+                                {% else %}
+                                    text-bg-other
+                                {% endif %}">
                                 {{ group.name }}
-                            {% endfor %}
-                        {% else %}
-                            Ninguno
-                        {% endif %}
-                    </span>
+                            </span>
+                        {% endfor %}
+                    {% else %}
+                        <span class="badge text-bg-secondary">Ninguno</span>
+                    {% endif %}
                 </div>
             </div>
             <div class="row mt-4">
-                <div class="col-md-12 d-flex justify-content-between">
-                    <a href="{% url 'password_change' %}" class="btn btn-primary">Cambiar Contraseña</a>
-                    <a href="{% url 'edit_profile' %}" class="btn btn-primary">Editar Perfil</a>
+                <div class="col-md-12 d-flex justify-content-center">
+                    <div class="btn-group" role="group">
+                        <a href="{% url 'password_change' %}" class="btn btn-primary rounded">Cambiar Contraseña</a>
+                        <a href="{% url 'edit_profile' %}" class="btn btn-primary rounded">Editar Perfil</a>
+                        <a href="{% url 'additional_role' %}" class="btn btn-primary rounded">Solicitar Nuevo Rol</a>
+                    </div>
                 </div>
             </div>
         </div>
@@ -72,13 +71,54 @@
         justify-content: center;
     }
 
-
     .profile-pic-container img {
         display: block;
         width: 100%;
         height: 100%;
         object-fit: cover;
         border-radius: 50%;
+    }
+
+    .btn-group .btn {
+        margin-right: 10px;
+        border-radius: 20px; /* Bordes redondeados */
+    }
+
+    .btn-group .btn:last-child {
+        margin-right: 0;
+    }
+
+    .badge {
+        margin: 2px;
+    }
+
+    .text-bg-success {
+        background-color: #28a745 !important;
+    }
+
+    .text-bg-danger {
+        background-color: #dc3545 !important;
+    }
+
+    .text-bg-warning {
+        background-color: #ffc107 !important;
+    }
+
+    .text-bg-primary {
+        background-color: #007bff !important;
+    }
+
+    .text-bg-light {
+        background-color: #f8f9fa !important;
+        color: #343a40 !important;
+    }
+
+    .text-bg-secondary {
+        background-color: #6c757d !important;
+    }
+
+    .text-bg-other {
+        background-color: #17a2b8 !important; /* Color provisional */
     }
 </style>
 

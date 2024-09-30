@@ -13,7 +13,7 @@ from .forms import CreateGroupForm, MemberEditGroupForm, MemberEditPermissionFor
 from .models import Member
 from .forms import MemberRegisterForm, MemberJoinForm, MemberLoginForm
 from .forms import PasswordChangingForm
-from .forms import EditProfileForm
+from .forms import EditProfileForm, UserAddRoleForm
 from django.contrib import messages
 from django.http import HttpResponseRedirect, JsonResponse
 from django.contrib.auth import authenticate
@@ -1374,3 +1374,63 @@ class PasswordsChangeView(PasswordChangeView):
     """
     form_class = PasswordChangingForm
     success_url = reverse_lazy('profile')
+
+class UserAddRoleView(LoginRequiredMixin, FormView):
+    template_name = 'members/add_role.html'
+    form_class = UserAddRoleForm
+    success_url = reverse_lazy('success_url_name')  # Cambia esto a la URL de éxito deseada
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs
+
+    def get_context_data(self, **kwargs):
+        """
+        Añade los roles disponibles al contexto de la plantilla.
+
+        Parameters:
+        -----------
+        **kwargs : dict
+            Argumentos adicionales de palabras clave.
+
+        Returns:
+        --------
+        dict
+            El contexto actualizado con los roles disponibles.
+        """
+        context = super().get_context_data(**kwargs)
+        roles = Group.objects.exclude(name__icontains='administrador')
+        context['roles'] = roles
+        return context
+
+    def form_valid(self, form):
+        """
+        Asignar el rol al usuario y redirigir a la URL de éxito si el formulario es válido.
+
+        Args:
+            form (AddRoleForm): El formulario utilizado para agregar un rol a un usuario.
+
+        Returns:
+            HttpResponse: La respuesta HTTP después de procesar el formulario.
+        """
+        user = self.request.user
+        group = form.cleaned_data['group']
+
+        if group == 'already_has_role':
+            messages.error(self.request, "Ya tienes el rol seleccionado. Por favor, elige otro.")
+            return self.form_invalid(form)
+        
+        user.groups.add(group)
+
+        # Desactivar todos los permisos del grupo para el usuario
+        for permission in group.permissions.all():
+            user.user_permissions.remove(permission)
+
+        messages.success(self.request, f"Se ha agregado el rol de {group.name} al usuario {user.username}, pero todos los permisos están desactivados por defecto.")
+        return redirect('posts')
+
+    def form_invalid(self, form):
+        if not form.cleaned_data.get('group'):
+            messages.error(self.request, "Por favor, seleccione un rol antes de enviar.")
+        return super().form_invalid(form)

@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import MemberListView, MemberJoinView, MemberRegisterView, MemberLoginView, MemberStatusView, UserEditView, ProfileView, PasswordsChangeView
+from .views import MemberListView, MemberJoinView, MemberRegisterView, MemberLoginView, MemberStatusView, UserEditView, ProfileView, PasswordsChangeView, UserAddRoleView
 from .views import GroupListView, CreateGroupView, GroupEditView, GroupDeleteView, CreateGroupView, MemberEditGroupView, MemberEditPermissionView, update_profile_picture
 from django.contrib.auth import views as auth_views
 
@@ -19,6 +19,7 @@ urlpatterns = [
     path('logout/', auth_views.LogoutView.as_view(), name='logout'),
     path('profile/', ProfileView.as_view(), name='profile'),
     path('edit-profile/', UserEditView.as_view(), name='edit_profile'),
+    path('additional-role/', UserAddRoleView.as_view(), name='additional_role'),
     path('update-profile-picture/', update_profile_picture, name='update_profile_picture'),
     path('password/', PasswordsChangeView.as_view(template_name='members/change-password.html'), name='password_change'),
     

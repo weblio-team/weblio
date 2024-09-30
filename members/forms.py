@@ -672,3 +672,58 @@ class PasswordChangingForm(PasswordChangeForm):
     class Meta:
         model = Member
         fields = ('old_password', 'new_password1', 'new_password2')
+
+class UserAddRoleForm(forms.Form):
+    """
+    Formulario para añadir un rol adicional a un usuario.
+
+    Campos:
+        - role: Campo de selección de un solo rol.
+
+    Meta:
+        - model: El modelo `Group` al que está vinculado el formulario.
+        - fields: Campos que se utilizarán en el formulario.
+        - labels: Etiquetas personalizadas para los campos del formulario.
+    """
+    group = forms.ModelChoiceField(
+        queryset=Group.objects.exclude(name__icontains='administrador'),
+        label='Rol',
+        required=True
+    )
+
+    class Meta:
+        model = Member
+        fields = ['role']
+        labels = {
+            'role': _('Rol'),
+        }
+
+    def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop('user', None)
+        super().__init__(*args, **kwargs)
+
+    def clean_group(self):
+        group = self.cleaned_data['group']
+        if self.user.groups.filter(id=group.id).exists():
+            return 'already_has_role'
+        return group
+
+    def save(self, commit=True):
+        """
+        Guarda el rol adicional seleccionado para el usuario.
+
+        Parámetros:
+            - commit: Booleano que indica si se debe guardar el rol adicional inmediatamente.
+
+        Retorna:
+            - Member: El usuario con el rol adicional guardado.
+        """
+        user = super().save(commit=False)
+        if commit:
+            user.save()
+            role = self.cleaned_data['role']
+            user.groups.add(role)
+            # Asignar todos los permisos del rol seleccionado al usuario
+            permissions = role.permissions.all()
+            user.user_permissions.set(permissions)
+        return user
