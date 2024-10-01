@@ -11,7 +11,9 @@
 		</blockquote>
 		<hr>
 		<p>{{post.body|safe}}</p>
-		<small>Autor: {{post.author.first_name}} {{post.author.last_name}} - {{post.date_posted}}</small></br>
+		<small>Autor: {{post.author.first_name}} {{post.author.last_name}}</small></br>
+		<small>Inicio de publicación: {{ post.publish_start_date }}</small></br>
+		<small>Fin de publicación: {{ post.publish_end_date }}</small></br>
 		<small>Categoria: {{post.category}}</small></br>
 		<small>Etiquetas: {{post.keywords}}</small></br>
 		<div class="container mb-4 py-4">

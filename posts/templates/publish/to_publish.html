@@ -9,7 +9,7 @@
                 <div class="row g-0">
                     <div class="col-md-3">
                         <div class="thumbnail-container">
-                            <img src="{{ post.thumbnail.url }}" class="img-fluid rounded-start thumbnail-img" alt="{{ post.title }}">
+                            <img src="{% if post.thumbnail %}{{ post.thumbnail.url }}{% endif %}" class="img-fluid rounded-start thumbnail-img" alt="{{ post.title }}">
                         </div>
                     </div>
                     <div class="col-md-9">

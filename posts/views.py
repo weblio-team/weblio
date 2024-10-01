@@ -18,6 +18,7 @@ from django.conf import settings
 from simple_history.utils import update_change_reason
 import random
 from django.core.files.storage import default_storage
+from datetime import timedelta
 
 
 def update_change_reason(instance, reason):
@@ -766,6 +767,11 @@ class ToPublishPostView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView)
                 post.change_reason = post_data.get('change_reason', 'Updated post')
             else:
                 post.change_reason = post_data.get('change_reason', '')
+
+            # Si el estado es 'published', establecer las fechas de publicación si no están definidas
+            if post.publish_start_date is None:
+                post.publish_start_date = timezone.now()
+                post.publish_end_date = timezone.now() + timedelta(days=7)
 
             post.save()
 
