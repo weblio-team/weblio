@@ -24,7 +24,7 @@ from django.db.models import Count, Prefetch
 from django.contrib.auth.models import Permission
 from django.utils.translation import gettext as _
 from django.conf import settings
-from services.views import SendLoginEmailView
+from services.views import SendLoginEmailView, AccountStatusEmailView
 from dicts import translated_module_dict, translated_submodule_dict, translated_permission_dict
 
 @login_required
@@ -768,8 +768,14 @@ class MemberStatusView(LoginRequiredMixin, PermissionRequiredMixin, views.View):
             """
             Método que se llama tras el POST del form con datos válidos.
             """
-            form.save()
-            messages.success(self.request, "El estado del miembro ha sido actualizado.")
+            member = form.save()
+            account_status = 'activada' if member.is_active else 'desactivada'
+
+            if not settings.DEBUG:
+                email_view = AccountStatusEmailView()
+                email_view.send_account_status_email(member, account_status, member.email)
+
+            messages.success(self.request, f"La cuenta del miembro ha sido {account_status}.")
             return redirect('member-list')
         return render(request, self.template_name, {'form': form, 'member': member})
     

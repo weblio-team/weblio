@@ -617,3 +617,28 @@ class CustomPasswordResetView(PasswordResetView):
 
         # Enviar el correo
         email_message.send()
+
+class AccountStatusEmailView(View):
+    email_template_name = 'emails/account-status/account_status_email.html'
+    html_email_template_name = 'emails/account-status/account_status_email.html'
+
+    def send_account_status_email(self, user, account_status, to_email):
+        """
+        Enviar correo como HTML utilizando EmailMultiAlternatives.
+        """
+        context = {
+            'user': user,
+            'account_status': account_status
+        }
+        subject = f'Tu cuenta ha sido {account_status}'
+        body = render_to_string(self.email_template_name, context)
+
+        # Crear el correo con texto plano
+        email_message = EmailMultiAlternatives(subject, body, settings.DEFAULT_FROM_EMAIL, [to_email])
+
+        # Adjuntar la versión HTML
+        html_body = render_to_string(self.html_email_template_name, context)
+        email_message.attach_alternative(html_body, "text/html")
+
+        # Enviar el correo
+        email_message.send()
