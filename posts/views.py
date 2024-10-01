@@ -8,7 +8,7 @@ from django.views import View
 from .models import Category, Post
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView, TemplateView
 from .forms import CategoryForm, CategoryEditForm, KanbanBoardForm, MyPostAddBodyForm, MyPostAddGeneralForm, MyPostAddProgramForm, MyPostAddThumbnailForm, MyPostEditGeneralForm, MyPostEditBodyForm, MyPostEditProgramForm, MyPostEditThumbnailForm, ToEditPostGeneralForm, ToEditPostBodyForm, ToPublishPostForm
-from django.db.models import Q, OuterRef, Subquery
+from django.db.models import Q, OuterRef, Subquery, Count
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib import messages
 from django.utils import timezone
@@ -828,7 +828,9 @@ class SuscriberExplorePostsView(ListView):
     def get_context_data(self, **kwargs):
         """Añade información adicional al contexto, como la lista de categorías."""
         context = super().get_context_data(**kwargs)
-        context['categories'] = Category.objects.all()
+        context['categories'] = Category.objects.annotate(
+             num_posts=Count('post', filter=Q(post__status='published'))
+        ).filter(num_posts__gt=0)
         # Generar una altura aleatoria para cada post en la lista de objetos (object_list)
         [setattr(post, 'height', random.randint(250, 450)) for post in context['object_list']]
         return context
