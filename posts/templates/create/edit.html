@@ -256,28 +256,70 @@
           </div>
         </div>
       </div>
-      {% else %}
-      <!-- Si el post no está en estado "draft" -->
-      <h1>{{ post.title }}</h1>
-      <blockquote class="blockquote">
-        <small>{{ post.summary }}</small>
-      </blockquote>
-      <hr>
-      <p>{{ post.body|safe }}</p>
-      <small>Autor: {{ post.author.first_name }} {{ post.author.last_name }}</small><br>
-      <small>Categoría: {{ post.category }}</small><br>
-      <small>Etiquetas: {{ post.keywords }}</small><br>
-
-      {% if post.status == 'to_publish' %}
-      <small>Estado: A publicar</small><br>
-      {% elif post.status == 'to_edit' %}
-      <small>Estado: En edición</small><br>
-      {% endif %}
+      {% else %} <!-- Si el post no está en estado "draft" -->
+      <div class="container my-3 p-3 bg-dark text-white rounded">
+        <div class="row g-0">
+            <!-- Título y resumen al lado izquierdo -->
+            <div class="col-md-7 d-flex flex-column justify-content-center">
+                <div class="card-body p-2">
+                    <!-- Título del post -->
+                    <h1 class="display-5 text-white">{{ post.title }}</h1>
+    
+                    <!-- Resumen del post -->
+                    <blockquote class="blockquote">
+                        <p class="mb-0 text-white">― {{ post.summary }}</p>
+                    </blockquote>
+    
+                    <!-- Información del autor, categoría, etiquetas y fechas -->
+                    <div class="mt-3">
+                        <div class="d-flex align-items-center my-2">
+                            <img src="{{ post.author.pfp.url }}" class="rounded-circle me-2" alt="Author Thumbnail" style="width: 50px; height: 50px;">
+                            <div class="text-start">
+                                <p class="mb-1">
+                                    <strong>Autor: {{ post.author.first_name }} {{ post.author.last_name }}</strong><br>
+                                    <small class="text-white">Categoría: {{ post.category }}</small>
+                                </p>
+                            </div>
+                        </div>
+    
+                        <!-- Etiquetas y fechas en una sola columna -->
+                        <div class="my-2">
+                            <p><small class="text-white">Etiquetas: {{ post.keywords }}</small></p>
+                            <p><small class="text-white">Inicio de publicación: {{ post.publish_start_date|default:"Sin fecha de publicación" }}</small></p>
+                            <p><small class="text-white">Fin de publicación: {{ post.publish_end_date|default:"Sin fecha de fin de publicación" }}</small></p>
+                        </div>
+    
+                        <!-- Estado del post (si no está publicado) -->
+                        {% if post.status != 'published' %}
+                        <p class="card-text mb-0">
+                            <span class="badge bg-warning text-dark">Estado: {{ post.status|yesno:"En edición,A publicar" }}</span>
+                        </p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+    
+            <!-- Imagen del post (Portada) al lado derecho -->
+            {% if post.thumbnail %}
+              <div class="col-md-5">
+                  <img src="{{ post.thumbnail.url }}" class="img-fluid rounded-start" alt="Thumbnail" style="width: 100%; height: auto; max-height: 100%; object-fit: cover;">
+              </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    
+    
+    
+    
+        <hr>
+        <p>{{ post.body|safe }}</p>
       {% endif %}
 
       <br>
       <div class="d-flex justify-content-between">
         <a href="{% url 'my-posts' %}" class="btn btn-secondary btn-light">Volver</a>
+        {% if post.status == 'draft' %}
         <div>
           <button class="btn btn-success my-0" type="submit">Guardar</button>
           <button type="button" class="btn btn-primary my-0" data-bs-toggle="modal"
@@ -285,6 +327,7 @@
           <button type="button" class="btn btn-danger my-0" data-bs-toggle="modal"
             data-bs-target="#deleteModal">Eliminar</button>
         </div>
+        {% endif %}
       </div>
     </form>
 
