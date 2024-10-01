@@ -18,6 +18,7 @@ from django.utils.html import strip_tags
 from django.utils import timezone
 import platform
 from django.contrib.auth.views import PasswordResetView
+from dicts import translated_module_dict, translated_submodule_dict, translated_permission_dict
 
 class CustomImageUploadView(View):
     """
@@ -631,6 +632,59 @@ class AccountStatusEmailView(View):
             'account_status': account_status
         }
         subject = f'Tu cuenta ha sido {account_status}'
+        body = render_to_string(self.email_template_name, context)
+
+        # Crear el correo con texto plano
+        email_message = EmailMultiAlternatives(subject, body, settings.DEFAULT_FROM_EMAIL, [to_email])
+
+        # Adjuntar la versión HTML
+        html_body = render_to_string(self.html_email_template_name, context)
+        email_message.attach_alternative(html_body, "text/html")
+
+        # Enviar el correo
+        email_message.send()
+
+class UserPermissionsEmailView(View):
+    email_template_name = 'emails/account-status/user_permissions_email.html'
+    html_email_template_name = 'emails/account-status/user_permissions_email.html'
+
+    def get_translated_permissions(self, user):
+        """
+        Obtiene los permisos agrupados y traducidos para un usuario específico.
+        """
+        grouped_permissions = {}
+        for perm in user.user_permissions.all():
+            module_name = perm.content_type.app_label.capitalize()
+            submodule_name = perm.content_type.model.capitalize()
+
+            # Traducción de módulos y submódulos
+            translated_module = translated_module_dict.get(perm.content_type.app_label, module_name)
+            translated_submodule = translated_submodule_dict.get(perm.content_type.model, submodule_name)
+
+            # Traducción de permisos
+            translated_permission = translated_permission_dict.get(perm.name, perm.name)
+
+            # Agrupar permisos
+            if translated_module not in grouped_permissions:
+                grouped_permissions[translated_module] = {}
+            if translated_submodule not in grouped_permissions[translated_module]:
+                grouped_permissions[translated_module][translated_submodule] = []
+            grouped_permissions[translated_module][translated_submodule].append(translated_permission)
+
+        return grouped_permissions
+
+    def send_permissions_email(self, user, to_email):
+        """
+        Enviar correo como HTML utilizando EmailMultiAlternatives.
+        """
+        translated_permissions = self.get_translated_permissions(user)
+        groups = user.groups.all()
+        context = {
+            'user': user,
+            'translated_permissions': translated_permissions,
+            'groups': groups
+        }
+        subject = 'Actualización de tus permisos de usuario'
         body = render_to_string(self.email_template_name, context)
 
         # Crear el correo con texto plano

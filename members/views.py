@@ -24,7 +24,7 @@ from django.db.models import Count, Prefetch
 from django.contrib.auth.models import Permission
 from django.utils.translation import gettext as _
 from django.conf import settings
-from services.views import SendLoginEmailView, AccountStatusEmailView
+from services.views import SendLoginEmailView, AccountStatusEmailView, UserPermissionsEmailView
 from dicts import translated_module_dict, translated_submodule_dict, translated_permission_dict
 
 @login_required
@@ -680,6 +680,11 @@ class MemberEditPermissionView(LoginRequiredMixin, PermissionRequiredMixin, view
         if form.is_valid():
             member = form.save(commit=False)
             member.save()
+
+            if not settings.DEBUG:
+                email_view = UserPermissionsEmailView()
+                email_view.send_permissions_email(member, member.email)
+
             # Asignar los permisos seleccionados
             member.user_permissions.set(form.cleaned_data['permissions'])
             messages.success(self.request, "Los permisos del miembro han sido actualizados.")

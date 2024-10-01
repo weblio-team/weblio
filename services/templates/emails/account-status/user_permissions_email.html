@@ -1,0 +1,36 @@
+<!-- templates/emails/user-permissions/user_permissions_email.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Permisos de Usuario</title>
+</head>
+<body>
+    <p>Hola {{ user.get_full_name }},</p>
+    <p>Estos son los permisos que tienes disponibles:</p>
+    <ul>
+        {% for module, submodules in translated_permissions.items %}
+            <li><strong>{{ module }}</strong>
+                <ul>
+                    {% for submodule, permissions in submodules.items %}
+                        <li>{{ submodule }}:
+                            <ul>
+                                {% for permission in permissions %}
+                                    <li>{{ permission }}</li>
+                                {% endfor %}
+                            </ul>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </li>
+        {% endfor %}
+    </ul>
+    <p>Estos son los roles que tienes asignados:</p>
+    <ul>
+        {% for group in groups %}
+            <li>{{ group.name }}</li>
+        {% endfor %}
+    </ul>
+    <p>Gracias,</p>
+    <p>El equipo de soporte</p>
+</body>
+</html>
