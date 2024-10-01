@@ -7,6 +7,7 @@ from .views import MyPostsView, MyPostEditView, MyPostAddView, MyPostDeleteView
 from .views import KanbanBoardView
 from .views import HistoryView
 from .views import RelevantPostsView
+from .views import SuscribirseView, DesuscribirseView, MisCategoriasView, CategoryDetailView
 
 
 urlpatterns = [
@@ -49,4 +50,8 @@ urlpatterns = [
 
     # urls for relevant posts
     path('relevant-posts/', RelevantPostsView.as_view(), name='relevant-posts'),
+
+    path('suscribirse/<int:category_id>/', SuscribirseView.as_view(), name='suscribirse'),
+    path('desuscribirse/<int:category_id>/', DesuscribirseView.as_view(), name='desuscribirse'),
+    path('mis-categorias/', MisCategoriasView.as_view(), name='mis_categorias'),
 ]

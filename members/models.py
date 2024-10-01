@@ -37,6 +37,7 @@ class Member(AbstractBaseUser, PermissionsMixin):
     date_joined = models.DateTimeField(_('date joined'), auto_now_add=True)
     pfp = models.ImageField(upload_to='profile_pictures/', blank=True, null=True)
     purchased_categories = models.ManyToManyField('posts.Category', related_name='purchased_members', blank=True)
+    suscribed_categories = models.ManyToManyField('posts.Category', related_name='suscribed_members', blank=True)
 
 
     USERNAME_FIELD = 'username'
