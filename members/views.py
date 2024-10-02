@@ -196,7 +196,7 @@ class GroupEditView(FormView):
         """
         # Excluir permisos no deseados
         permissions = Permission.objects.exclude(
-            content_type__model__in=['historicalpost', 'contenttype', 'session', 'logentry']
+            content_type__model__in=['historicalpost', 'contenttype', 'session', 'logentry', 'site']
         ).select_related('content_type').distinct()
 
         grouped_permissions = {}

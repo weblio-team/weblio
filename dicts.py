@@ -31,6 +31,7 @@ translated_permission_dict = {
     'Can change post': 'Puede cambiar artículo',
     'Can delete post': 'Puede eliminar artículo',
     'Can view post': 'Puede ver artículo',
+    'Can publish post': 'Puede publicar artículo',
 
     # Categorías
     'Can add category': 'Puede agregar categoría',
