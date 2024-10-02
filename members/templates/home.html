@@ -1,132 +1,128 @@
 {% extends "base.html" %}
-{% block content %}    
+{% block content %}
     <div class="container marketing">
         <!-- Hero Section -->
         <div class="container my-5">
             <div class="row align-items-center g-5">
-                <div class="col-lg-6">
+                <!-- Texto hero -->
+                <div class="col-lg-6 col-md-12">
                     <h1 class="display-4 fw-bold lh-1 mb-3">Weblio, Tu blog de confianza!</h1>
-                    <p class="lead">Lorem ipsum dolor, sit amet consectetur adipisicing elit. Odio reiciendis dolore recusandae cumque tempora illo officiis temporibus? Ducimus adipisci qui ratione repellendus, rerum architecto? Iusto quam nam nisi quia voluptates.</p>
+                    <p class="lead">Bienvenido a Weblio, tu fuente confiable para artículos interesantes y educativos. Aquí encontrarás contenido de alta calidad escrito por expertos en diversas áreas. Únete a nuestra comunidad y comparte tus propias historias y conocimientos con el mundo.</p>
                     {% if not user.is_authenticated %}
-                        <div class="d-grid gap-2 d-md-flex justify-content-md-start">
-                            <a class="btn btn-primary btn-lg px-4 me-md-2" href="{% url 'member-login' %}">Iniciar Sesion</a>
-                            <a class="btn btn-outline-secondary btn-lg px-4" href="{% url 'member-register' %}">Registrarse</a>
-                        </div>
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-start">
+                        <a class="btn btn-primary btn-lg px-4 me-md-2" href="{% url 'member-login' %}">Iniciar Sesion</a>
+                        <a class="btn btn-outline-secondary btn-lg px-4" href="{% url 'member-register' %}">Registrarse</a>
+                    </div>
                     {% else %}
-                        <div class="d-grid gap-2 d-md-flex justify-content-md-start">
-                            <a class="btn btn-primary btn-lg px-4 me-md-2" href="{% url 'posts' %}">Llévame a ver los artículos!</a>
-                        </div>
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-start">
+                        <a class="btn btn-primary btn-lg px-4 me-md-2" href="{% url 'posts' %}">Llévame a ver los artículos!</a>
+                    </div>
                     {% endif %}
                 </div>
-                <div class="col-lg-6">
-                    <img src="https://storage.googleapis.com/bucket-weblio/heroes/01.jpg" class="d-block mx-lg-auto img-fluid" alt="Bootstrap Themes" width="500" height="500" loading="lazy">
+
+                <!-- Imagen hero -->
+                <div class="col-lg-6 col-md-12 text-center">
+                    <img src="https://storage.googleapis.com/bucket-weblio/heroes/01.jpg" class="img-fluid rounded mx-auto d-block" alt="Bootstrap Themes" width="500" height="500" loading="lazy">
                 </div>
             </div>
         </div>
-        
-        <!-- Features -->
-        <div>
-            <hr class="featurette-divider">
-            <h1 class="text-center">Funcionalidades del sitio</h1>
-            
-            <div class="row featurette py-5">
-                <div class="col-md-7">
-                    <h2 class="featurette-heading">Publicación Fácil de Artículos</h2>
-                    <p class="lead">Los usuarios pueden redactar, editar y publicar artículos fácilmente con un editor de texto enriquecido que permite agregar imágenes, videos y enlaces.</p>
+
+        <!-- Features Section -->
+        <div class="container marketing">
+            <div>
+                <hr class="featurette-divider">
+                <h1 class="text-center">Funcionalidades del sitio</h1>
+
+                <!-- Primera feature -->
+                <div class="row featurette py-5">
+                    <div class="col-md-7">
+                        <h2 class="featurette-heading">Publicación Fácil de Artículos</h2>
+                        <p class="lead">Los usuarios pueden redactar, editar y publicar artículos fácilmente con un editor de texto enriquecido que permite agregar imágenes, videos y enlaces.</p>
+                    </div>
+                    <div class="col-md-5 text-center">
+                        <img src="https://storage.googleapis.com/bucket-weblio/branding/features/01.png" class="img-fluid rounded mx-auto d-block" style="max-height: 300px; width: auto;" alt="Editor de Texto">
+                    </div>
                 </div>
-                <div class="col-md-5">
-                    <img src="https://storage.googleapis.com/bucket-weblio/features/01.jpg" width="200" height="200" alt="Editor de Texto" class="float-end">
+
+                <!-- Segunda feature -->
+                <div class="row featurette py-5">
+                    <div class="col-md-7 order-md-2">
+                        <h2 class="featurette-heading">Comentarios y Reacciones</h2>
+                        <p class="lead">Los lectores pueden dejar comentarios en las publicaciones y reaccionar con likes, dislikes y estrellas, fomentando la interacción y el debate en la comunidad.</p>
+                    </div>
+                    <div class="col-md-5 order-md-1 text-center">
+                        <img src="https://storage.googleapis.com/bucket-weblio/branding/features/02.png" class="img-fluid rounded mx-auto d-block" style="max-height: 300px; width: auto;" alt="Comentarios y Reacciones">
+                    </div>
                 </div>
+
+                <!-- Tercera feature -->
+                <div class="row featurette py-5">
+                    <div class="col-md-7">
+                        <h2 class="featurette-heading">Compra segura</h2>
+                        <p class="lead">Compra segura a través de nuestra integración con la pasarela de pagos Stripe, garantizando transacciones rápidas y protegidas para todos nuestros usuarios.</p>
+                    </div>
+                    <div class="col-md-5 text-center">
+                        <img src="https://storage.googleapis.com/bucket-weblio/branding/features/03.png" class="img-fluid rounded mx-auto d-block" style="max-height: 300px; width: auto;" alt="Búsqueda Avanzada">
+                    </div>
+                </div>
+
+                <!-- Cuarta feature -->
+                <div class="row featurette py-5">
+                    <div class="col-md-7 order-md-2">
+                        <h2 class="featurette-heading">Sistema de Categorización</h2>
+                        <p class="lead">Las publicaciones pueden organizarse en categorías de tipo público, gratuito y premium, lo que facilita la navegación por temas específicos y mejora la experiencia del usuario.</p>
+                    </div>
+                    <div class="col-md-5 order-md-1 text-center">
+                        <img src="https://storage.googleapis.com/bucket-weblio/branding/features/04.png" class="img-fluid rounded mx-auto d-block" style="max-height: 300px; width: auto;" alt="Categorías y Etiquetas">
+                    </div>
+                </div>
+                <hr class="featurette-divider">
             </div>
-            
-            <div class="row featurette">
-                <div class="col-md-5">
-                    <img src="https://storage.googleapis.com/bucket-weblio/features/02.jpg" width="200" height="200" alt="Comentarios y Reacciones" class="float-start">
-                </div>
-                <div class="col-md-7">
-                    <h2 class="featurette-heading">Comentarios y Reacciones</h2>
-                    <p class="lead">Los lectores pueden dejar comentarios en las publicaciones y reaccionar con emojis o likes, fomentando la interacción y el debate en la comunidad.</p>
-                </div>
-            </div>
-            
-            <div class="row featurette py-5">
-                <div class="col-md-7">
-                    <h2 class="featurette-heading">Búsqueda Avanzada</h2>
-                    <p class="lead">Un sistema de búsqueda que permite a los usuarios encontrar artículos por palabras clave, categorías o autores, mejorando la accesibilidad a contenido relevante.</p>
-                </div>
-                <div class="col-md-5">
-                    <img src="https://storage.googleapis.com/bucket-weblio/features/03.jpg" width="200" height="200" alt="Búsqueda Avanzada" class="float-end">
-                </div>
-            </div>
-            
-            <div class="row featurette">
-                <div class="col-md-5">
-                    <img src="https://storage.googleapis.com/bucket-weblio/features/04.jpg" width="200" height="200" alt="Categorías y Etiquetas" class="float-start">
-                </div>
-                <div class="col-md-7">
-                    <h2 class="featurette-heading">Sistema de Categorización</h2>
-                    <p class="lead">Las publicaciones pueden organizarse en categorías y etiquetas, lo que facilita la navegación por temas específicos y mejora la experiencia del usuario.</p>
-                </div>
-            </div>
-            
-            <div class="row featurette py-5">
-                <div class="col-md-7">
-                    <h2 class="featurette-heading">Suscripción y Notificaciones</h2>
-                    <p class="lead">Los usuarios pueden suscribirse al blog y recibir notificaciones por correo electrónico o a través del sitio cuando se publiquen nuevos artículos, asegurando que no se pierdan ninguna actualización.</p>
-                </div>
-                <div class="col-md-5">
-                    <img src="https://storage.googleapis.com/bucket-weblio/features/05.jpg" width="200" height="200" alt="Suscripción y Notificaciones" class="float-end">
-                </div>
-            </div>
-            <hr class="featurette-divider">
-        </div>       
-        
-        <!-- Join the team -->
+        </div>
+
+        <!-- Join the team section -->
         <div class="container py-4">
             <div class="row justify-content-center">
                 <div class="col-lg-8 text-center">
                     <h1 class="display-4 fw-bold lh-1 mb-3">Escribe tus historias con nosotros!</h1>
-                    <p class="lead mb-4">Lorem ipsum dolor sit amet consectetur adipisicing elit. 
-                        Nobis pariatur nulla et officiis molestias mollitia, quisquam, quo architecto delectus iure eum. 
-                        Esse molestias laudantium nihil? Quam tenetur quae doloribus quo.</p>
+                    <p class="lead mb-4">Únete a nuestra comunidad de escritores y comparte tus historias, experiencias y conocimientos con el mundo. En Weblio, valoramos la diversidad de voces y creemos que cada historia tiene el poder de inspirar y educar. No importa si eres un escritor experimentado o estás comenzando, aquí encontrarás una plataforma amigable y un público dispuesto a leerte. ¡Escribe tus historias con nosotros y sé parte de algo grande!</p>
                     <div class="d-flex justify-content-center mb-4">
                         <a class="btn btn-primary btn-lg px-4 me-2" href="{% url 'member-join' %}">Unirme</a>
                         <a class="btn btn-outline-secondary btn-lg px-4" href="{% url 'member-login' %}">Ya tengo una cuenta!</a>
                     </div>
                     <div class="d-flex justify-content-center">
-                        <img src="https://storage.googleapis.com/bucket-weblio/heroes/02.jpg" class="img-fluid rounded" alt="Centered Screenshot" width="700" height="400" loading="lazy">
+                        <img src="https://storage.googleapis.com/bucket-weblio/heroes/02.jpg" class="img-fluid rounded mx-auto d-block" alt="Centered Screenshot" width="700" height="400" loading="lazy">
                     </div>
                 </div>
             </div>
             <hr class="featurette-divider">
         </div>
 
-        <!-- Weblio team -->
+        <!-- Weblio team section -->
         <div class="container marketing py-4">
             <h1 class="text-center">El equipo de Weblio</h1>
             <div class="row py-4">
-                <div class="col-lg-3 text-center">
-                    <img src="https://storage.googleapis.com/bucket-weblio/team/kevin.jpg" class="rounded-circle" width="140" height="140" alt="Placeholder Image">
+                <div class="col-lg-3 col-md-6 text-center">
+                    <img src="https://storage.googleapis.com/bucket-weblio/branding/team/kevin.jpg" class="rounded-circle mx-auto d-block" width="140" height="140" alt="Placeholder Image">
                     <h2 class="fw-normal py-4">Kevin Galeano</h2>
                     <p>Facilito el trabajo del equipo, eliminando obstáculos y asegurando que sigamos las prácticas ágiles para entregar valor en cada sprint.</p>
                 </div>
-                <div class="col-lg-3 text-center">
-                    <img src="https://storage.googleapis.com/bucket-weblio/team/majo.jpg" class="rounded-circle" width="140" height="140" alt="Placeholder Image">
+                <div class="col-lg-3 col-md-6 text-center">
+                    <img src="https://storage.googleapis.com/bucket-weblio/branding/team/majo.jpg" class="rounded-circle mx-auto d-block" width="140" height="140" alt="Placeholder Image">
                     <h2 class="fw-normal py-4">Majo Duarte</h2>
                     <p>Automatizo la integración y entrega continua, asegurando despliegues eficientes y seguros, y manteniendo la infraestructura estable.</p>
                 </div>
-                <div class="col-lg-3 text-center">
-                    <img src="https://storage.googleapis.com/bucket-weblio/team/amanda.jpg" class="rounded-circle" width="140" height="140" alt="Placeholder Image">
+                <div class="col-lg-3 col-md-6 text-center">
+                    <img src="https://storage.googleapis.com/bucket-weblio/branding/team/amanda.jpg" class="rounded-circle mx-auto d-block" width="140" height="140" alt="Placeholder Image">
                     <h2 class="fw-normal py-4">Amanda Caceres</h2>
                     <p>Escribo código de calidad para construir funcionalidades que satisfacen las necesidades del usuario, mejorando continuamente el producto.</p>
                 </div>
-                <div class="col-lg-3 text-center">
-                    <img src="https://storage.googleapis.com/bucket-weblio/team/werner.jpg" class="rounded-circle" width="140" height="140" alt="Placeholder Image">
+                <div class="col-lg-3 col-md-6 text-center">
+                    <img src="https://storage.googleapis.com/bucket-weblio/branding/team/werner.jpg" class="rounded-circle mx-auto d-block" width="140" height="140" alt="Placeholder Image">
                     <h2 class="fw-normal py-4">Werner Uibrig</h2>
                     <p>Realizo pruebas exhaustivas para identificar errores y asegurar que todo funcione correctamente antes del lanzamiento.</p>
                 </div>
             </div>
         </div>
     </div>
-
 {% endblock %}
