@@ -436,8 +436,17 @@ class MyPostAddThumbnailForm(forms.ModelForm):
         model = Post
         fields = ['thumbnail']
         widgets = {
-            'thumbnail': forms.FileInput(attrs={'class': 'form-control'}),
+            'thumbnail': forms.ClearableFileInput(attrs={
+                'class': 'form-control', 
+                'accept': 'image/*',  # Solo permite imágenes
+                'data-current-url': '',  # Agregamos un atributo para la URL de la imagen actual
+            }),
         }
+
+    def __init__(self, *args, **kwargs):
+        super(MyPostAddThumbnailForm, self).__init__(*args, **kwargs)
+        # No hay imagen existente, ya que es una vista de agregar
+        self.fields['thumbnail'].widget.attrs['data-current-url'] = ''
 
 class MyPostAddProgramForm(forms.ModelForm):
     class Meta:

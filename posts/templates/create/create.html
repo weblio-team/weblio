@@ -83,10 +83,24 @@
         <div class="tab-pane fade" id="thumbnail" role="tabpanel" aria-labelledby="thumbnail-tab">
           <div class="py-3">
             <div class="form-group">
-              <label for="id_thumbnail">Foto de portada</label>
-              {{ thumbnail_form.thumbnail }}
-            </div>
-          </div>
+              <!-- Input file oculto pero con el evento onchange -->
+              <input type="file" name="thumbnail" id="id_thumbnail" accept="image/*" onchange="updateThumbnail(this);" style="display: none;">
+        
+              <!-- Botones personalizados para abrir el input de archivo y eliminar la imagen -->
+              <div style="display: flex; align-items: center;">
+                <label for="id_thumbnail" id="thumbnail-label" style="cursor: pointer; background-color: #007bff; color: white; padding: 8px 12px; font-size: 14px; border-radius: 4px;">Subir portada</label>
+        
+                <!-- Botón para eliminar la portada (solo visible si hay imagen) -->
+                <button id="delete-thumbnail-button" type="button" class="btn btn-danger ml-2" style="display: none; margin-left: 10px; background-color: #dc3545; padding: 8px 12px; border-radius: 4px; font-size: 14px;" onclick="removeThumbnail()">Eliminar portada</button>
+              </div>
+        
+              <!-- Mostrar la vista previa de la imagen seleccionada -->
+              <div class="mt-2">
+                <p id="no-thumbnail-text">No hay imagen de portada actual.</p>
+                <img id="current-thumbnail" src="" alt="Vista previa de la imagen" style="max-width: 300px; display: none;">
+              </div>
+            </div>    
+          </div>       
         </div>
       </div>
     </div>
@@ -131,4 +145,93 @@
     })
   });
 </script>
+<script>
+  function updateThumbnail(input) {
+      if (input.files && input.files[0]) {
+          var reader = new FileReader();
+
+          // Evento que se ejecuta cuando se carga la imagen
+          reader.onload = function(e) {
+              var thumbnail = document.getElementById('current-thumbnail');
+              var noThumbnailText = document.getElementById('no-thumbnail-text');
+              var thumbnailLabel = document.getElementById('thumbnail-label');
+              var deleteButton = document.getElementById('delete-thumbnail-button');
+
+              // Actualiza la src de la imagen
+              thumbnail.src = e.target.result;
+              thumbnail.style.display = 'block';  // Asegúrate de que la imagen sea visible
+              
+              // Oculta el texto "No hay imagen de portada actual"
+              noThumbnailText.style.display = 'none';
+
+              // Cambia el texto del botón a "Cambiar portada"
+              thumbnailLabel.textContent = 'Cambiar portada';
+
+              // Mostrar el botón de eliminar portada
+              deleteButton.style.display = 'inline-block';
+          }
+
+          // Lee la imagen seleccionada como una URL de datos
+          reader.readAsDataURL(input.files[0]);
+      }
+  }
+
+  function removeThumbnail() {
+      // Ocultar la imagen de portada
+      var thumbnail = document.getElementById('current-thumbnail');
+      var noThumbnailText = document.getElementById('no-thumbnail-text');
+      var thumbnailLabel = document.getElementById('thumbnail-label');
+      var deleteButton = document.getElementById('delete-thumbnail-button');
+      var thumbnailInput = document.getElementById('id_thumbnail');
+
+      // Limpiar el campo de archivo
+      thumbnailInput.value = '';
+
+      // Ocultar la imagen y el botón de eliminar
+      thumbnail.style.display = 'none';
+      deleteButton.style.display = 'none';
+
+      // Mostrar el texto "No hay imagen de portada actual"
+      noThumbnailText.style.display = 'block';
+
+      // Cambiar el texto del botón de subir imagen a "Subir portada"
+      thumbnailLabel.textContent = 'Subir portada';
+  }
+</script>
+
+<style>
+  /* Oculta completamente el input de tipo file y muestra solo el botón */
+  input[type="file"] {
+      visibility: hidden;
+      position: absolute;
+  }
+
+  /* Botón de eliminar portada debe coincidir con los estilos del botón de subir/cambiar portada */
+  #delete-thumbnail-button {
+      font-size: 14px;
+      padding: 8px 12px;
+      margin-left: 10px;
+      border-radius: 4px;
+      cursor: pointer;
+  }
+
+  #delete-thumbnail-button:hover {
+      background-color: #c82333;
+  }
+
+  /* Mismo estilo que el botón de subir/cambiar portada */
+  label[for="id_thumbnail"] {
+      display: inline-block;
+      background-color: #007bff;
+      color: white;
+      padding: 8px 12px;
+      font-size: 14px;
+      border-radius: 4px;
+      cursor: pointer;
+  }
+
+  label[for="id_thumbnail"]:hover {
+      background-color: #0056b3;
+  }
+</style>
 {% endblock %}
