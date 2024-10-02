@@ -99,7 +99,7 @@
                     {% endif %}
                     <input type="hidden" name="operation" value="update">
                     <input type="hidden" name="thumbnail" value="{{ current_thumbnail_url }}">
-                    <input type="hidden" name="post_id" value="{{ post_id }}">
+                    <input type="hidden" name="post_id" value="{% if post_id %}{{ post_id }}{% else %}{{ post.id }}{% endif %}">
                     <input type="hidden" name="history_id" value="{{ history_id }}">
                 </div>
               </div>    

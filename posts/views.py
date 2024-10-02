@@ -488,8 +488,8 @@ class ToEditPostView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
     """
     model = Post
     template_name = 'edit/edit.html'
-    fields = ['title', 'title_tag', 'summary', 'body', 'category', 'keywords', 'publish_start_date', 'publish_end_date', 'thumbnail']    
     permission_required = 'posts.change_post'
+    fields = ['title', 'title_tag', 'summary', 'body', 'category', 'keywords', 'publish_start_date', 'publish_end_date', 'thumbnail']
 
     def dispatch(self, request, *args, **kwargs):
         post = get_object_or_404(Post, pk=self.kwargs['pk'])
@@ -499,8 +499,7 @@ class ToEditPostView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        post_history = self.object.history.all()
-        post_history_with_reason = self.object.history.filter(change_reason__isnull=False).exclude(change_reason='')
+        post = self.get_object()
 
         # Diccionario de mapeo para traducir y formatear los estados
         state_mapping = {
@@ -510,6 +509,10 @@ class ToEditPostView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
             'published': 'Publicado',
             'inactive': 'Inactivo'
         }
+
+        # Order version history by history_date in descending order
+        post_history = post.history.order_by('-history_date')
+        post_history_with_reason = post.history.filter(change_reason__isnull=False).exclude(change_reason='').order_by('-history_date')
 
         # Set up pagination (e.g., 5 items per page)
         paginator = Paginator(post_history, 5)
@@ -535,24 +538,32 @@ class ToEditPostView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
         context['post_history_page'] = post_history_page
         context['post_history_with_reason_page'] = post_history_with_reason_page
 
-        if self.request.POST:
-            context['gen_form'] = ToEditPostGeneralForm(self.request.POST, instance=self.object)
-            context['body_form'] = ToEditPostBodyForm(self.request.POST, instance=self.object)
-        else:
-            context['gen_form'] = ToEditPostGeneralForm(instance=self.object)
-            context['body_form'] = ToEditPostBodyForm(instance=self.object)
-
-        context['publish_start_date'] = self.object.publish_start_date
-        context['publish_end_date'] = self.object.publish_end_date
         # Obtener la versión específica de la imagen si se solicita restaurar
         if self.request.POST.get('operation') == 'restore':
             post_version = get_object_or_404(get_object_or_404(Post, pk=self.request.POST.get('post_id')).history, pk=self.request.POST.get('history_id'))
             context['current_thumbnail_url'] = default_storage.url(post_version.thumbnail)
             context['post_id'] = self.request.POST.get('post_id')
             context['history_id'] = self.request.POST.get('history_id')
-        # Si no se solicita restaurar una versión anterior, mostrar la imagen actual del objeto
+            context['publish_start_date'] = post_version.publish_start_date
+            context['publish_end_date'] = post_version.publish_end_date
+        # Si no se solicita restaurar una versión anterior, mostrar la imagen y la fecha programada actual del objeto
         else:
-            context['current_thumbnail_url'] = self.object.thumbnail.url if self.object.thumbnail else None
+            context['current_thumbnail_url'] = post.thumbnail.url if post.thumbnail else None
+            context['publish_start_date'] = self.object.publish_start_date
+            context['publish_end_date'] = self.object.publish_end_date
+
+        if self.request.POST:
+            context['gen_form'] = MyPostEditGeneralForm(self.request.POST, instance=post)
+            context['body_form'] = MyPostEditBodyForm(self.request.POST, instance=post)
+            context['thumbnail_form'] = MyPostEditThumbnailForm(self.request.POST, self.request.FILES, instance=post)
+            context['program_form'] = MyPostEditProgramForm(self.request.POST, instance=post)  # Faltaba instance=post
+        
+        else:
+            context['gen_form'] = MyPostEditGeneralForm(instance=post)
+            context['body_form'] = MyPostEditBodyForm(instance=post)
+            context['thumbnail_form'] = MyPostEditThumbnailForm(instance=post)
+            context['program_form'] = MyPostEditProgramForm(instance=post)  # Faltaba instance=post
+
         context['state_mapping'] = state_mapping
         return context
 
@@ -588,7 +599,8 @@ class ToEditPostView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
             thumbnail_form = MyPostEditThumbnailForm(initial={
                 'thumbnail': post_version.thumbnail
             })
-
+        
+        # Si no se solicita restaurar una versión anterior o se está guardando una nueva versión o se está guardando una versión anterior
         else:
             # Check if 'status' is missing and set it to the existing status from the post instance
             if 'status' not in post_data:
@@ -602,16 +614,26 @@ class ToEditPostView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
             if post_data.get('post_id') != '' and post_data.get('history_id') != '':  # Si se está restaurando una versión anterior
                 post_version = get_object_or_404(get_object_or_404(Post, pk=post_data.get('post_id')).history, pk=post_data.get('history_id'))
                 self.object.thumbnail = post_version.thumbnail
+                self.object.publish_start_date = post_version.publish_start_date
+                self.object.publish_end_date = post_version.publish_end_date
             thumbnail_form = MyPostEditThumbnailForm(post_data, request.FILES, instance=self.object)
             program_form = MyPostEditProgramForm(post_data, instance=self.object)
 
+        # si se esta guardando una nueva version
         if gen_form.is_valid() and body_form.is_valid() and thumbnail_form.is_valid() and program_form.is_valid():
             post = gen_form.save(commit=False)
-            post.body = body_form.cleaned_data['body']
-            post.publish_start_date = self.object.publish_start_date
-            post.publish_end_date = self.object.publish_end_date
-            post.thumbnail = self.object.thumbnail
-
+            post.body = body_form.cleaned_data.get('body')
+              
+            if post_data.get('history_id') != '':  # Si se está restaurando una versión anterior
+                post_version = get_object_or_404(get_object_or_404(Post, pk=post_data.get('post_id')).history, pk=post_data.get('history_id'))
+                post.publish_start_date = post_version.publish_start_date
+                post.publish_end_date = post_version.publish_end_date
+            else:
+                post_version = get_object_or_404(Post, pk=post_data.get('post_id'))
+                post.publish_start_date = post_version.publish_start_date
+                post.publish_end_date = post_version.publish_end_date
+            
+            post.thumbnail = thumbnail_form.cleaned_data.get('thumbnail')
             # Check if the status has changed
             if post_data['status'] != self.object.status:
                 post.status = post_data['status']
@@ -621,14 +643,17 @@ class ToEditPostView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
 
             post.save()
 
+            # Update the change reason in the version history
+            update_change_reason(post, post.change_reason)
+            messages.success(self.request, "El artículo se ha actualizado correctamente.")
             return redirect('to-edit')
+        # si se esta restaurando a una version anterior
         else:
             context = self.get_context_data()
             context['gen_form'] = gen_form
             context['body_form'] = body_form
-            context['publish_start_date'] = self.object.publish_start_date
-            context['publish_end_date'] = self.object.publish_end_date
-            context['thumbnail_url'] = self.object.thumbnail.url if self.object.thumbnail else None
+            context['thumbnail_form'] = thumbnail_form
+            context['program_form'] = program_form
             messages.success(self.request, 'El artículo se ha restaurado correctamente.')
             return self.render_to_response(context)
         
