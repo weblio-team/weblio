@@ -96,23 +96,26 @@
                   <!-- Input file oculto pero con el evento onchange -->
                   <input type="file" name="thumbnail" id="id_thumbnail" accept="image/*" onchange="updateThumbnail(this);" style="display: none;">
                   
+                  <!-- Botón para eliminar la imagen si existe -->
+                  <button type="button" id="remove-thumbnail-btn" class="btn btn-danger mt-2" style="display: {% if current_thumbnail_url %}block{% else %}none{% endif %};" onclick="removeThumbnail()">Eliminar portada</button>      
+
                   <!-- Botón personalizado para abrir el input de archivo -->
-                  <label for="id_thumbnail" style="cursor: pointer;">Cambiar portada</label>
+                  <label for="id_thumbnail" id="thumbnail-label" style="cursor: pointer;">{% if current_thumbnail_url %}Cambiar portada{% else %}Subir portada{% endif %}</label>
               
                   <!-- Mostrar la vista previa de la imagen actual si existe -->
                   <div class="mt-2">
                     <img id="current-thumbnail" 
                       src="{% if current_thumbnail_url %}{{ current_thumbnail_url }}{% endif %}" 
                       alt="{{ current_thumbnail_url }}" 
-                      style="max-width: 300px;">
-                      <input type="hidden" name="operation" value="update">
-                      <input type="hidden" name="thumbnail" value="{{ current_thumbnail_url }}">
-                      <input type="hidden" name="post_id" value="{{ post_id }}">
-                      <input type="hidden" name="history_id" value="{{ history_id }}">
-                </div>
-                </div>    
-              </div>       
-            </div>
+                      style="max-width: 300px; {% if not current_thumbnail_url %}display: none;{% endif %}">
+            
+                    <input type="hidden" name="thumbnail" id="thumbnail-input" value="{{ current_thumbnail_url }}">
+                    <input type="hidden" name="post_id" value="{{ post_id }}">
+                    <input type="hidden" name="history_id" value="{{ history_id }}">
+                  </div>
+                 </div>
+              </div>
+            </div>                     
           </div>
         </div>
 
@@ -438,6 +441,26 @@
     </script>
   {% endif %}
   <script>
+      function removeThumbnail() {
+          // Cambiar la imagen a 'None' y ocultarla
+          var thumbnail = document.getElementById('current-thumbnail');
+          thumbnail.src = '';  // Borrar la imagen
+          thumbnail.style.display = 'none';  // Ocultar la imagen
+
+          // Actualizar el valor del campo thumbnail a 'None'
+          document.getElementById('thumbnail-input').value = 'None';
+
+          // Ocultar el botón de eliminar
+          var removeBtn = document.getElementById('remove-thumbnail-btn');
+          if (removeBtn) {
+              removeBtn.style.display = 'none';
+          }
+
+          // Cambiar el texto del botón de subir imagen a "Subir portada"
+          var thumbnailLabel = document.getElementById('thumbnail-label');
+          thumbnailLabel.textContent = 'Subir portada';
+      }
+
     function updateThumbnail(input) {
         if (input.files && input.files[0]) {
             var reader = new FileReader();
@@ -447,6 +470,19 @@
                 var thumbnail = document.getElementById('current-thumbnail');
                 thumbnail.src = e.target.result;  // Actualiza la src de la imagen
                 thumbnail.style.display = 'block';  // Asegúrate de que la imagen sea visible
+
+                // Actualizar el valor del campo thumbnail con el nuevo archivo
+                document.getElementById('thumbnail-input').value = e.target.result;
+
+                // Cambiar el texto del botón a "Cambiar portada"
+                var thumbnailLabel = document.getElementById('thumbnail-label');
+                thumbnailLabel.textContent = 'Cambiar portada';
+
+                // Mostrar el botón de eliminar si estaba oculto
+                var removeBtn = document.getElementById('remove-thumbnail-btn');
+                if (removeBtn) {
+                    removeBtn.style.display = 'block';
+                }
             }
 
             // Lee la imagen seleccionada como una URL de datos

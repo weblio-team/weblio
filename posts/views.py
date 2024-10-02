@@ -324,6 +324,7 @@ class MyPostEditView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
             if post_data.get('post_id') != '' and post_data.get('history_id') != '':  # Si se está restaurando una versión anterior
                 post_version = get_object_or_404(get_object_or_404(Post, pk=post_data.get('post_id')).history, pk=post_data.get('history_id'))
                 self.object.thumbnail = post_version.thumbnail
+            if post_data.get('thumbnail') == 'None': self.object.thumbnail = None # Si se elimina la imagen
             thumbnail_form = MyPostEditThumbnailForm(post_data, request.FILES, instance=self.object)
             program_form = MyPostEditProgramForm(post_data, instance=self.object)
 
