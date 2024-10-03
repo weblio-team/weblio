@@ -28,11 +28,17 @@
                                     </div>
                                     <div class="post-extra-info d-flex align-items-center mt-auto">
                                         <!-- Author's profile picture -->
-                                        <img src="{{ post.author.pfp.url }}" alt="{{ post.author.first_name }}" class="profile-picture rounded-circle me-2">
-                                        <!-- Author's name and category -->
-                                        <span class="text-muted">
-                                            <strong>{{ post.author.first_name }} {{ post.author.last_name }}</strong> en <strong>{{ post.category }}</strong>
-                                        </span>
+                                        <div class="d-flex align-items-center">
+                                            {% if post.author.pfp %}
+                                                <img src="{{ post.author.pfp.url }}" alt="{{ post.author.first_name }}" class="profile-picture rounded-circle me-2">
+                                            {% else %}
+                                                <img src="https://picsum.photos/200" alt="{{ post.author.first_name }}" class="profile-picture rounded-circle me-2">
+                                            {% endif %}
+                                            <!-- Author's name and category -->
+                                            <span class="text-muted">
+                                                <strong>{{ post.author.first_name }} {{ post.author.last_name }}</strong> en <strong>{{ post.category }}</strong>
+                                            </span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>

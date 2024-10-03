@@ -173,9 +173,12 @@ class MyPostsView(PermissionRequiredMixin, LoginRequiredMixin, ListView):
     permission_required = 'posts.add_post'
     
     def get_queryset(self):
-        """Obtiene las publicaciones del usuario autenticado, ordenadas por la fecha de la última versión del historial."""
+        """Obtiene las publicaciones del usuario autenticado, ordenadas por la fecha de la última versión del historial donde el autor es el history_user."""
         PostHistory = Post.history.model
-        latest_history = PostHistory.objects.filter(id=OuterRef('id')).order_by('-history_date')
+        latest_history = PostHistory.objects.filter(
+            id=OuterRef('id'),
+            history_user=self.request.user
+        ).order_by('-history_date')
         
         queryset = Post.objects.filter(author=self.request.user).annotate(
             latest_history_date=Subquery(latest_history.values('history_date')[:1])
