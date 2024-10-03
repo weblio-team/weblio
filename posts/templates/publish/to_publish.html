@@ -1,35 +1,53 @@
 {% extends "base.html" %}
 {% block content %}
-<main class="container py-4">
-    <h1>Articulos a publicar</h1>
-    <div class="row">
-        <div class="col-md-9">
-            {% for post in posts %}
-            <div class="card mb-3 w-100">
-                <div class="row g-0">
-                    <div class="col-md-3">
-                        <div class="thumbnail-container">
-                            <img src="{% if post.thumbnail %}{{ post.thumbnail.url }}{% endif %}" class="img-fluid rounded-start thumbnail-img" alt="{{ post.title }}">
+<main class="container py-4 d-flex justify-content-center"> <!-- Center the layout -->
+    <div class="col-md-9">
+        <h1 class="text-center">Artículos a publicar</h1> <!-- Center the header -->
+        <div class="row">
+            <div class="col-md-12"> <!-- Ensure content is centered within the container -->
+                {% for post in posts %}
+                <!-- Make the entire card clickable -->
+                <a href="{% url 'publish-a-post' post.id %}" class="card-link">
+                    <div class="card mb-3 w-100 card-hover">
+                        <div class="row g-0">
+                            <!-- Conditionally show the image column only if there's a thumbnail -->
+                            {% if post.thumbnail %}
+                            <div class="col-md-3">
+                                <div class="thumbnail-container">
+                                    <img src="{{ post.thumbnail.url }}" class="img-fluid rounded-start thumbnail-img" alt="{{ post.title }}">
+                                </div>
+                            </div>
+                            <div class="col-md-9"> <!-- 9-column content when thumbnail exists -->
+                            {% else %}
+                            <div class="col-md-12"> <!-- Full width content when no thumbnail -->
+                            {% endif %}
+                                <div class="card-body">
+                                    <div>
+                                        <h4 class="card-title post-title">{{ post.title }}</h4>
+                                        <p class="card-text post-summary">— {{ post.summary }}</p>
+                                    </div>
+                                    <div class="post-extra-info d-flex align-items-center mt-auto">
+                                        <!-- Author's profile picture -->
+                                        <img src="{{ post.author.pfp.url }}" alt="{{ post.author.first_name }}" class="profile-picture rounded-circle me-2">
+                                        <!-- Author's name and category -->
+                                        <span class="text-muted">
+                                            <strong>{{ post.author.first_name }} {{ post.author.last_name }}</strong> en <strong>{{ post.category }}</strong>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <div class="col-md-9">
-                        <div class="card-body">
-                            <h5 class="card-title"><a href="{% url 'publish-a-post' post.id %}">{{ post.title }}</a></h5>
-                            <p class="card-text">{{ post.summary|safe }}</p>
-                            <p class="card-text"><small class="text-muted">Autor: {{ post.author.first_name }} {{ post.author.last_name }}</small></p>
-                            <p class="card-text"><small class="text-muted">Categoria: {{ post.category }}</small></p>
-                            <div><span class="badge rounded-pill text-bg-warning">A publicar</span></div>
-                        </div>
-                    </div>
-                </div>
+                </a>
+                {% empty %}
+                    <p class="text-center">No se encontraron artículos.</p>
+                {% endfor %}
             </div>
-            {% empty %}
-                <p>No se encontraron articulos.</p>
-            {% endfor %}
         </div>
     </div>
 </main>
 <style>
+/* Thumbnail and Profile Picture Styles */
 .thumbnail-container {
     width: 100%;
     padding-top: 100%; /* 1:1 Aspect Ratio */
@@ -43,6 +61,82 @@
     width: 100%;
     height: 100%;
     object-fit: cover;
+}
+
+/* Profile Picture Styling */
+.profile-picture {
+    width: 35px;   /* Size of the profile picture */
+    height: 35px;  /* Same height to make it circular */
+    object-fit: cover;
+}
+
+/* Card body layout */
+.card-body {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 100%;
+}
+
+/* Title styling */
+.post-title {
+    font-size: 1.5rem;
+    color: #007bff;
+    margin-bottom: 0.5rem;
+}
+/* Summary styling */
+.post-summary {
+    font-size: 1.1rem;
+    color: #495057;
+    margin-bottom: 1rem;
+    line-height: 1.5;
+}
+
+/* Extra info section */
+.post-extra-info {
+    display: flex;
+    align-items: center;
+    font-size: 0.9rem;
+    color: #6c757d;
+    margin-top: auto;
+}
+
+.post-extra-info img {
+    margin-right: 10px;
+}
+
+.card-text {
+    margin-bottom: 0.5rem;
+}
+
+/* Hover effect to enlarge the card */
+.card-hover {
+    transition: transform 0.3s ease;
+}
+
+.card-hover:hover {
+    transform: scale(1.05); /* Slightly enlarge the card on hover */
+}
+
+/* Make the entire card clickable */
+.card-link {
+    text-decoration: none;
+    color: inherit;
+}
+
+.card-link:hover .post-title {
+    color: #007bff; /* Blue on hover */
+    text-decoration: underline;
+}
+
+/* Center the title and content */
+h1 {
+    text-align: center;
+}
+
+.container {
+    max-width: 1000px; /* Restrict the container's max width to center the content */
+    margin: 0 auto; /* Center the container */
 }
 </style>
 {% endblock %}
