@@ -1,60 +1,69 @@
 {% extends "base.html" %}
 {% block content %}
     <main role="main" class="container py-4">
-        <!-- Formulario original -->
-        <form method="post">
-            {% csrf_token %}
-            {{ form.as_p }}
+            
+        <!-- Detalles de la categoría -->
+        <h1>{{ category.name }} - {{ category.alias }}</h1>
+        <hr>
+        <h2>Tipo: {{ category.kind }}</h2>
+        <h2>Precio: {{ category.price }}</h2>
+        <p>{{ category.description }}</p>
 
-            <!-- Detalles de la categoría -->
-            <h1>{{ category.name }} - {{ category.alias }}</h1>
-            <hr>
-            <h2>Tipo: {{ category.kind }}</h2>
-            <h2>Precio: {{ category.price }}</h2>
-            <p>{{ category.description }}</p>
+        <!-- Botones de acciones -->
+        <div class="d-flex flex-column flex-md-row gap-2">
+            <a href="{% url 'categories' %}" class="btn btn-primary">Volver</a>
 
-            <!-- Botones de acciones -->
-            <div class="d-flex flex-column flex-md-row gap-2">
-                <a href="{% url 'categories' %}" class="btn btn-primary">Volver</a>
-
-                {% if perms.posts.change_category %}
-                    <a href="{% url 'category_edit' pk=category.pk name=category.name|slugify %}" class="btn btn-warning">Editar</a>
+            {% if category.kind != 'premium' %}
+                {% if category in request.user.suscribed_categories.all %}
+                    <form method="post" action="{% url 'unsubscribe' category.id %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger">Desuscribirse</button>
+                    </form>
+                {% else %}
+                    <form method="post" action="{% url 'subscribe' category.id %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-success">Suscribirse</button>
+                    </form>
                 {% endif %}
+            {% endif %}
 
-                {% if perms.posts.delete_category %}
-                    <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">Eliminar</button>
-                {% endif %}
-            </div>
+            {% if perms.posts.change_category %}
+                <a href="{% url 'category_edit' pk=category.pk name=category.name|slugify %}" class="btn btn-warning">Editar</a>
+            {% endif %}
 
-            <!-- Modal de eliminación -->
-            <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        {% if category_count == 1 %}
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="deleteModalLabel">Error al eliminar!</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                            </div>
-                            <div class="modal-body">
-                                No se puede eliminar esta categoría. Necesita existir al menos una categoría.
-                            </div>
-                        {% else %}
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="deleteModalLabel">Eliminar</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                            </div>
-                            <div class="modal-body">
-                                ¿Estás seguro de que quieres borrar esta categoría?
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                                <a href="{% url 'category_delete' pk=category.pk name=category.name|slugify %}" class="btn btn-danger">Confirmar</a>
-                            </div>
-                        {% endif %}
-                    </div>
+            {% if perms.posts.delete_category %}
+                <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">Eliminar</button>
+            {% endif %}
+        </div>
+
+        <!-- Modal de eliminación -->
+        <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    {% if category_count == 1 %}
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="deleteModalLabel">Error al eliminar!</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            No se puede eliminar esta categoría. Necesita existir al menos una categoría.
+                        </div>
+                    {% else %}
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="deleteModalLabel">Eliminar</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            ¿Estás seguro de que quieres borrar esta categoría?
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                            <a href="{% url 'category_delete' pk=category.pk name=category.name|slugify %}" class="btn btn-danger">Confirmar</a>
+                        </div>
+                    {% endif %}
                 </div>
-            </div>        
-        </form>
+            </div>
+        </div>
 
         <!-- Mostrar los posts de la categoría -->
         <h3 class="mt-5">Posts en esta categoría:</h3>
@@ -98,5 +107,6 @@
                 <button type="submit" class="btn btn-success mt-4">Comprar por {{ category.price }} USD</button>
             </form>
         {% endif %}
+
     </main>
 {% endblock %}

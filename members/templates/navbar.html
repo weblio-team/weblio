@@ -30,7 +30,7 @@
                     </a>
                     <ul class="dropdown-menu">
                         {% if perms.posts.view_post %}
-                            <li><a class="dropdown-item" href="#">Mis categorías</a></li>
+                        <li><a class="dropdown-item" href="{% url 'my_categories' %}">Mis categorías</a></li>
                         {% endif %}
                         <li><a class="dropdown-item" href="{% url 'categories' %}">Explorar categorías</a></li>
                         {% if perms.posts.add_category %}

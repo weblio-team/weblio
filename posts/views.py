@@ -895,9 +895,11 @@ class SuscriberFeedPostsView(ListView):
         # Obtener las categorías compradas por el usuario
         purchased_categories = user.purchased_categories.all()
 
+        suscribed_categories = user.suscribed_categories.all()
+
         # Filtrar los posts con status 'published' que cumplan cualquiera de las dos condiciones
         return Post.objects.filter(
-            Q(status='published') & (programmed | regular) & Q(category__in=purchased_categories)
+            Q(status='published') & (programmed | regular) & (Q(category__in=purchased_categories) | Q(category__in=suscribed_categories))
         ).order_by('-priority', '-date_posted')
     
     def get_context_data(self, **kwargs):
@@ -1438,3 +1440,26 @@ class TogglePostStatusView(LoginRequiredMixin, View):
         post.save()
 
         return redirect(f'{reverse("incidents")}')
+    
+class SubscribeView(LoginRequiredMixin, View):
+    def post(self, request, category_id):
+        category = get_object_or_404(Category, id=category_id)
+        if category.kind != 'premium':
+            request.user.suscribed_categories.add(category)
+            messages.success(request, 'Te haz suscrito a la categoria correctamente.')
+        return redirect('category', pk=category.pk, name=category.name)
+
+class UnsubscribeView(LoginRequiredMixin, View):
+    def post(self, request, category_id):
+        category = get_object_or_404(Category, id=category_id)
+        if category in request.user.suscribed_categories.all():
+            request.user.suscribed_categories.remove(category)
+            messages.success(request, 'Te haz desuscrito a la categoria correctamente.')
+        return redirect('category', pk=category.pk, name=category.name)
+
+class MyCategoriesView(LoginRequiredMixin, ListView):
+    template_name = 'suscribers/my_categories.html'
+    context_object_name = 'suscribed_categories'
+
+    def get_queryset(self):
+        return self.request.user.suscribed_categories.all()
