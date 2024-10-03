@@ -36,6 +36,7 @@ class Category(models.Model):
     alias = models.CharField(max_length=2, default='')
     price = models.DecimalField(max_digits=6, decimal_places=2, default=0.00, validators=[MinValueValidator(0.00)], null=True, blank=True)
     kind = models.CharField(max_length=20, choices=(('public', 'Public'), ('free', 'Free'), ('premium', 'Premium'),), default='free')
+    moderated = models.BooleanField(default=True)
 
     def __str__(self):
         """Retorna el nombre de la categoría junto con su tipo."""
