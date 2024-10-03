@@ -52,6 +52,7 @@ class Member(AbstractBaseUser, PermissionsMixin):
         permissions = [
             ('view_dashboard', 'Can view dashboard'),
             ('make_relevant', 'Can make a post relevant'),
+            ('auto_publish', 'Puede auto-publicar artículo'),
         ]
 
     def __str__(self):

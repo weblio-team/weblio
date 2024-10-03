@@ -40,7 +40,7 @@ class Migration(migrations.Migration):
             options={
                 'verbose_name': 'member',
                 'verbose_name_plural': 'members',
-                'permissions': [('view_dashboard', 'Can view dashboard'), ('make_relevant', 'Can make a post relevant')],
+                'permissions': [('view_dashboard', 'Can view dashboard'), ('make_relevant', 'Can make a post relevant'), ('auto_publish', 'Puede auto-publicar artículo')],
             },
         ),
     ]

@@ -39,13 +39,14 @@ class CategoryForm(forms.ModelForm):
             Widgets personalizados para los campos del formulario.
         """
         model = Category
-        fields = ['name', 'alias', 'description', 'kind', 'price']
+        fields = ['name', 'alias', 'description', 'kind', 'price', 'moderated']
         labels = {
             'name': _('Nombre'),
             'alias': _('Alias'),
             'description': _('Descripción'),
             'kind': _('Tipo'),
             'price': _('Precio'),
+            'moderated': _('Moderado'),
         }
         widgets = {
             'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Introduzca la categoria'}),
@@ -53,6 +54,7 @@ class CategoryForm(forms.ModelForm):
             'description': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Introduzca la descripcion'}),
             'kind': forms.Select(attrs={'class': 'form-control'}),
             'price': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Introduzca el precio', 'id': 'id_price', 'readonly': 'readonly'}),
+            'moderated': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
 
     def clean(self):
@@ -109,22 +111,14 @@ class CategoryEditForm(forms.ModelForm):
             Widgets personalizados para los campos del formulario.
         """
         model = Category
-        fields = ['name', 'alias', 'description', 'kind', 'price']
-        labels = {
-            'title': _('Título'),
-            'title_tag': _('Etiqueta del Título'),
-            'summary': _('Resumen'),
-            'body': _('Cuerpo'),
-            'category': _('Categoría'),
-            'author': _('Autor'),
-            'status': _('Estado'),
-        }
+        fields = ['name', 'alias', 'description', 'kind', 'price', 'moderated']
         labels = {
             'name': _('Nombre'),
             'alias': _('Alias'),
             'description': _('Descripción'),
             'kind': _('Tipo'),
             'price': _('Precio'),
+            'moderated': _('Moderado'),
         }
         widgets = {
             'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Introduzca la categoria'}),
@@ -132,6 +126,7 @@ class CategoryEditForm(forms.ModelForm):
             'description': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Introduzca la descripcion'}),
             'kind': forms.Select(attrs={'class': 'form-control'}),
             'price': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Introduzca el precio', 'id': 'id_price', 'readonly': 'readonly'}),
+            'moderated': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
 
     def clean(self):
