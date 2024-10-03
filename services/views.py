@@ -246,6 +246,8 @@ class DashboardClapsPostsView(TemplateView):
                         # Fetch the related Post by id
                         try:
                             post = Post.objects.get(id=clap_button['id'])
+                            if self.request.user.has_perm('posts.add_post') and post.author != self.request.user:
+                                continue  # Skip posts not authored by the user if they have the add_post permission
                             clap_button['title'] = post.title  # Post title
                             clap_button['author'] = post.author  # Post author
                             clap_button['category'] = post.category  # Post category
@@ -270,6 +272,8 @@ class DashboardClapsPostsView(TemplateView):
                     # Fetch the related Post by id
                     try:
                         post = Post.objects.get(id=clap_button['id'])
+                        if self.request.user.has_perm('posts.add_post') and post.author != self.request.user:
+                            continue  # Skip posts not authored by the user if they have the add_post permission
                         clap_button['title'] = post.title  # Post title
                         clap_button['author'] = post.author  # Post author
                         clap_button['category'] = post.category  # Post category
@@ -328,6 +332,8 @@ class DashboardUpdownsPostsView(TemplateView):
                         # Fetch the related Post by id
                         try:
                             post = Post.objects.get(id=updown_button['id'])
+                            if self.request.user.has_perm('posts.add_post') and post.author != self.request.user:
+                                continue  # Skip posts not authored by the user if they have the add_post permission
                             updown_button['title'] = post.title  # Post title
                             updown_button['author'] = post.author  # Post author
                             updown_button['category'] = post.category  # Post category
@@ -354,6 +360,8 @@ class DashboardUpdownsPostsView(TemplateView):
                     # Fetch the related Post by id
                     try:
                         post = Post.objects.get(id=updown_button['id'])
+                        if self.request.user.has_perm('posts.add_post') and post.author != self.request.user:
+                            continue  # Skip posts not authored by the user if they have the add_post permission
                         updown_button['title'] = post.title  # Post title
                         updown_button['author'] = post.author  # Post author
                         updown_button['category'] = post.category  # Post category
@@ -413,6 +421,8 @@ class DashboardRatePostsView(TemplateView):
                         # Fetch the related Post by id
                         try:
                             post = Post.objects.get(id=rate_button['id'])
+                            if self.request.user.has_perm('posts.add_post') and post.author != self.request.user:
+                                continue  # Skip posts not authored by the user if they have the add_post permission
                             rate_button['title'] = post.title  # Post title
                             rate_button['author'] = post.author  # Post author
                             rate_button['category'] = post.category  # Post category

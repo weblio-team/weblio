@@ -84,7 +84,7 @@
                     </li>
                 {% endif %}
                 <!-- Gestión de usuarios -->
-                {% if perms.auth.view_dashboard %}
+                {% if perms.posts.add_post or perms.posts.change_post or perms.posts.can_publish or perms.auth.view_dashboard %}
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             Gestión de reportes
@@ -97,12 +97,10 @@
                             <li><a class="dropdown-item" href="#">Views por categoria</a></li>
                             <li><a class="dropdown-item" href="#">Likes/Dislikes por categoria</a></li>
                             <li><a class="dropdown-item" href="#">Estrellas por categoria</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="#">Views por usuario</a></li>
-                            <li><a class="dropdown-item" href="#">Likes/Dislikes por usuario</a></li>
-                            <li><a class="dropdown-item" href="#">Estrellas por usuario</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="{% url 'posts_dashboard' %}">Dashboard</a></li>
+                            {% if perms.auth.view_dashboard %}
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="{% url 'posts_dashboard' %}">Dashboard</a></li>
+                            {% endif %}
                         </ul>
                     </li>
                 {% endif %}
