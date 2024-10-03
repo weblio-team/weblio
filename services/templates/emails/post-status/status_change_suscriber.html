@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nuevo post disponible en tus categorías de interés</title>
+    <style>
+        /* Estilos básicos para asegurar que el diseño sea responsivo */
+        @media only screen and (max-width: 600px) {
+            .container {
+                width: 100% !important;
+            }
+            h2 {
+                font-size: 24px !important;
+            }
+            p, a {
+                font-size: 16px !important;
+            }
+        }
+
+        body {
+            background: linear-gradient(135deg, #1e1e1e 0%, #3a3a3a 100%);
+            font-family: Arial, sans-serif;
+            color: #fff;
+            padding: 20px;
+            margin: 0;
+            text-align: center;
+        }
+
+        .container {
+            max-width: 600px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 30px;
+            background-color: #2c2c2c;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        h2 {
+            color: #00bfff;
+            margin-bottom: 20px;
+            font-size: 28px;
+        }
+
+        p {
+            color: #fff;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        strong {
+            color: #fff;
+        }
+
+        .btn {
+            display: inline-block;
+            margin: 20px auto;
+            padding: 12px 24px;
+            background-color: #00bfff;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 18px;
+            font-weight: bold;
+            text-align: center;
+            transition: background-color 0.3s ease;
+        }
+
+        .btn:hover {
+            background-color: #008fb3;
+        }
+
+        .divider {
+            width: 80%;
+            height: 1px;
+            background-color: #444;
+            margin: 20px auto;
+        }
+
+        footer {
+            margin-top: 20px;
+            font-size: 14px;
+            color: #bbb;
+        }
+
+        /* Estilo para la tarjeta del post */
+        .post-card {
+            display: flex;
+            flex-direction: column;
+            background-color: #1e1e1e;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .post-header {
+            display: flex;
+            flex-direction: row;
+        }
+
+        .post-thumbnail {
+            flex: 1;
+            margin-right: 20px;
+        }
+
+        .post-thumbnail img {
+            width: 100%;
+            height: auto;
+            border-radius: 10px;
+            max-width: 200px;
+        }
+
+        .post-details {
+            flex: 2;
+            text-align: left;
+        }
+
+        .post-title {
+            color: #00bfff;
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        .post-summary {
+            color: #ddd;
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+
+        .post-author {
+            color: #bbb;
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+
+        .post-meta {
+            color: #bbb;
+            font-size: 14px;
+        }
+
+        .post-status {
+            display: inline-block;
+            padding: 5px 10px;
+            background-color: #ffc107;
+            color: #000;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+
+        .post-content-divider {
+            background-color: #444;
+            height: 1px;
+            width: 100%;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Título -->
+        <h2>Nuevo post disponible en tus categorías de interés</h2>
+
+        <!-- Mensaje principal -->
+        <p>Hola <strong>{{ user.first_name }}</strong>,</p>
+        <p>El artículo "<strong>{{ post.title }}</strong>" está disponible en tus categorías de interés.</p>
+
+        <!-- Tarjeta del post -->
+        <div class="post-card">
+            <div class="post-header">
+                {% if post.thumbnail %}
+                <div class="post-thumbnail">
+                    <img src="{{ post.thumbnail.url }}" alt="Imagen del post">
+                </div>
+                {% endif %}
+                <div class="post-details">
+                    <!-- Título del post -->
+                    <h3 class="post-title">{{ post.title }}</h3>
+
+                    <!-- Resumen del post -->
+                    <p class="post-summary">― {{ post.summary }}</p>
+
+                    <!-- Información del autor -->
+                    <p class="post-author">Autor: {{ post.author.first_name }} {{ post.author.last_name }}</p>
+
+                    <!-- Información adicional -->
+                    <p class="post-meta">Categoría: {{ post.category }}</p>
+                    <p class="post-meta">Etiquetas: {{ post.keywords }}</p>
+                    <p class="post-meta">Publicado: {{ post.publish_start_date|default:"Sin fecha de publicación" }} hasta el {{ post.publish_end_date|default:"Sin fecha de finalización" }}</p>
+
+                    <!-- Estado del post (si no está publicado) -->
+                    {% if post.status != 'published' %}
+                    <p class="post-status">Estado: {{ post.status|yesno:"En edición,A publicar" }}</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Botón de acción -->
+        <a href="{{ post_url }}" class="btn">Ver artículo</a>
+
+        <!-- Separador -->
+        <div class="divider"></div>
+
+        <!-- Footer -->
+        <footer>
+            <p>Gracias,<br>El equipo de Weblio</p>
+        </footer>
+    </div>
+</body>
+</html>

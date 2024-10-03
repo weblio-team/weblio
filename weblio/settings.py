@@ -14,6 +14,10 @@ DEBUG = False if 'DYNO' in os.environ else True
 
 ALLOWED_HOSTS = ['.blog', '.herokuapp.com', 'localhost', '127.0.0.1'] if not DEBUG else []
 
+# Define el dominio y el protocolo del sitio según el entorno
+SITE_DOMAIN = 'www.weblio.blog' if not DEBUG else '127.0.0.1:8000'
+SITE_PROTOCOL = 'https' if not DEBUG else 'http'
+
 SILENCED_SYSTEM_CHECKS = ['ckeditor.W001', 'templates.W003']
 
 # Application definition

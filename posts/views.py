@@ -1462,4 +1462,5 @@ class MyCategoriesView(LoginRequiredMixin, ListView):
     context_object_name = 'suscribed_categories'
 
     def get_queryset(self):
-        return self.request.user.suscribed_categories.all()
+        user = self.request.user
+        return user.suscribed_categories.all() | user.purchased_categories.all()

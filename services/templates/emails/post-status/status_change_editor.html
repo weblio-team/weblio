@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nuevo artículo pendiente de edición</title>
+    <style>
+        /* Estilos básicos para asegurar que el diseño sea responsivo */
+        @media only screen and (max-width: 600px) {
+            .container {
+                width: 100% !important;
+            }
+            h2 {
+                font-size: 24px !important;
+            }
+            p, a {
+                font-size: 16px !important;
+            }
+        }
+
+        body {
+            background: linear-gradient(135deg, #1e1e1e 0%, #3a3a3a 100%);
+            font-family: Arial, sans-serif;
+            color: #fff;
+            padding: 20px;
+            margin: 0;
+            text-align: center;
+        }
+
+        .container {
+            max-width: 600px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 30px;
+            background-color: #2c2c2c;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        h2 {
+            color: #00bfff;
+            margin-bottom: 20px;
+            font-size: 28px;
+        }
+
+        p {
+            color: #fff;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        strong {
+            color: #fff;
+        }
+
+        .btn {
+            display: inline-block;
+            margin: 20px auto;
+            padding: 12px 24px;
+            background-color: #00bfff;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 18px;
+            font-weight: bold;
+            text-align: center;
+            transition: background-color 0.3s ease;
+        }
+
+        .btn:hover {
+            background-color: #008fb3;
+        }
+
+        .divider {
+            width: 80%;
+            height: 1px;
+            background-color: #444;
+            margin: 20px auto;
+        }
+
+        footer {
+            margin-top: 20px;
+            font-size: 14px;
+            color: #bbb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Título -->
+        <h2>Nuevo artículo pendiente de edición</h2>
+
+        <!-- Mensaje principal -->
+        <p>Hola <strong>{{ changed_by.first_name }}</strong>,</p>
+        <p>El artículo "<strong>{{ post.title }}</strong>" está pendiente de edición.</p>
+
+        <!-- Detalles del cambio -->
+        <p><strong>Razón del cambio:</strong> {{ change_reason }}</p>
+        <p><strong>Cambiado por:</strong> {{ changed_by.first_name }} {{ changed_by.last_name }}</p>
+        <p><strong>Fecha del cambio:</strong> {{ change_date }}</p>
+
+        <!-- Botón de acción -->
+        <a href="{{ post_url }}" class="btn">Ver artículo</a>
+
+        <!-- Separador -->
+        <div class="divider"></div>
+
+        <!-- Footer -->
+        <footer>
+            <p>Gracias,<br>El equipo de Weblio</p>
+        </footer>
+    </div>
+</body>
+</html>

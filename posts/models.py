@@ -13,6 +13,7 @@ from django.template.loader import render_to_string
 from django.core.mail import EmailMultiAlternatives
 from django.contrib.sites.models import Site
 from django.conf import settings
+from django.apps import apps
 
 # Create your models here.
 class Category(models.Model):
@@ -163,19 +164,23 @@ class Post(models.Model):
         super().save(*args, **kwargs)
 
         # Enviar correo si el estado ha cambiado
-        if not settings.DEBUG and old_status != self.status:
+        if old_status != self.status:
             self.send_status_change_email(old_status)
 
     def send_status_change_email(self, old_status):
         # Recuperar el último historial
-        last_history = self.history.order_by('-history_date').first()  # Ordenar por fecha descendente y obtener el primer registro
+        last_history = self.history.order_by('-history_date').first()
         changed_by = last_history.history_user
         change_reason = self.change_reason or "Sin razón proporcionada"
         change_date = last_history.history_date
 
         # Crear la URL absoluta del post
         current_site = Site.objects.get_current()
-        post_url = f"http://{current_site.domain}/my-posts/{self.pk}/"
+
+        # Ajusta el dominio y el protocolo del sitio según la configuración
+        current_site.domain = settings.SITE_DOMAIN
+        site_protocol = settings.SITE_PROTOCOL
+
 
         # Obtener el estado anterior y el nuevo estado con traducción
         old_status_translated = self.get_status_display(old_status)
@@ -189,19 +194,74 @@ class Post(models.Model):
             'changed_by': changed_by,
             'change_reason': change_reason,
             'change_date': change_date,
-            'post_url': post_url,
         }
 
-        # Renderizar el HTML del correo
-        subject = f"Cambio de estado de tu artículo: {self.title}"
-        from_email = settings.EMAIL_HOST_USER
-        to_email = self.author.email
-        html_content = render_to_string('emails/status_change_notification.html', context)
+        # Obtener el modelo de usuario personalizado
+        User = apps.get_model(settings.AUTH_USER_MODEL)
 
-        # Crear y enviar el correo
-        msg = EmailMultiAlternatives(subject, '', from_email, [to_email])
-        msg.attach_alternative(html_content, "text/html")
-        msg.send()
+        # Obtener la lista de usuarios a notificar
+        users_to_notify = set()
+
+        # Autor del post
+        if self.author.has_perm('posts.create_post'):
+            author_notification = self.author.notification_set.first()
+            if author_notification and 'Informar sobre cambios de estado de articulos' in author_notification.additional_notifications:
+                users_to_notify.add((self.author, 'author'))
+
+        # Editores si el estado es to_edit
+        if self.status == 'to_edit':
+            editors = User.objects.all()
+            for editor in editors:
+                if editor.has_perm('posts.change_post'):
+                    editor_notification = editor.notification_set.first()
+                    if editor_notification and 'Informar sobre cambios de estado de articulos' in editor_notification.additional_notifications:
+                        users_to_notify.add((editor, 'editor'))
+
+        # Publicadores si el estado es to_publish
+        if self.status == 'to_publish':
+            publishers = User.objects.all()
+            for publisher in publishers:
+                if publisher.has_perm('posts.can_publish'):
+                    publisher_notification = publisher.notification_set.first()
+                    if publisher_notification and 'Informar sobre cambios de estado de articulos' in publisher_notification.additional_notifications:
+                        users_to_notify.add((publisher, 'publisher'))
+
+        # Suscriptores si el estado es published
+        if self.status == 'published':
+            suscribers = User.objects.all()
+            for user in suscribers:
+                if user.has_perm('posts.view_post'):
+                    if self.category in user.purchased_categories.all() or self.category in user.suscribed_categories.all():
+                        users_to_notify.add((user, 'suscriber'))
+
+        # Enviar el correo a cada usuario en la lista
+        for user, user_type in users_to_notify:
+            if user_type == 'author':
+                subject = f"Cambio de estado de tu artículo: {self.title}"
+                template = 'emails/post-status/status_change_author.html'
+                post_url = f"{site_protocol}://{current_site.domain}/my-posts/{self.pk}/"
+            elif user_type == 'editor':
+                subject = f"Nuevo artículo pendiente de edición: {self.title}"
+                template = 'emails/post-status/status_change_editor.html'
+                post_url = f"{site_protocol}://{current_site.domain}/to-edit/{self.pk}/"
+            elif user_type == 'publisher':
+                subject = f"Nuevo artículo pendiente de publicación: {self.title}"
+                template = 'emails/post-status/status_change_publisher.html'
+                post_url = f"{site_protocol}://{current_site.domain}/to-publish/{self.pk}/"
+            elif user_type == 'suscriber':
+                subject = f"Nuevo post disponible en tus categorías de interés: {self.title}"
+                template = 'emails/post-status/status_change_suscriber.html'
+                post_url = f"{site_protocol}://{current_site.domain}/{self.get_absolute_url()}"
+                context['user'] = user
+
+            context['post_url'] = post_url
+
+            from_email = settings.EMAIL_HOST_USER
+            html_content = render_to_string(template, context)
+            to_email = user.email
+            msg = EmailMultiAlternatives(subject, '', from_email, [to_email])
+            msg.attach_alternative(html_content, "text/html")
+            msg.send()
 
     def get_status_display(self, status_value):
         """

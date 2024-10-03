@@ -4,13 +4,13 @@ from django.urls import reverse_lazy, reverse
 
 from django.contrib.auth.models import Group
 from django.contrib.auth.views import LoginView, PasswordChangeView
-from .models import Member
+from .models import Member, Notification
 from django import views
 from django.views.generic import CreateView, DeleteView
 from django.shortcuts import render, get_object_or_404, redirect
 
 from .forms import CreateGroupForm, MemberEditGroupForm, MemberEditPermissionForm, MemberStatusForm, GroupEditForm
-from .models import Member
+from posts.models import Category
 from .forms import MemberRegisterForm, MemberJoinForm, MemberLoginForm
 from .forms import PasswordChangingForm
 from .forms import EditProfileForm, UserAddRoleForm
@@ -26,6 +26,7 @@ from django.utils.translation import gettext as _
 from django.conf import settings
 from services.views import SendLoginEmailView, AccountStatusEmailView, UserPermissionsEmailView
 from dicts import translated_module_dict, translated_submodule_dict, translated_permission_dict
+from django.urls import resolve
 
 @login_required
 def edit_profile(request):
@@ -58,6 +59,40 @@ class HomeView(TemplateView):
     """
     template_name = 'home.html'
 
+    def dispatch(self, request, *args, **kwargs):
+        if settings.DEBUG:
+            # URLs para desarrollo con mensajes personalizados
+            development_urls = {
+                 # URLs for stripe (development)
+                'stripe_checkout': "La funcionalidad de Stripe solo está disponible en producción.",
+                'payment_success': "La confirmación de pago solo está disponible en producción.",
+                'payment_cancel': "La cancelación de pago solo está disponible en producción.",
+                 
+                # URLs for dashboard (development)
+                'posts_claps': "Las vistas de publicaciones solo están disponibles en producción.",
+                'posts_updowns': "Los likes de publicaciones solo están disponibles en producción.",
+                'posts_rates': "Las estrellas de publicaciones solo están disponibles en producción.",
+                'categories_claps': "Las vistas de categorías solo están disponibles en producción.",
+                'categories_updowns': "Los likes de categorías solo están disponibles en producción.",
+                'categories_rates': "Las estrellas de categorías solo están disponibles en producción.",
+                'posts_dashboard': "El dashboard solo está disponible en producción.",
+                
+                # URLs for password reset email (development)
+                'reset_password_email': "El reseteo de contraseña por correo solo está disponible en producción.",
+                'password_reset_done_email': "La confirmación de reseteo de contraseña por correo solo está disponible en producción.",
+                'password_reset_confirm_email': "La confirmación de reseteo de contraseña por correo solo está disponible en producción.",
+                'password_reset_complete_email': "La finalización de reseteo de contraseña por correo solo está disponible en producción."
+            }
+
+            # Obtener el nombre de la URL actual
+            current_url_name = resolve(request.path_info).url_name
+
+            # Verificar si la URL actual está en el diccionario de URLs de desarrollo
+            if current_url_name in development_urls:
+                messages.warning(request, development_urls[current_url_name])
+                return redirect('home')  # Redirigir a una página adecuada, por ejemplo, la página de inicio
+
+        return super().dispatch(request, *args, **kwargs)
 
 # views for groups
 class GroupListView(LoginRequiredMixin, PermissionRequiredMixin, TemplateView):
@@ -681,7 +716,15 @@ class MemberEditPermissionView(LoginRequiredMixin, PermissionRequiredMixin, view
             member = form.save(commit=False)
             member.save()
 
-            if not settings.DEBUG:
+            # Obtener la instancia de Notification del usuario
+            try:
+                notification = Notification.objects.get(user=member)
+            except Notification.DoesNotExist:
+                notification = None
+
+            # Verificar si la notificación de "Informar sobre actualización de permisos" está activada
+            if notification and 'Informar sobre actualización de permisos' in notification.additional_notifications and not settings.DEBUG:
+                # Enviar correo de notificación al usuario
                 email_view = UserPermissionsEmailView()
                 email_view.send_permissions_email(member, member.email)
 
@@ -776,7 +819,15 @@ class MemberStatusView(LoginRequiredMixin, PermissionRequiredMixin, views.View):
             member = form.save()
             account_status = 'activada' if member.is_active else 'desactivada'
 
-            if not settings.DEBUG:
+            # Obtener la instancia de Notification del usuario
+            try:
+                notification = Notification.objects.get(user=member)
+            except Notification.DoesNotExist:
+                notification = None
+
+            # Verificar si la notificación de "Informar sobre activación/inactivación de cuenta" está activada
+            if notification and 'Informar sobre activación/inactivación de cuenta' in notification.additional_notifications and not settings.DEBUG:
+                # Enviar correo de notificación al usuario
                 email_view = AccountStatusEmailView()
                 email_view.send_account_status_email(member, account_status, member.email)
 
@@ -911,8 +962,15 @@ class MemberLoginView(LoginView):
         """
         response = super().form_valid(form)
 
-        # Enviar correo de notificación al usuario
-        if not settings.DEBUG:
+        # Obtener la instancia de Notification del usuario
+        try:
+            notification = Notification.objects.get(user=self.request.user)
+        except Notification.DoesNotExist:
+            notification = None
+
+        # Verificar si la notificación de "Informar sobre inicio de sesión" está activada
+        if notification and 'Informar sobre inicio de sesión' in notification.additional_notifications and not settings.DEBUG:
+            # Enviar correo de notificación al usuario
             email_view = SendLoginEmailView()
             email_view.send_email(self.request.user, self.request)
 
@@ -1252,3 +1310,107 @@ class UserAddRoleView(LoginRequiredMixin, FormView):
         if not form.cleaned_data.get('group'):
             messages.error(self.request, "Por favor, seleccione un rol antes de enviar.")
         return super().form_invalid(form)
+    
+class UserNotificationsView(LoginRequiredMixin, TemplateView):
+    """
+    Vista para manejar las notificaciones de usuario.
+    Esta vista requiere que el usuario esté autenticado y extiende de TemplateView.
+    Atributos:
+        template_name (str): Nombre de la plantilla HTML a renderizar.
+    Métodos:
+        get_context_data(**kwargs):
+            Obtiene el contexto para renderizar la plantilla.
+            Combina las categorías compradas y suscritas del miembro.
+            Añade las notificaciones adicionales al contexto.
+        post(request, *args, **kwargs):
+            Maneja las solicitudes POST para alternar las notificaciones.
+            Permite activar o desactivar notificaciones para categorías específicas
+            o notificaciones adicionales.
+    """
+    template_name = 'members/notifications.html'
+
+    def get_context_data(self, **kwargs):
+        """
+        Obtiene el contexto adicional para la vista.
+        Este método extiende el contexto proporcionado por la clase base con información adicional
+        específica del usuario actual, incluyendo categorías compradas y suscritas, y notificaciones.
+        Args:
+            **kwargs: Argumentos adicionales pasados al método.
+        Returns:
+            dict: Un diccionario que contiene el contexto extendido con las siguientes claves:
+                - 'combined_categories': Lista combinada de categorías compradas y suscritas por el usuario.
+                - 'purchased_categories': Categorías compradas por el usuario.
+                - 'suscribed_categories': Categorías suscritas por el usuario.
+                - 'notification': Objeto de notificación asociado al usuario.
+                - 'additional_notifications': Notificaciones adicionales obtenidas del método del modelo de notificación.
+        """
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+        member = get_object_or_404(Member, id=user.id)
+        
+        # Try to get the Notification object, create if it doesn't exist
+        notification, _ = Notification.objects.get_or_create(user=member)
+
+        # Combine purchased and subscribed categories
+        purchased_categories = member.purchased_categories.all()
+        suscribed_categories = member.suscribed_categories.all()
+        combined_categories = list(purchased_categories) + list(suscribed_categories)
+
+        context['combined_categories'] = combined_categories
+        context['purchased_categories'] = purchased_categories
+        context['suscribed_categories'] = suscribed_categories
+        context['notification'] = notification
+
+        # Add additional notifications from the model method
+        context['additional_notifications'] = notification.get_additional_notifications()
+
+        return context
+
+    def post(self, request, *args, **kwargs):
+        """
+        Maneja la solicitud POST para alternar las notificaciones de un usuario.
+        Args:
+            request (HttpRequest): La solicitud HTTP que contiene los datos POST.
+            *args: Argumentos adicionales.
+            **kwargs: Palabras clave adicionales.
+        Funcionalidad:
+            - Obtiene el usuario actual de la solicitud.
+            - Intenta obtener el objeto Notification asociado al usuario, o lo crea si no existe.
+            - Procesa la acción 'toggle_notification' para alternar las notificaciones de categorías
+              o notificaciones adicionales según los datos POST recibidos.
+            - Guarda los cambios en el objeto Notification.
+            - Redirige a la vista de notificaciones.
+        Datos POST:
+            - action (str): La acción a realizar, en este caso 'toggle_notification'.
+            - category_id (str): El ID de la categoría a alternar (opcional).
+            - additional_notification (str): Notificación adicional a alternar (opcional).
+        Returns:
+            HttpResponseRedirect: Redirige a la vista de notificaciones.
+        """
+        user = self.request.user
+        member = get_object_or_404(Member, id=user.id)
+        
+        # Try to get the Notification object, create if it doesn't exist
+        notification, _ = Notification.objects.get_or_create(user=member)
+
+        action = request.POST.get('action')
+        category_id = request.POST.get('category_id')
+        additional_notification = request.POST.get('additional_notification')
+
+        if action == 'toggle_notification':
+            if category_id:
+                category = get_object_or_404(Category, id=category_id)
+                if category in notification.notifications.all():
+                    notification.notifications.remove(category)
+                else:
+                    notification.notifications.add(category)
+            elif additional_notification:
+                additional_notifications = notification.get_additional_notifications()
+                if additional_notification in additional_notifications:
+                    if additional_notification in notification.additional_notifications:
+                        notification.additional_notifications.remove(additional_notification)
+                    else:
+                        notification.additional_notifications.append(additional_notification)
+            notification.save()
+
+        return redirect('notifications')
