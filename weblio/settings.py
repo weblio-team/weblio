@@ -177,7 +177,7 @@ CKEDITOR_CONFIGS = {
 }
 
 # Lyket settings
-LYKET_API_KEY = "pt_3dfda96e132cbc507a6cad39de1826"
+LYKET_API_KEY = "pt_4af2797b993e58962dc123ac154afc"
 
 # Commentbox settings
 COMMENTBOX_API_KEY = "5656563893141504-proj"

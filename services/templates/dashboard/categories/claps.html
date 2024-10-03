@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% block content %}
+    <p id="DEBUG" style="display: none;">{{ DEBUG }}</p>
+    <p id="AUTH" style="display: none;">{{ user.is_authenticated }}</p>
+    <main role="main" class="container py-4">
+        <span id="view-count"></span>
+
+        <!-- Display clap buttons data -->
+        <h2>Reporte de Vistas por Categoría</h2>
+
+        <!-- Responsive Bootstrap Table in Dark Mode -->
+        <div class="table-responsive">
+            <table 
+                id="clapTable"
+                class="table table-dark table-striped table-bordered"
+                data-toggle="table"
+                data-search="true"
+                data-pagination="true"
+                data-page-size="5"
+                data-page-list="[5, 10, 20, 50]"
+                data-sortable="true"
+                data-click-to-select="true"
+                data-locale="es-ES"
+                data-sort-name="total_claps"
+                data-sort-order="desc"
+                data-show-export="true"
+                data-export-types="['csv', 'excel', 'xlsx']"
+            >
+                <thead>
+                    <tr>
+                        <th data-field="id" data-sortable="true">ID</th>
+                        <th data-field="name" data-sortable="true">Titulo</th>
+                        <th data-field="total_claps" data-sortable="true">Vistas</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for category in category_clap_data %}
+                        <tr>
+                            <td>{{ category.id }}</td>
+                            <td>{{ category.name }}</td>
+                            <td>{{ category.total_claps }}</td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="3">No hay datos disponibles</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </main>
+    <style>
+        /* Dark Mode for Search Input */
+        .bootstrap-table .search input {
+            background-color: #333;  /* Dark background */
+            color: #fff;  /* White text */
+            border-color: #444;  /* Dark border */
+        }
+
+        /* White placeholder text */
+        .bootstrap-table .search input::placeholder {
+            color: #fff;  /* White placeholder text */
+        }
+    
+        /* Dark Mode for Paginator */
+        .pagination li.active a,
+        .pagination li.active a:hover,
+        .pagination li.active a:focus {
+            background-color: #555;  /* Dark background for active page */
+            border-color: #666;  /* Dark border */
+            color: #fff;  /* White text */
+        }
+    
+        .pagination li a {
+            background-color: #333;  /* Dark background for normal pages */
+            color: #fff;  /* White text */
+            border-color: #444;  /* Dark border */
+        }
+    
+        .pagination li a:hover {
+            background-color: #555;  /* Darker background on hover */
+        }
+    
+        /* Additional Dark Mode Tweaks */
+        .btn {
+            background-color: #333;  /* Dark background for buttons */
+            color: #fff;  /* White text */
+            border-color: #444;  /* Dark border */
+        }
+        .btn:hover {
+            background-color: #555;  /* Darker background on hover */
+        }
+    </style>
+{% endblock %}

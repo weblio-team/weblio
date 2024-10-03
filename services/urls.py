@@ -3,7 +3,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from .views import CustomImageUploadView
 from .views import CreateCheckoutSessionView, PaymentSuccessView, PaymentCancelView
-from .views import DashboardClapsPostsView, DashboardUpdownsPostsView, DashboardRatePostsView, DashboardPostsView
+from .views import DashboardClapsPostsView, DashboardUpdownsPostsView, DashboardRatePostsView, DashboardPostsView, DashboardClapsCategoriesView, DashboardUpdownsCategoriesView, DashboardRateCategoriesView
 from django.contrib.auth import views as auth_views
 from django.urls import reverse_lazy
 from .views import CustomPasswordResetView
@@ -20,9 +20,12 @@ urlpatterns = [
     path('stripe/payment-cancel/<int:category_id>/', PaymentCancelView.as_view(), name='payment_cancel'),
 
     # urls for dashboard
-    path('dashboard/views/', DashboardClapsPostsView.as_view(), name='posts_claps'),
-    path('dashboard/updowns/', DashboardUpdownsPostsView.as_view(), name='posts_updowns'),
-    path('dashboard/rates/', DashboardRatePostsView.as_view(), name='posts_rates'),
+    path('dashboard/posts/views/', DashboardClapsPostsView.as_view(), name='posts_claps'),
+    path('dashboard/posts/likes/', DashboardUpdownsPostsView.as_view(), name='posts_updowns'),
+    path('dashboard/posts/stars/', DashboardRatePostsView.as_view(), name='posts_rates'),
+    path('dashboard/categories/views/', DashboardClapsCategoriesView.as_view(), name='categories_claps'),
+    path('dashboard/categories/likes/', DashboardUpdownsCategoriesView.as_view(), name='categories_updowns'),
+    path('dashboard/categories/stars/', DashboardRateCategoriesView.as_view(), name='categories_rates'),
     path('dashboard/', DashboardPostsView.as_view(), name='posts_dashboard'),
 
     # urls for password reset

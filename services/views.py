@@ -214,7 +214,7 @@ class DashboardClapsPostsView(TemplateView):
     """
     Vista del reporte de views de los articulos.
     """
-    template_name = 'dashboard/claps.html'
+    template_name = 'dashboard/posts/claps.html'
     
     def get_context_data(self, **kwargs):
         """Agrega datos adicionales al contexto de la plantilla."""
@@ -246,7 +246,7 @@ class DashboardClapsPostsView(TemplateView):
                         # Fetch the related Post by id
                         try:
                             post = Post.objects.get(id=clap_button['id'])
-                            if self.request.user.has_perm('posts.add_post') and post.author != self.request.user:
+                            if self.request.user.has_perm('posts.add_post') and post.author == self.request.user:
                                 continue  # Skip posts not authored by the user if they have the add_post permission
                             clap_button['title'] = post.title  # Post title
                             clap_button['author'] = post.author  # Post author
@@ -272,7 +272,7 @@ class DashboardClapsPostsView(TemplateView):
                     # Fetch the related Post by id
                     try:
                         post = Post.objects.get(id=clap_button['id'])
-                        if self.request.user.has_perm('posts.add_post') and post.author != self.request.user:
+                        if self.request.user.has_perm('posts.add_post') and post.author == self.request.user:
                             continue  # Skip posts not authored by the user if they have the add_post permission
                         clap_button['title'] = post.title  # Post title
                         clap_button['author'] = post.author  # Post author
@@ -298,7 +298,7 @@ class DashboardUpdownsPostsView(TemplateView):
     """
     Vista del reporte de updown de los artículos.
     """
-    template_name = 'dashboard/updowns.html'
+    template_name = 'dashboard/posts/updowns.html'
     
     def get_context_data(self, **kwargs):
         """Agrega datos adicionales al contexto de la plantilla."""
@@ -332,7 +332,7 @@ class DashboardUpdownsPostsView(TemplateView):
                         # Fetch the related Post by id
                         try:
                             post = Post.objects.get(id=updown_button['id'])
-                            if self.request.user.has_perm('posts.add_post') and post.author != self.request.user:
+                            if self.request.user.has_perm('posts.add_post') and post.author == self.request.user:
                                 continue  # Skip posts not authored by the user if they have the add_post permission
                             updown_button['title'] = post.title  # Post title
                             updown_button['author'] = post.author  # Post author
@@ -360,7 +360,7 @@ class DashboardUpdownsPostsView(TemplateView):
                     # Fetch the related Post by id
                     try:
                         post = Post.objects.get(id=updown_button['id'])
-                        if self.request.user.has_perm('posts.add_post') and post.author != self.request.user:
+                        if self.request.user.has_perm('posts.add_post') and post.author == self.request.user:
                             continue  # Skip posts not authored by the user if they have the add_post permission
                         updown_button['title'] = post.title  # Post title
                         updown_button['author'] = post.author  # Post author
@@ -386,7 +386,7 @@ class DashboardRatePostsView(TemplateView):
     """
     Vista del reporte de botones de calificación de los artículos (solo rate_button).
     """
-    template_name = 'dashboard/rates.html'
+    template_name = 'dashboard/posts/rates.html'
     
     def get_context_data(self, **kwargs):
         """Agrega datos adicionales al contexto de la plantilla."""
@@ -421,7 +421,7 @@ class DashboardRatePostsView(TemplateView):
                         # Fetch the related Post by id
                         try:
                             post = Post.objects.get(id=rate_button['id'])
-                            if self.request.user.has_perm('posts.add_post') and post.author != self.request.user:
+                            if self.request.user.has_perm('posts.add_post') and post.author == self.request.user:
                                 continue  # Skip posts not authored by the user if they have the add_post permission
                             rate_button['title'] = post.title  # Post title
                             rate_button['author'] = post.author  # Post author
@@ -439,6 +439,177 @@ class DashboardRatePostsView(TemplateView):
                 context['raw_api_response'] = f"Error: {response.status_code}"
         except requests.exceptions.RequestException as e:
             context['rate_data'] = []  # Empty list in case of exception
+            context['raw_api_response'] = f"Request error: {e}"
+        
+        return context
+
+
+class DashboardClapsCategoriesView(TemplateView):
+    """
+    Vista del reporte de claps por categorías.
+    """
+    template_name = 'dashboard/categories/claps.html'
+    
+    def get_context_data(self, **kwargs):
+        """Agrega datos adicionales al contexto de la plantilla."""
+        context = super().get_context_data(**kwargs)
+        
+        # Adding existing context data
+        context['LYKET_API_KEY'] = settings.LYKET_API_KEY
+        context['DEBUG'] = settings.DEBUG
+
+        # API Call to Lyket
+        url = 'https://api.lyket.dev/v1/rank/clap-buttons?sort=asc&limit=100'
+        headers = {
+            'accept': 'application/json',
+            'Authorization': f'Bearer {settings.LYKET_API_KEY}'
+        }
+
+        try:
+            response = requests.get(url, headers=headers)
+            if response.status_code in [200, 201]:
+                clap_data = response.json()  # Parse the JSON response
+                category_clap_data = {}
+
+                for item in clap_data['data']:
+                    post_id = item['id']
+                    total_claps = item['attributes']['total_claps']
+                    
+                    try:
+                        post = Post.objects.get(id=post_id)
+                        category = post.category
+                        if category.id not in category_clap_data:
+                            category_clap_data[category.id] = {
+                                'id': category.id,
+                                'name': category.name,
+                                'total_claps': 0
+                            }
+                        category_clap_data[category.id]['total_claps'] += total_claps
+                    except Post.DoesNotExist:
+                        continue
+
+                context['category_clap_data'] = category_clap_data.values()
+            else:
+                context['category_clap_data'] = []
+                context['raw_api_response'] = f"Error: {response.status_code}"
+        except requests.exceptions.RequestException as e:
+            context['category_clap_data'] = []
+            context['raw_api_response'] = f"Request error: {e}"
+        
+        return context
+
+class DashboardUpdownsCategoriesView(TemplateView):
+    """
+    Vista del reporte de updowns por categorías.
+    """
+    template_name = 'dashboard/categories/updowns.html'
+    
+    def get_context_data(self, **kwargs):
+        """Agrega datos adicionales al contexto de la plantilla."""
+        context = super().get_context_data(**kwargs)
+        
+        # Adding existing context data
+        context['LYKET_API_KEY'] = settings.LYKET_API_KEY
+        context['DEBUG'] = settings.DEBUG
+
+        # API Call to Lyket
+        url = 'https://api.lyket.dev/v1/rank/updown-buttons?sort=asc&limit=100'
+        headers = {
+            'accept': 'application/json',
+            'Authorization': f'Bearer {settings.LYKET_API_KEY}'
+        }
+
+        try:
+            response = requests.get(url, headers=headers)
+            if response.status_code in [200, 201]:
+                updown_data = response.json()  # Parse the JSON response
+                category_updown_data = {}
+
+                for item in updown_data['data']:
+                    post_id = item['id']
+                    total_score = item['attributes'].get('total_score', 0)
+                    
+                    try:
+                        post = Post.objects.get(id=post_id)
+                        category = post.category
+                        if category.id not in category_updown_data:
+                            category_updown_data[category.id] = {
+                                'id': category.id,
+                                'name': category.name,
+                                'total_updowns': 0
+                            }
+                        category_updown_data[category.id]['total_updowns'] += total_score
+                    except Post.DoesNotExist:
+                        continue
+
+                context['category_updown_data'] = category_updown_data.values()
+            else:
+                context['category_updown_data'] = []
+                context['raw_api_response'] = f"Error: {response.status_code}"
+        except requests.exceptions.RequestException as e:
+            context['category_updown_data'] = []
+            context['raw_api_response'] = f"Request error: {e}"
+        
+        return context
+    
+class DashboardRateCategoriesView(TemplateView):
+    """
+    Vista del reporte de botones de calificación por categorías.
+    """
+    template_name = 'dashboard/categories/rates.html'
+    
+    def get_context_data(self, **kwargs):
+        """Agrega datos adicionales al contexto de la plantilla."""
+        context = super().get_context_data(**kwargs)
+        
+        # Adding existing context data
+        context['LYKET_API_KEY'] = settings.LYKET_API_KEY
+        context['DEBUG'] = settings.DEBUG
+
+        # API Call to Lyket for rate buttons (filtered by "type": "rate_button")
+        url = 'https://api.lyket.dev/v1/rank/buttons/blog?sort=desc&limit=100'
+        headers = {
+            'accept': 'application/json',
+            'Authorization': f'Bearer {settings.LYKET_API_KEY}'
+        }
+
+        try:
+            response = requests.get(url, headers=headers)
+            if response.status_code in [200, 201]:
+                rate_data = response.json()  # Parse the JSON response
+                category_rate_data = {}
+
+                for item in rate_data['data']['attributes']['responses']:
+                    if item['data']['type'] == 'rate_button':
+                        post_id = item['data']['id']
+                        average_rating = item['data']['attributes'].get('average_rating', 0)
+                        
+                        try:
+                            post = Post.objects.get(id=post_id)
+                            category = post.category
+                            if category.id not in category_rate_data:
+                                category_rate_data[category.id] = {
+                                    'id': category.id,
+                                    'name': category.name,
+                                    'average_rating': 0,
+                                    'total_votes': 0
+                                }
+                            category_rate_data[category.id]['average_rating'] += average_rating
+                            category_rate_data[category.id]['total_votes'] += 1
+                        except Post.DoesNotExist:
+                            continue
+
+                # Calculate the average rating for each category
+                for category in category_rate_data.values():
+                    if category['total_votes'] > 0:
+                        category['average_rating'] /= category['total_votes']
+
+                context['category_rate_data'] = category_rate_data.values()
+            else:
+                context['category_rate_data'] = []
+                context['raw_api_response'] = f"Error: {response.status_code}"
+        except requests.exceptions.RequestException as e:
+            context['category_rate_data'] = []
             context['raw_api_response'] = f"Request error: {e}"
         
         return context

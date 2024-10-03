@@ -29,9 +29,12 @@ if settings.DEBUG:
         path('stripe/payment-cancel/<int:category_id>/', HomeView.as_view(), name='payment_cancel'),
 
         # URLs for dashboard (development)
-        path('dashboard/views/', HomeView.as_view(), name='posts_claps'),
-        path('dashboard/updowns/', HomeView.as_view(), name='posts_updowns'),
-        path('dashboard/rates/', HomeView.as_view(), name='posts_rates'),
+        path('dashboard/posts/views/', HomeView.as_view(), name='posts_claps'),
+        path('dashboard/posts/likes/', HomeView.as_view(), name='posts_updowns'),
+        path('dashboard/posts/stars/', HomeView.as_view(), name='posts_rates'),
+        path('dashboard/categories/views/', HomeView.as_view(), name='categories_claps'),
+        path('dashboard/categories/likes/', HomeView.as_view(), name='categories_updowns'),
+        path('dashboard/categories/stars/', HomeView.as_view(), name='categories_rates'),
         path('dashboard/', HomeView.as_view(), name='posts_dashboard'),
 
         # URLs for password reset email (development)
