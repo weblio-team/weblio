@@ -1,7 +1,7 @@
 from django import forms
 from django.urls import reverse_lazy
 from django.utils.translation import gettext as _
-from .models import Category, Post, Post
+from .models import Category, Post, Report
 from ckeditor_uploader.widgets import CKEditorUploadingWidget
 from django.utils.safestring import mark_safe
 
@@ -560,3 +560,14 @@ class ToPublishPostForm(forms.ModelForm):
         widgets = {
             'status': forms.HiddenInput(),
         }
+
+class ReportForm(forms.ModelForm):
+    class Meta:
+        model = Report
+        fields = ['email', 'reason']
+
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        if Report.objects.filter(email=email).exists():
+            raise forms.ValidationError('Ya existe un reporte con este correo.')
+        return email

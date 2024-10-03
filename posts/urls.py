@@ -5,7 +5,7 @@ from .views import ToEditView, ToEditPostView
 from .views import ToPublishView, ToPublishPostView
 from .views import MyPostsView, MyPostEditView, MyPostAddView, MyPostDeleteView
 from .views import KanbanBoardView
-from .views import HistoryView
+from .views import HistoryView, ReportPostView, ReportedPostsView, TogglePostStatusView
 from .views import RelevantPostsView
 
 
@@ -24,7 +24,11 @@ urlpatterns = [
     path('all/', SuscriberExplorePostsView.as_view(), name='posts'),
     path('feed/', SuscriberFeedPostsView.as_view(), name='feed'),
     path('<int:pk>/<slug:category>/<str:month>/<str:year>/<slug:title>/', SuscriberPostDetailView.as_view(), name='post'),
-    
+    path('<int:pk>/<slug:category>/<str:month>/<str:year>/<slug:title>/report/', ReportPostView.as_view(), name='report_post'),
+    path('incidents/', ReportedPostsView.as_view(), name='incidents'),
+    path('toggle-post-status/<int:pk>/', TogglePostStatusView.as_view(), name='toggle_post_status'),  
+
+
     # urls for authors
     path('my-posts/', MyPostsView.as_view(), name='my-posts'),
     path('my-posts/<int:pk>/', MyPostEditView.as_view(), name='edit-my-post'),

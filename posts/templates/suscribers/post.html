@@ -208,5 +208,10 @@
 			});
 		</script>
 		<a href="{% url 'posts' %}" class="btn btn-primary">Volver</a>
+        {% if report_exists %}
+            <button class="btn btn-secondary" disabled>Reportado</button>
+        {% else %}
+            <a href="{% url 'report_post' post.pk post.category.name|slugify post.date_posted|date:'m' post.date_posted|date:'Y' post.title|slugify %}" class="btn btn-danger">Reportar</a>
+        {% endif %}
 	</main>
 {% endblock %}
