@@ -331,7 +331,7 @@
         <div>
           <button class="btn btn-success my-0" type="submit">Guardar</button>
           <button type="button" class="btn btn-primary my-0" data-bs-toggle="modal"
-            data-bs-target="#changeReasonModal">Mandar a edición</button>
+            data-bs-target="#changeReasonModal" id="changeStatusButton">Mandar a edición</button>
           <button type="button" class="btn btn-danger my-0" data-bs-toggle="modal"
             data-bs-target="#deleteModal">Eliminar</button>
         </div>
@@ -371,7 +371,7 @@
             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
-            <label for="changeReasonInput">Agrega una observación para el cambio de estado del artículo:</label>
+            <label for="changeReasonInput" id="changeReasonLabelDescription">Agrega una observación para el cambio de estado del artículo:</label>
             <input type="text" id="changeReasonInput" class="form-control bg-dark text-white mt-2">
           </div>
           <div class="modal-footer">
@@ -409,21 +409,24 @@
       // Handle the change reason modal
       document.getElementById('submit-change-reason').addEventListener('click', function () {
         var reason = document.getElementById('changeReasonInput').value;
-        if (reason) {
+        var moderated = document.getElementById('changeStatusButton').textContent;
+        if (reason || moderated === 'Publicar') {
           var changeReasonInput = document.createElement('input');
           changeReasonInput.type = 'hidden';
           changeReasonInput.name = 'change_reason';
-          changeReasonInput.value = reason;
+          changeReasonInput.value = moderated === 'Publicar' ? 'Publicado sin moderacion' : reason;
           document.getElementById('post-form').appendChild(changeReasonInput);
 
           var statusInput = document.createElement('input');
+          var statusButton = document.getElementById('changeStatusButton');
           statusInput.type = 'hidden';
           statusInput.name = 'status';
-          statusInput.value = 'to_edit';
+          statusInput.value = statusButton.textContent === 'Publicar' ? 'published' : 'to_edit';
           document.getElementById('post-form').appendChild(statusInput);
 
           document.getElementById('post-form').submit(); // Submit the form after reason is filled
-        } else {
+        } 
+        else {
           alert('Please provide a reason for changing the status.');
         }
       });
@@ -524,4 +527,54 @@
     color: white; /* Text color for the active tab */
   }
 </style>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    if ('{{ post.status }}' === 'draft') {
+      var categoryField = document.getElementById('id_category');
+      var changeStatusButton = document.getElementById('changeStatusButton');
+      var categories;
+      var changeReasonInput = document.getElementById('changeReasonInput');
+      var changeReasonLabel = document.getElementById('changeReasonLabel');
+      var changeReasonLabelDescription = document.getElementById('changeReasonLabelDescription');
+
+      try {
+        // Intenta parsear el JSON pasado desde la vista
+        categories = JSON.parse('{{ categories_json|safe }}');  // Usa "safe" porque ya estamos controlando el JSON en la vista
+        console.log('Initial category value:', categoryField.value);
+        console.log('Initial category details:', categories.find(category => category.id == categoryField.value));
+      } catch (e) {
+        console.error('Error parsing categories JSON:', e);
+      }
+
+      function updateButtonText() {
+        var selectedCategory = categories.find(category => category.id == categoryField.value);
+        if (selectedCategory) {
+          if (selectedCategory.moderated === false) {
+            changeStatusButton.textContent = 'Publicar';
+            changeReasonInput.style.display = 'none';
+            changeReasonLabel.textContent = '¿Estás seguro de que quieres publicar este artículo?';
+            changeReasonLabelDescription.textContent = 'Este artículo no requiere una observación para ser publicado. Ya que no está en una categoría moderada, puedes publicarlo directamente.';
+            
+
+          } else {
+            changeStatusButton.textContent = 'Mandar a edición';
+            changeReasonInput.style.display = 'block';
+            changeReasonLabel.textContent = 'Observación';
+            changeReasonLabelDescription.textContent = 'Agrega una observación para el cambio de estado del artículo:';
+          }
+        }
+      }
+
+      // Actualizar el texto del botón al cargar la página
+      updateButtonText();
+
+      // Escuchar el cambio de la categoría seleccionada
+      categoryField.addEventListener('change', function() {
+        console.log('Category value changed to:', categoryField.value);
+        console.log('Category details:', categories.find(category => category.id == categoryField.value));
+        updateButtonText();
+      });
+    }
+  });
+</script>
 {% endblock %}

@@ -281,6 +281,7 @@ class MyPostEditView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
             context['thumbnail_form'] = MyPostEditThumbnailForm(instance=post)
             context['program_form'] = MyPostEditProgramForm(instance=post)  # Faltaba instance=post
 
+        context['categories_json'] = json.dumps(list(Category.objects.values('id', 'name', 'moderated')))  
         context['state_mapping'] = state_mapping
         return context
 

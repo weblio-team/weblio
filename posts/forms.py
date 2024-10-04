@@ -334,7 +334,7 @@ class ToEditPostGeneralForm(forms.ModelForm):
                 'title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Insertar título'}),
                 'title_tag': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Insertar etiqueta de título'}),
                 'summary': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Insertar resumen'}),
-                'category': forms.Select(attrs={'class': 'form-control'}),
+                'category': forms.Select(attrs={'class': 'form-control', 'id': 'id_category'}),
                 'keywords': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Insertar etiquetas'}),
                 'status': forms.HiddenInput(),
         }

@@ -41,7 +41,7 @@ class Category(models.Model):
 
     def __str__(self):
         """Retorna el nombre de la categoría junto con su tipo."""
-        return f"{self.name} ({self.kind})"
+        return f"{self.name} ({self.kind})" + (" (No moderada)" if not self.moderated else "")
     
     def get_absolute_url(self):
         """
