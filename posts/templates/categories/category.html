@@ -114,7 +114,7 @@
         </div>
 
         <!-- Formulario separado para Stripe -->
-        {% if category.kind == 'premium' and user.is_authenticated and not DEBUG %}
+        {% if category.kind == 'premium' and user.is_authenticated and category not in request.user.purchased_categories.all and not DEBUG %}
             <form action="{% url 'stripe_checkout' category.pk %}" method="post">
                 {% csrf_token %}
                 <button type="submit" class="btn btn-success mt-4">Comprar por {{ category.price }} USD</button>
