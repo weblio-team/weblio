@@ -271,12 +271,12 @@ class MyPostEditView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
             context['current_thumbnail_url'] = post.thumbnail.url if post.thumbnail else None
 
         if self.request.POST:
-            context['gen_form'] = MyPostEditGeneralForm(self.request.POST, instance=post)
+            context['gen_form'] = MyPostEditGeneralForm(self.request.POST, instance=post, user=self.request.user)
             context['body_form'] = MyPostEditBodyForm(self.request.POST, instance=post)
             context['thumbnail_form'] = MyPostEditThumbnailForm(self.request.POST, self.request.FILES, instance=post)
             context['program_form'] = MyPostEditProgramForm(self.request.POST, instance=post)  # Faltaba instance=post
         else:
-            context['gen_form'] = MyPostEditGeneralForm(instance=post)
+            context['gen_form'] = MyPostEditGeneralForm(instance=post, user=self.request.user)            
             context['body_form'] = MyPostEditBodyForm(instance=post)
             context['thumbnail_form'] = MyPostEditThumbnailForm(instance=post)
             context['program_form'] = MyPostEditProgramForm(instance=post)  # Faltaba instance=post
@@ -406,7 +406,7 @@ class MyPostAddView(PermissionRequiredMixin, LoginRequiredMixin, View):
     """
     permission_required = 'posts.add_post'
     def get(self, request, *args, **kwargs):
-        gen_form = MyPostAddGeneralForm()
+        gen_form = MyPostAddGeneralForm(user=request.user)
         body_form = MyPostAddBodyForm()
         thumbnail_form = MyPostAddThumbnailForm()
         program_form = MyPostAddProgramForm()

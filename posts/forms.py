@@ -200,6 +200,14 @@ class MyPostEditGeneralForm(forms.ModelForm):
             'keywords': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Insertar etiquetas'}),
             'status': forms.HiddenInput(),
         }
+    
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
+        super().__init__(*args, **kwargs)
+        if user and user.has_perm('auth.auto_publish'):
+            self.fields['category'].queryset = Category.objects.all()
+        else:
+            self.fields['category'].queryset = Category.objects.filter(moderated=True)
 
 class MyPostEditThumbnailForm(forms.ModelForm):
     class Meta:
@@ -425,6 +433,14 @@ class MyPostAddGeneralForm(forms.ModelForm):
             'category': forms.Select(attrs={'class': 'form-control'}),
             'keywords': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Insertar etiquetas'}),
         }
+    
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
+        super().__init__(*args, **kwargs)
+        if user and user.has_perm('auth.auto_publish'):
+            self.fields['category'].queryset = Category.objects.all()
+        else:
+            self.fields['category'].queryset = Category.objects.filter(moderated=True)
 
 class MyPostAddThumbnailForm(forms.ModelForm):
     class Meta:
