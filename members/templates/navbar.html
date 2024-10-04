@@ -16,8 +16,9 @@
                         Artículos
                     </a>
                     <ul class="dropdown-menu">
-                        {% if user.is_authenticated %}
+                        {% if user.is_authenticated and perms.posts.view_post %}
                             <li><a class="dropdown-item" href="{% url 'feed' %}">Mis artículos</a></li>
+                            <li><hr class="dropdown-divider"></li>
                         {% endif %}
                         <li><a class="dropdown-item" href="{% url 'posts' %}">Explorar artículos</a></li>
                     </ul>
@@ -29,8 +30,9 @@
                         Categorías
                     </a>
                     <ul class="dropdown-menu">
-                        {% if perms.posts.view_post %}
+                        {% if user.is_authenticated and perms.posts.view_post %}
                         <li><a class="dropdown-item" href="{% url 'my_categories' %}">Mis categorías</a></li>
+                        <li><hr class="dropdown-divider"></li>
                         {% endif %}
                         <li><a class="dropdown-item" href="{% url 'categories' %}">Explorar categorías</a></li>
                         {% if perms.posts.add_category %}
@@ -85,7 +87,7 @@
                         </ul>
                     </li>
                 {% endif %}
-                <!-- Gestión de usuarios -->
+                <!-- Gestión de reportes -->
                 {% if perms.posts.add_post or perms.posts.change_post or perms.posts.can_publish or perms.auth.view_dashboard %}
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
