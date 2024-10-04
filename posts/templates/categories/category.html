@@ -26,7 +26,7 @@
         <div class="d-flex flex-column flex-md-row gap-2">
             <a href="{% url 'categories' %}" class="btn btn-primary">Volver</a>
 
-            {% if category.kind != 'premium' %}
+            {% if category.kind != 'premium' and perms.posts.view_post%}
                 {% if category in request.user.suscribed_categories.all %}
                     <form method="post" action="{% url 'unsubscribe' category.id %}">
                         {% csrf_token %}
@@ -114,7 +114,7 @@
         </div>
 
         <!-- Formulario separado para Stripe -->
-        {% if category.kind == 'premium' and user.is_authenticated and category not in request.user.purchased_categories.all and not DEBUG %}
+        {% if category.kind == 'premium' and user.is_authenticated and category not in request.user.purchased_categories.all and perms.posts.view_post and not DEBUG %}
             <form action="{% url 'stripe_checkout' category.pk %}" method="post">
                 {% csrf_token %}
                 <button type="submit" class="btn btn-success mt-4">Comprar por {{ category.price }} USD</button>
