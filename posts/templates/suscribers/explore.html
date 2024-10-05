@@ -15,14 +15,14 @@
                                 {% endif %}
                                 <div class="card-body d-flex flex-column">
                                     <h5 class="card-title post-title"> {{ post.title }} </h5>
-                                    <p class="card-text text-muted flex-grow-1">{{ post.summary|safe }}</p>
+                                    <p class="card-text text-muted flex-grow-1">— {{ post.summary|safe }}</p>
                                     <div class="post-extra-info d-flex align-items-center mt-auto">
                                         {% if post.author.pfp %}
                                             <img src="{{ post.author.pfp.url }}" alt="{{ post.author.first_name }}" class="profile-picture rounded-circle me-2">
                                         {% else %}
                                             <img src="https://storage.googleapis.com/bucket-weblio/media/profile_pictures/default_pfp.jpg" alt="{{ post.author.first_name }}" class="profile-picture rounded-circle me-2">
                                         {% endif %}
-                                        <span class="text-muted">
+                                        <span class="text-muted small-text">
                                             <strong>{{ post.author.first_name }} {{ post.author.last_name }}</strong> en <strong>{{ post.category }}</strong>
                                         </span>
                                     </div>
@@ -168,6 +168,9 @@
 
         .card-link:hover .post-title {
             text-decoration: underline;
+        }
+        .small-text {
+            font-size: 0.795rem;
         }
     </style>
 

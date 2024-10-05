@@ -22,7 +22,7 @@
                                 {% else %}
                                     <img src="https://storage.googleapis.com/bucket-weblio/media/profile_pictures/default_pfp.jpg" alt="{{ post.author.first_name }}" class="profile-picture rounded-circle me-2">
                                 {% endif %}
-                                <span class="text-muted">
+                                <span class="text-muted small-text">
                                     <strong>{{ post.author.first_name }} {{ post.author.last_name }}</strong> en <strong>{{ post.category }}</strong>
                                 </span>
                             </div>
@@ -100,6 +100,10 @@
 
         .card-link:hover .post-title {
             text-decoration: underline;
+        }
+
+        .small-text {
+            font-size: 0.795rem;
         }
     </style>
 {% endblock %}
