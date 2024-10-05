@@ -3,9 +3,9 @@
         "model": "auth.group",
         "pk": 1,
         "fields": {
-            "name": "suscriptor",
+            "name": "Suscriptor",
             "permissions": [
-                36
+                44
             ]
         }
     },
@@ -13,10 +13,9 @@
         "model": "auth.group",
         "pk": 2,
         "fields": {
-            "name": "autor",
+            "name": "Autor",
             "permissions": [
-                33,
-                35
+                41
             ]
         }
     },
@@ -24,9 +23,9 @@
         "model": "auth.group",
         "pk": 3,
         "fields": {
-            "name": "editor",
+            "name": "Editor",
             "permissions": [
-                34
+                42
             ]
         }
     },
@@ -34,9 +33,9 @@
         "model": "auth.group",
         "pk": 4,
         "fields": {
-            "name": "publicador",
+            "name": "Publicador",
             "permissions": [
-                37
+                45
             ]
         }
     },
@@ -44,7 +43,20 @@
         "model": "auth.group",
         "pk": 5,
         "fields": {
-            "name": "administrador de categorias",
+            "name": "Administrador de Categorias",
+            "permissions": [
+                33,
+                34,
+                35,
+                36
+            ]
+        }
+    },
+    {
+        "model": "auth.group",
+        "pk": 6,
+        "fields": {
+            "name": "Administrador de Usuarios",
             "permissions": [
                 25,
                 26,
@@ -55,21 +67,9 @@
     },
     {
         "model": "auth.group",
-        "pk": 6,
-        "fields": {
-            "name": "administrador de usuarios",
-            "permissions": [
-                22,
-                23,
-                24
-            ]
-        }
-    },
-    {
-        "model": "auth.group",
         "pk": 7,
         "fields": {
-            "name": "administrador de roles",
+            "name": "Administrador de Roles",
             "permissions": [
                 9,
                 10,
@@ -86,7 +86,7 @@
         "model": "auth.group",
         "pk": 8,
         "fields": {
-            "name": "administrador general",
+            "name": "Administrador General",
             "permissions": [
                 9,
                 10,
@@ -96,13 +96,51 @@
                 6,
                 7,
                 8,
-                22,
-                23,
-                25,
-                24,
+                31,
                 26,
                 27,
-                28
+                30,
+                29,
+                32,
+                28,
+                33,
+                34,
+                35,
+                36,
+                45,
+                42,
+                43,
+                44
+            ]
+        }
+    },
+    {
+        "model": "auth.group",
+        "pk": 9,
+        "fields": {
+            "name": "Administrador de Finanzas",
+            "permissions": [
+                32
+            ]
+        }
+    },
+    {
+        "model": "auth.group",
+        "pk": 10,
+        "fields": {
+            "name": "Administrador de Interacciones",
+            "permissions": [
+                29
+            ]
+        }
+    },
+    {
+        "model": "auth.group",
+        "pk": 11,
+        "fields": {
+            "name": "Autor Independiente",
+            "permissions": [
+                31
             ]
         }
     }

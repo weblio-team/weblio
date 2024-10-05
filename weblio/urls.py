@@ -28,14 +28,19 @@ if settings.DEBUG:
         path('stripe/payment-success/', HomeView.as_view(), name='payment_success'),
         path('stripe/payment-cancel/<int:category_id>/', HomeView.as_view(), name='payment_cancel'),
 
-        # URLs for dashboard (development)
-        path('dashboard/posts/views/', HomeView.as_view(), name='posts_claps'),
-        path('dashboard/posts/likes/', HomeView.as_view(), name='posts_updowns'),
-        path('dashboard/posts/stars/', HomeView.as_view(), name='posts_rates'),
-        path('dashboard/categories/views/', HomeView.as_view(), name='categories_claps'),
-        path('dashboard/categories/likes/', HomeView.as_view(), name='categories_updowns'),
-        path('dashboard/categories/stars/', HomeView.as_view(), name='categories_rates'),
-        path('dashboard/', HomeView.as_view(), name='posts_dashboard'),
+        # urls for stats of engagement
+        path('stats/engagement/dashboard', HomeView.as_view(), name='engagement_dashboard'),
+        path('stats/engagement/posts/views/', HomeView.as_view(), name='posts_claps'),
+        path('stats/engagement/posts/likes/', HomeView.as_view(), name='posts_updowns'),
+        path('stats/engagement/posts/stars/', HomeView.as_view(), name='posts_rates'),
+        path('stats/engagement/categories/views/', HomeView.as_view(), name='categories_claps'),
+        path('stats/engagement/categories/likes/', HomeView.as_view(), name='categories_updowns'),
+        path('stats/engagement/categories/stars/', HomeView.as_view(), name='categories_rates'),
+
+        # urls for stats of finances
+        path('stats/finances/dashboard/', HomeView.as_view(), name='finances_dashboard'),
+        path('stats/finances/posts/', HomeView.as_view(), name='members_finances'),
+        path('stats/finances/categories/', HomeView.as_view(), name='categories_finances'),
 
         # URLs for password reset email (development)
         path('members/reset_password/', HomeView.as_view(), name='reset_password_email'),

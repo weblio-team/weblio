@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     'simple_history',
     'django_social_share',
     'django.contrib.sites',
+    'services',
 ]
 
 MIDDLEWARE = [

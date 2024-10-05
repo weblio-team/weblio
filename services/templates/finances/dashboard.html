@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% block content %}
+    <div role="main" class="container container-fluid py-4">
+
+        <!-- Tab Navigation -->
+        <ul class="nav nav-tabs" id="myTab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <a class="nav-link active" id="info-tab" data-bs-toggle="tab" href="#info" role="tab" aria-controls="info" aria-selected="true">Resumen</a>
+            </li>
+        </ul>
+    
+        <div class="tab-content mt-3" id="myTabContent">
+            <!-- Tab 1: Resumen -->
+            <div class="tab-pane fade show active" id="info" role="tabpanel" aria-labelledby="info-tab">
+                <!-- Statistics Widgets -->
+                <div class="row text-center">
+                    <!-- Total Revenue -->
+                    <div class="col-lg-6 col-md-6">
+                        <div class="card shadow-sm bg-dark text-light">
+                            <div class="card-body">
+                                <p>Total Ingresos</p>
+                                <h3>$ {{ total_revenue|floatformat:2 }}</h3>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Total Purchases -->
+                    <div class="col-lg-6 col-md-6">
+                        <div class="card shadow-sm bg-dark text-light">
+                            <div class="card-body">
+                                <p>Total Compras</p>
+                                <h3>{{ total_purchases }}</h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chart Section -->
+                <div class="row">
+                    <div class="col-lg-12">
+                        <canvas id="salesChart" class="bg-dark"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<!-- Include Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    // Datos pasados directamente desde el contexto de Django
+    var categories = {{ categories_json|safe }};
+    var salesData = {{ sales_json|safe }};
+
+    // Inicialización del gráfico de barras para "Total Ventas por Categoría Premium"
+    var salesCtx = document.getElementById('salesChart').getContext('2d');
+    var salesChart = new Chart(salesCtx, {
+        type: 'bar',
+        data: {
+            labels: categories,  // Nombres de las categorías
+            datasets: [{
+                label: 'Total Ventas',
+                data: salesData,  // Ventas totales por categoría
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                borderColor: 'rgba(75, 192, 192, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true,  // Asegurarse de que el eje y comienza en 0
+                    ticks: {
+                        color: '#fff'  // Dark mode ticks color
+                    }
+                },
+                x: {
+                    ticks: {
+                        color: '#fff'  // Dark mode ticks color
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    labels: {
+                        color: '#fff'  // Dark mode legend color
+                    }
+                }
+            }
+        }
+    });
+</script>
+
+{% endblock %}
