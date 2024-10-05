@@ -276,7 +276,7 @@ class GroupEditView(FormView):
         form = GroupEditForm(request.POST, instance=group)
         if form.is_valid():
             form.save()
-            messages.success(request, f'El grupo "{group.name}" ha sido actualizado.')
+            messages.success(request, f'El rol "{group.name}" ha sido actualizado.')
             return redirect('group-list')
         context = {
             'form': form,
@@ -465,7 +465,7 @@ class CreateGroupView(LoginRequiredMixin, PermissionRequiredMixin, FormView):
             HttpResponse: Redirige a `success_url` después de crear el grupo.
         """
         form.save()
-        messages.success(self.request, "El grupo ha sido creado.")
+        messages.success(self.request, "El rol ha sido creado.")
         return super().form_valid(form)
 
 # views for members
