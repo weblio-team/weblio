@@ -63,7 +63,7 @@
                             {% endif %}
                             <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item" href="{% url 'kanban-board' %}">Tablero Kanban</a></li>
-                            {% if perms.posts.make_relevant %}
+                            {% if perms.members.make_relevant %}
                                 <li><hr class="dropdown-divider"></li>
                                 <li><a class="dropdown-item" href="{% url 'relevant-posts' %}">Artículos relevantes</a></li>
                             {% endif %}
@@ -88,7 +88,7 @@
                     </li>
                 {% endif %}
                 <!-- Gestión de reportes -->
-                {% if perms.posts.add_post or perms.posts.change_post or perms.posts.can_publish or perms.auth.view_dashboard %}
+                {% if perms.posts.add_post or perms.posts.change_post or perms.posts.can_publish or perms.members.view_dashboard %}
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             Gestión de reportes
@@ -101,7 +101,7 @@
                             <li><a class="dropdown-item" href="{% url 'categories_claps' %}">Views por categoria</a></li>
                             <li><a class="dropdown-item" href="{% url 'categories_updowns' %}">Likes/Dislikes por categoria</a></li>
                             <li><a class="dropdown-item" href="{% url 'categories_rates' %}">Estrellas por categoria</a></li>
-                            {% if perms.auth.view_dashboard %}
+                            {% if perms.members.view_dashboard %}
                                 <li><hr class="dropdown-divider"></li>
                                 <li><a class="dropdown-item" href="{% url 'engagement_dashboard' %}">Dashboard</a></li>
                             {% endif %}
@@ -110,7 +110,7 @@
                 {% endif %}
                 
                 <!-- Gestión de finanzas -->
-                {% if perms.auth.view_finance %}
+                {% if perms.members.view_finances %}
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             Gestión de finanzas

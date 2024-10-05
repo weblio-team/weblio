@@ -271,15 +271,16 @@ class MyPostEditView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
             context['current_thumbnail_url'] = post.thumbnail.url if post.thumbnail else None
 
         if self.request.POST:
-            context['gen_form'] = MyPostEditGeneralForm(self.request.POST, instance=post, user=self.request.user)
+            context['gen_form'] = MyPostEditGeneralForm(self.request.POST, instance=post)
             context['body_form'] = MyPostEditBodyForm(self.request.POST, instance=post)
             context['thumbnail_form'] = MyPostEditThumbnailForm(self.request.POST, self.request.FILES, instance=post)
             context['program_form'] = MyPostEditProgramForm(self.request.POST, instance=post)  # Faltaba instance=post
         else:
-            context['gen_form'] = MyPostEditGeneralForm(instance=post, user=self.request.user)            
+            context['gen_form'] = MyPostEditGeneralForm(instance=post)            
             context['body_form'] = MyPostEditBodyForm(instance=post)
             context['thumbnail_form'] = MyPostEditThumbnailForm(instance=post)
             context['program_form'] = MyPostEditProgramForm(instance=post)  # Faltaba instance=post
+            context['gen_form'].fields['category'].queryset = Category.objects.all() if self.request.user.has_perm('members.auto_publish') else Category.objects.filter(moderated=True)
 
         context['categories_json'] = json.dumps(list(Category.objects.values('id', 'name', 'moderated')))  
         context['state_mapping'] = state_mapping
@@ -406,10 +407,11 @@ class MyPostAddView(PermissionRequiredMixin, LoginRequiredMixin, View):
     """
     permission_required = 'posts.add_post'
     def get(self, request, *args, **kwargs):
-        gen_form = MyPostAddGeneralForm(user=request.user)
+        gen_form = MyPostAddGeneralForm()
         body_form = MyPostAddBodyForm()
         thumbnail_form = MyPostAddThumbnailForm()
         program_form = MyPostAddProgramForm()
+        gen_form.fields['category'].queryset = Category.objects.all() if self.request.user.has_perm('members.auto_publish') else Category.objects.filter(moderated=True)
         return render(request, 'create/create.html', {
             'gen_form': gen_form,
             'body_form': body_form,
