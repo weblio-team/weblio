@@ -747,7 +747,7 @@ class MemberEditPermissionView(LoginRequiredMixin, PermissionRequiredMixin, view
         """
         Agrupa y traduce los permisos de los grupos para mostrarlos en la vista.
         """
-        permissions = Permission.objects.filter(group__in=member.groups.all()).distinct()
+        permissions = Permission.objects.filter(group__in=member.groups.all()).exclude(content_type__model__in=['historicalpost', 'contenttype', 'logentry', 'site']).distinct()
 
         grouped_permissions = {}
         for perm in permissions:
