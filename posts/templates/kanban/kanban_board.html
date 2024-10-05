@@ -2,109 +2,119 @@
 {% load static %}
 
 {% block content %}
-<style>
-    .kanban-footer {
-        position: sticky;
-        bottom: 0;
-        width: 100%;
-        background: linear-gradient(to top, #212529, transparent);
-        z-index: 1000;
-        padding: 20px 0;
-        text-align: center;
-    }
-
-    .kanban-footer .btn {
-        font-size: 18px;
-        padding: 10px 20px;
-        background-color: #007bff;
-        color: white;
-        border: none;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    }
-
-    .kanban-footer .btn:hover {
-        background-color: #0056b3;
-    }
-</style>
 <main>
     <div class="container mt-3">
         <h1>Tablero Kanban</h1>
         <div class="board" 
-        data-can-create="{{ perms.posts.add_post }}"
-        data-can-edit="{{ perms.posts.change_post }}" 
-        data-can-publish="{{ perms.posts.can_publish }}">
+            data-can-create="{{ perms.posts.add_post }}"
+            data-can-edit="{{ perms.posts.change_post }}" 
+            data-can-publish="{{ perms.posts.can_publish }}">
             <form method="post" id="kanban-board">
                 {% csrf_token %}
                 <div class="row">
+                    <!-- Borrador Column -->
                     <div class="col column" id="borrador" data-status="draft">
                         <h3>Borrador</h3>
                         {% for post in draft_posts %}
-                        <div class="card border border-dark mb-3" draggable="true" id="card-{{ post.pk }}"
-                            data-author="{{ post.author.pk }}">
+                        <div class="card border border-dark mb-3 {% if post.author == user %} clickable-card {% endif %}" draggable="true" id="card-{{ post.pk }}" data-author="{{ post.author.pk }}">
+                            <a href="{% if post.author == user %}{% url 'edit-my-post' post.pk %}{% else %}# {% endif %}" class="stretched-link"></a>
                             <div class="card-body">
-                                <h5 class="card-title">
-                                    {% if post.author == user %}
-                                    <a href="{% url 'edit-my-post' post.pk %}" class="card-link">{{ post.title }}</a>
-                                    {% else %}
+                                <h5 class="card-title {% if post.author == user %} clickable {% else %} non-clickable {% endif %}">
                                     {{ post.title }}
-                                    {% endif %}
                                 </h5>
-                                <h6 class="card-text text-muted">Autor: {{ post.author }}</h6>
-                                <h6 class="card-text text-muted">Categoria: {{ post.category }}</h6>
+                                <div class="post-extra-info d-flex align-items-center mt-auto">
+                                    <div class="d-flex align-items-center">
+                                        {% if post.author.pfp %}
+                                        <img src="{{ post.author.pfp.url }}" alt="{{ post.author.first_name }}" class="profile-picture rounded-circle me-2">
+                                        {% else %}
+                                        <img src="https://storage.googleapis.com/bucket-weblio/media/profile_pictures/default_pfp.jpg" alt="{{ post.author.first_name }}" class="profile-picture rounded-circle me-2">
+                                        {% endif %}
+                                        <span class="text-muted smaller-text">
+                                            {{ post.author.first_name }} {{ post.author.last_name }} en {{ post.category }}
+                                        </span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         {% endfor %}
                     </div>
+
+                    <!-- A Editar Column -->
                     <div class="col column" id="editar" data-status="to_edit">
                         <h3>A editar</h3>
                         {% for post in to_edit_posts %}
-                        <div class="card border border-dark mb-3" draggable="true" id="card-{{ post.pk }}"
-                            data-author="{{ post.author.pk }}">
+                        <div class="card border border-dark mb-3 {% if perms.posts.change_post and post.author != user %} clickable-card {% endif %}" draggable="true" id="card-{{ post.pk }}" data-author="{{ post.author.pk }}">
+                            <a href="{% if perms.posts.change_post and post.author != user %}{% url 'edit-a-post' post.pk %}{% else %}# {% endif %}" class="stretched-link"></a>
                             <div class="card-body">
-                                <h5 class="card-title">
-                                    {% if perms.posts.change_post %}
-                                    <a href="{% url 'edit-a-post' post.pk %}" class="card-link">{{ post.title }}</a>
-                                    {% else %}
+                                <h5 class="card-title {% if perms.posts.change_post and post.author != user %} clickable {% else %} non-clickable {% endif %}">
                                     {{ post.title }}
-                                    {% endif %}
                                 </h5>
-                                <h6 class="card-text text-muted">Autor: {{ post.author }}</h6>
-                                <h6 class="card-text text-muted">Categoria: {{ post.category }}</h6>
+                                <div class="post-extra-info d-flex align-items-center mt-auto">
+                                    <div class="d-flex align-items-center">
+                                        {% if post.author.pfp %}
+                                        <img src="{{ post.author.pfp.url }}" alt="{{ post.author.first_name }}" class="profile-picture rounded-circle me-2">
+                                        {% else %}
+                                        <img src="https://storage.googleapis.com/bucket-weblio/media/profile_pictures/default_pfp.jpg" alt="{{ post.author.first_name }}" class="profile-picture rounded-circle me-2">
+                                        {% endif %}
+                                        <span class="text-muted smaller-text">
+                                            {{ post.author.first_name }} {{ post.author.last_name }} en {{ post.category }}
+                                        </span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         {% endfor %}
                     </div>
+
+                    <!-- A Publicar Column -->
                     <div class="col column" id="publicar" data-status="to_publish">
                         <h3>A publicar</h3>
                         {% for post in to_publish_posts %}
-                        <div class="card border border-dark mb-3" draggable="true" id="card-{{ post.pk }}"
-                            data-author="{{ post.author.pk }}">
+                        <div class="card border border-dark mb-3 {% if perms.posts.can_publish and post.author != user %} clickable-card {% endif %}" draggable="true" id="card-{{ post.pk }}" data-author="{{ post.author.pk }}">
+                            <a href="{% if perms.posts.can_publish and post.author != user %}{% url 'publish-a-post' post.pk %}{% else %}# {% endif %}" class="stretched-link"></a>
                             <div class="card-body">
-                                <h5 class="card-title">
-                                    {% if perms.posts.can_publish %}
-                                    <a href="{% url 'publish-a-post' post.pk %}" class="card-link">{{ post.title }}</a>
-                                    {% else %}
+                                <h5 class="card-title {% if perms.posts.can_publish and post.author != user %} clickable {% else %} non-clickable {% endif %}">
                                     {{ post.title }}
-                                    {% endif %}
                                 </h5>
-                                <h6 class="card-text text-muted">Autor: {{ post.author }}</h6>
-                                <h6 class="card-text text-muted">Categoria: {{ post.category }}</h6>
+                                <div class="post-extra-info d-flex align-items-center mt-auto">
+                                    <div class="d-flex align-items-center">
+                                        {% if post.author.pfp %}
+                                        <img src="{{ post.author.pfp.url }}" alt="{{ post.author.first_name }}" class="profile-picture rounded-circle me-2">
+                                        {% else %}
+                                        <img src="https://storage.googleapis.com/bucket-weblio/media/profile_pictures/default_pfp.jpg" alt="{{ post.author.first_name }}" class="profile-picture rounded-circle me-2">
+                                        {% endif %}
+                                        <span class="text-muted smaller-text">
+                                            {{ post.author.first_name }} {{ post.author.last_name }} en {{ post.category }}
+                                        </span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         {% endfor %}
                     </div>
+
+                    <!-- Publicado Column -->
                     <div class="col column" id="publicado" data-status="published">
                         <h3>Publicado</h3>
                         {% for post in published_posts %}
-                        <div class="card border border-dark mb-3" draggable="true" id="card-{{ post.pk }}"
-                            data-author="{{ post.author.pk }}">
+                        <div class="card border border-dark mb-3 clickable-card" draggable="true" id="card-{{ post.pk }}" data-author="{{ post.author.pk }}">
+                            <a href="{% url 'post' post.pk post.category.name|slugify post.date_posted|date:'m' post.date_posted|date:'Y' post.title|slugify %}" class="stretched-link"></a>
                             <div class="card-body">
-                                <h5 class="card-title">
-                                    <a href="{% url 'post' post.pk post.category.name|slugify post.date_posted|date:'m' post.date_posted|date:'Y' post.title|slugify %}"
-                                        class="card-link">{{ post.title }}</a>
+                                <h5 class="card-title clickable">
+                                    {{ post.title }}
                                 </h5>
-                                <h6 class="card-text text-muted">Autor: {{ post.author }}</h6>
-                                <h6 class="card-text text-muted">Categoria: {{ post.category }}</h6>
+                                <div class="post-extra-info d-flex align-items-center mt-auto">
+                                    <div class="d-flex align-items-center">
+                                        {% if post.author.pfp %}
+                                        <img src="{{ post.author.pfp.url }}" alt="{{ post.author.first_name }}" class="profile-picture rounded-circle me-2">
+                                        {% else %}
+                                        <img src="https://storage.googleapis.com/bucket-weblio/media/profile_pictures/default_pfp.jpg" alt="{{ post.author.first_name }}" class="profile-picture rounded-circle me-2">
+                                        {% endif %}
+                                        <span class="text-muted smaller-text">
+                                            {{ post.author.first_name }} {{ post.author.last_name }} en {{ post.category }}
+                                        </span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         {% endfor %}
@@ -114,6 +124,7 @@
         </div>
         <div class="kanban-footer">
             <button class="btn btn-primary btn-lg" id="actualizar-button">Actualizar</button>
+            <a href="{% url 'posts' %}" class="btn btn-secondary btn-lg ms-2">Cancelar</a>
         </div>
     </div>
 </main>
@@ -251,4 +262,66 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 });
 </script>
+<style>
+    /* Title styles */
+    .clickable {
+        color: #007bff;
+        cursor: pointer;
+    }
+
+    .non-clickable {
+        color: black;
+    }
+    
+    /* Profile Picture Styling */
+    .profile-picture {
+        width: 30px;
+        height: 30px;
+        object-fit: cover;
+    }
+
+    .card-title a {
+        text-decoration: none;
+    }
+
+    .kanban-footer {
+        position: sticky;
+        bottom: 0;
+        width: 100%;
+        background: linear-gradient(to top, #212529, transparent);
+        z-index: 1000;
+        padding: 20px 0;
+        text-align: center;
+    }
+
+    .kanban-footer .btn-primary {
+        font-size: 18px;
+        padding: 10px 20px;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .kanban-footer .btn-primary:hover {
+        background-color: #0056b3;
+    }
+    
+    .kanban-footer .btn-secondary {
+        font-size: 18px;
+        padding: 10px 20px;
+        background-color: #6c757d;
+        color: white;
+        border: none;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .kanban-footer .btn-secondary:hover {
+        background-color: #5a6268;
+    }
+
+    .smaller-text {
+        font-size: 0.9em; /* Adjust the size as needed */
+    }
+</style>
 {% endblock %}

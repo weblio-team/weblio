@@ -1144,18 +1144,20 @@ class KanbanBoardView(PermissionRequiredMixin, LoginRequiredMixin, TemplateView)
         can_edit = user.has_perm('posts.change_post')
         can_publish = user.has_perm('posts.can_publish')
 
+        moderated_categories = Category.objects.filter(moderated=True)
+
         if can_create and not can_edit and not can_publish:
             # User can only create posts, show only their posts
-            draft_posts = Post.objects.filter(status='draft', author=user)
-            to_edit_posts = Post.objects.filter(status='to_edit', author=user)
-            to_publish_posts = Post.objects.filter(status='to_publish', author=user)
-            published_posts = Post.objects.filter(status='published', author=user)
+            draft_posts = Post.objects.filter(status='draft', author=user, category__in=moderated_categories)
+            to_edit_posts = Post.objects.filter(status='to_edit', author=user, category__in=moderated_categories)
+            to_publish_posts = Post.objects.filter(status='to_publish', author=user, category__in=moderated_categories)
+            published_posts = Post.objects.filter(status='published', author=user, category__in=moderated_categories)
         else:
             # User has other permissions, show all posts
-            draft_posts = Post.objects.filter(status='draft')
-            to_edit_posts = Post.objects.filter(status='to_edit')
-            to_publish_posts = Post.objects.filter(status='to_publish')
-            published_posts = Post.objects.filter(status='published')
+            draft_posts = Post.objects.filter(status='draft', category__in=moderated_categories)
+            to_edit_posts = Post.objects.filter(status='to_edit', category__in=moderated_categories)
+            to_publish_posts = Post.objects.filter(status='to_publish', category__in=moderated_categories)
+            published_posts = Post.objects.filter(status='published', category__in=moderated_categories)
 
         context.update({
             'draft_posts': draft_posts,
