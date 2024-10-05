@@ -98,10 +98,10 @@
                             <li><a class="dropdown-item" href="{% url 'posts_updowns' %}">Likes/Dislikes por articulo</a></li>
                             <li><a class="dropdown-item" href="{% url 'posts_rates' %}">Estrellas por articulo</a></li>
                             <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="{% url 'categories_claps' %}">Views por categoria</a></li>
-                            <li><a class="dropdown-item" href="{% url 'categories_updowns' %}">Likes/Dislikes por categoria</a></li>
-                            <li><a class="dropdown-item" href="{% url 'categories_rates' %}">Estrellas por categoria</a></li>
-                            {% if perms.members.view_dashboard %}
+                            {% if perms.posts.change_post or perms.posts.can_publish or perms.members.view_dashboard %}
+                                <li><a class="dropdown-item" href="{% url 'categories_claps' %}">Views por categoria</a></li>
+                                <li><a class="dropdown-item" href="{% url 'categories_updowns' %}">Likes/Dislikes por categoria</a></li>
+                                <li><a class="dropdown-item" href="{% url 'categories_rates' %}">Estrellas por categoria</a></li>
                                 <li><hr class="dropdown-divider"></li>
                                 <li><a class="dropdown-item" href="{% url 'engagement_dashboard' %}">Dashboard</a></li>
                             {% endif %}
