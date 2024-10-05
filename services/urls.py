@@ -7,6 +7,7 @@ from .views import DashboardClapsPostsView, DashboardUpdownsPostsView, Dashboard
 from django.contrib.auth import views as auth_views
 from django.urls import reverse_lazy
 from .views import CustomPasswordResetView
+from .views import FinancesDashboardView, FinancesMembersView, FinancesCategoriesView
 
 urlpatterns = [
 
@@ -19,14 +20,19 @@ urlpatterns = [
     path('stripe/payment-success/', PaymentSuccessView.as_view(), name='payment_success'),
     path('stripe/payment-cancel/<int:category_id>/', PaymentCancelView.as_view(), name='payment_cancel'),
 
-    # urls for dashboard
-    path('dashboard/posts/views/', DashboardClapsPostsView.as_view(), name='posts_claps'),
-    path('dashboard/posts/likes/', DashboardUpdownsPostsView.as_view(), name='posts_updowns'),
-    path('dashboard/posts/stars/', DashboardRatePostsView.as_view(), name='posts_rates'),
-    path('dashboard/categories/views/', DashboardClapsCategoriesView.as_view(), name='categories_claps'),
-    path('dashboard/categories/likes/', DashboardUpdownsCategoriesView.as_view(), name='categories_updowns'),
-    path('dashboard/categories/stars/', DashboardRateCategoriesView.as_view(), name='categories_rates'),
-    path('dashboard/', DashboardPostsView.as_view(), name='posts_dashboard'),
+    # urls for stats of engagement
+    path('stats/engagement/dashboard', DashboardPostsView.as_view(), name='engagement_dashboard'),
+    path('stats/engagement/posts/views/', DashboardClapsPostsView.as_view(), name='posts_claps'),
+    path('stats/engagement/posts/likes/', DashboardUpdownsPostsView.as_view(), name='posts_updowns'),
+    path('stats/engagement/posts/stars/', DashboardRatePostsView.as_view(), name='posts_rates'),
+    path('stats/engagement/categories/views/', DashboardClapsCategoriesView.as_view(), name='categories_claps'),
+    path('stats/engagement/categories/likes/', DashboardUpdownsCategoriesView.as_view(), name='categories_updowns'),
+    path('stats/engagement/categories/stars/', DashboardRateCategoriesView.as_view(), name='categories_rates'),
+
+    # urls for stats of finances
+    path('stats/finances/dashboard/', FinancesDashboardView.as_view(), name='finances_dashboard'),
+    path('stats/finances/members/', FinancesMembersView.as_view(), name='members_finances'),
+    path('stats/finances/categories/', FinancesCategoriesView.as_view(), name='categories_finances'),
 
     # urls for password reset
     path('password-reset-email/', CustomPasswordResetView.as_view(

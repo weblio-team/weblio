@@ -68,14 +68,19 @@ class HomeView(TemplateView):
                 'payment_success': "La confirmación de pago solo está disponible en producción.",
                 'payment_cancel': "La cancelación de pago solo está disponible en producción.",
                  
-                # URLs for dashboard (development)
+                # URLs for stats of engagement (development)
                 'posts_claps': "Las vistas de publicaciones solo están disponibles en producción.",
                 'posts_updowns': "Los likes de publicaciones solo están disponibles en producción.",
                 'posts_rates': "Las estrellas de publicaciones solo están disponibles en producción.",
                 'categories_claps': "Las vistas de categorías solo están disponibles en producción.",
                 'categories_updowns': "Los likes de categorías solo están disponibles en producción.",
                 'categories_rates': "Las estrellas de categorías solo están disponibles en producción.",
-                'posts_dashboard': "El dashboard solo está disponible en producción.",
+                'engagement_dashboard': "El dashboard de interaccion solo está disponible en producción.",
+                
+                # URLs for stats of finances (development)
+                'finances_dashboard': "El dashboard de finanzas solo está disponible en producción.",
+                'members_finances': "Las finanzas por miembros solo están disponibles en producción.",
+                'categories_finances': "Las finanzas por categorías solo están disponibles en producción.",
                 
                 # URLs for password reset email (development)
                 'reset_password_email': "El reseteo de contraseña por correo solo está disponible en producción.",
@@ -126,11 +131,7 @@ class GroupListView(LoginRequiredMixin, PermissionRequiredMixin, TemplateView):
         """
         Agrupa y traduce los permisos de un grupo para mostrarlos en el listado.
         """
-        permissions = group.permissions.exclude(content_type__model__in=['historicalpost',
-                                                                         'session',
-                                                                         'contenttype'
-                                                                         'logentry',
-                                                                         ]
+        permissions = group.permissions.exclude(content_type__model__in=['historicalpost', 'contenttype', 'session', 'logentry', 'site', 'notification', 'report', 'purchase']
         ).select_related('content_type')
         grouped_permissions = {}
         for perm in permissions:
@@ -231,7 +232,7 @@ class GroupEditView(FormView):
         """
         # Excluir permisos no deseados
         permissions = Permission.objects.exclude(
-            content_type__model__in=['historicalpost', 'contenttype', 'session', 'logentry', 'site']
+            content_type__model__in=['historicalpost', 'contenttype', 'session', 'logentry', 'site', 'notification', 'report', 'purchase']
         ).select_related('content_type').distinct()
 
         grouped_permissions = {}
@@ -413,7 +414,7 @@ class CreateGroupView(LoginRequiredMixin, PermissionRequiredMixin, FormView):
         """
         # Excluye los permisos no deseados y selecciona los que pertenecen al grupo
         permissions = Permission.objects.exclude(
-            content_type__model__in=['historicalpost', 'contenttype', 'session', 'logentry', 'site']
+            content_type__model__in=['historicalpost', 'contenttype', 'session', 'logentry', 'site', 'notification', 'report', 'purchase']
         ).select_related('content_type').distinct()
 
         grouped_permissions = {}
@@ -444,7 +445,7 @@ class CreateGroupView(LoginRequiredMixin, PermissionRequiredMixin, FormView):
         if settings.DEBUG:
             grouped_permissions = {
                 module: {
-                    submodule: [perm for perm in perms if perm['name'] != 'Puede ver dashboard']
+                    submodule: [perm for perm in perms if perm['name'] not in ['Puede ver dashboard', 'Puede ver las finanzas']]
                     for submodule, perms in submodules.items()
                 }
                 for module, submodules in grouped_permissions.items()
@@ -487,7 +488,7 @@ class MemberListView(LoginRequiredMixin, PermissionRequiredMixin, TemplateView):
             Prefetch(
                 'user_permissions',
                 queryset=Permission.objects.exclude(
-                    content_type__model__in=['historicalpost', 'logentry', 'session', 'contenttype']
+                    content_type__model__in=['historicalpost', 'contenttype', 'session', 'logentry', 'site', 'notification', 'report', 'purchase']
                 ).select_related('content_type')
             )
         ).prefetch_related('groups')
@@ -628,7 +629,7 @@ class MemberEditGroupView(LoginRequiredMixin, PermissionRequiredMixin, views.Vie
             list: Lista de grupos traducidos con sus permisos agrupados.
         """
         groups = Group.objects.exclude(name__in=['Admin', 'Contenttypes', 'Sessions']).prefetch_related(
-            Prefetch('permissions', queryset=Permission.objects.exclude(content_type__model__in=['historicalpost', 'session', 'contenttype', 'logentry']).select_related('content_type'))
+            Prefetch('permissions', queryset=Permission.objects.exclude(content_type__model__in=['historicalpost', 'contenttype', 'session', 'logentry', 'site', 'notification', 'report', 'purchase']).select_related('content_type'))
         )
 
         translated_groups = []
@@ -645,7 +646,7 @@ class MemberEditGroupView(LoginRequiredMixin, PermissionRequiredMixin, views.Vie
         """
         Agrupa y traduce los permisos de un grupo para mostrarlos en la vista.
         """
-        permissions = group.permissions.exclude(content_type__model__in=['historicalpost', 'session', 'contenttype', 'logentry']).select_related('content_type')
+        permissions = group.permissions.exclude(content_type__model__in=['historicalpost', 'contenttype', 'session', 'logentry', 'site', 'notification', 'report', 'purchase']).select_related('content_type')
         
         grouped_permissions = {}
         for perm in permissions:
@@ -672,7 +673,7 @@ class MemberEditGroupView(LoginRequiredMixin, PermissionRequiredMixin, views.Vie
         if settings.DEBUG:
             grouped_permissions = {
                 module: {
-                submodule: [perm for perm in perms if perm != 'Puede ver dashboard']
+                submodule: [perm for perm in perms if perm not in ['Puede ver dashboard', 'Puede ver las finanzas']]
                     for submodule, perms in submodules.items()
                 }
                 for module, submodules in grouped_permissions.items()

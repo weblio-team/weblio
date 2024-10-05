@@ -53,6 +53,7 @@ class Member(AbstractBaseUser, PermissionsMixin):
             ('view_dashboard', 'Can view dashboard'),
             ('make_relevant', 'Can make a post relevant'),
             ('auto_publish', 'Puede auto-publicar artículo'),
+            ('view_finances', 'Puede ver las finanzas'),
         ]
 
     def __str__(self):

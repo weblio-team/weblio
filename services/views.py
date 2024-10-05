@@ -19,6 +19,11 @@ from django.utils import timezone
 import platform
 from django.contrib.auth.views import PasswordResetView
 from dicts import translated_module_dict, translated_submodule_dict, translated_permission_dict
+from .models import Purchase
+from django.db import models
+import json
+from django.db.models import Sum, Value, DecimalField
+from django.db.models.functions import Coalesce
 
 class CustomImageUploadView(View):
     """
@@ -184,6 +189,16 @@ class PaymentSuccessView(View):
                 user.purchased_categories.add(category)
                 user.save()
                 print(f"Category {category.name} added to user {user.username}'s purchased categories.")
+
+                # Crear una nueva instancia de Purchase
+                purchase = Purchase(
+                    user=user,
+                    category=category,
+                    price=session['amount_total'] / 100,  # Stripe amount is in cents
+                )
+                purchase.save()
+                print(f"Purchase record created: {purchase}")
+                print(f"User {user.username} purchased category {category.name} for ${purchase.price}")
 
                 # Mostrar mensaje de éxito
                 messages.success(request, '¡Categoría comprada con éxito!')
@@ -877,3 +892,52 @@ class UserPermissionsEmailView(View):
 
         # Enviar el correo
         email_message.send()
+
+# viers for finances reports
+class FinancesDashboardView(TemplateView):
+    template_name = 'finances/dashboard.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        # Total revenue and purchases
+        context['total_revenue'] = Purchase.objects.aggregate(total=Sum('price'))['total']
+        context['total_purchases'] = Purchase.objects.count()
+
+        # Filtrar categorías premium
+        premium_categories = Category.objects.filter(kind='premium')
+
+        # Obtener ventas por categoría premium, incluso si las ventas son 0
+        category_sales_data = premium_categories.annotate(
+            total_sales=Coalesce(Sum('purchase__price'), Value(0, output_field=DecimalField()))
+        )
+
+        # Preparar los datos para el gráfico de barras
+        categories = [category.name for category in category_sales_data]
+        sales = [float(category.total_sales) for category in category_sales_data]  # Convertir Decimal a float para serializar
+
+        # Serializar los datos como JSON
+        context['categories_json'] = json.dumps(categories)
+        context['sales_json'] = json.dumps(sales)
+
+        return context
+
+
+class FinancesMembersView(TemplateView):
+    template_name = 'finances/member.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['purchases'] = Purchase.objects.select_related('category', 'user').all()
+        return context
+
+class FinancesCategoriesView(TemplateView):
+    template_name = 'finances/category.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        
+        # Group by category name and sum the price
+        context['categories'] = Purchase.objects.values('category__name').annotate(total=models.Sum('price'))
+        
+        return context
