@@ -32,6 +32,14 @@
             });
         });
 
+        // Add event listener for the actualizar button
+        const actualizarButton = document.getElementById("actualizar-button");
+        if (actualizarButton) {
+            actualizarButton.addEventListener("click", function() {
+                showSpinner(); // Show spinner when the button is clicked
+            });
+        }
+
         // Attach submit event to all forms
         document.querySelectorAll('form').forEach(function(form) {
             form.addEventListener('submit', function() {
