@@ -29,73 +29,121 @@
     <div class="tab-content" id="myTabContent">
         <!-- Vista previa Tab -->
         <div class="tab-pane fade show active" id="vista-previa" role="tabpanel" aria-labelledby="vista-previa-tab">
-            <div class="py-3">
-                <h1>{{ post.title }}</h1>
-                <blockquote class="blockquote">
-                    <small>{{ post.summary }}</small>
-                </blockquote>
+            <div class="container my-3 p-3 bg-dark text-white rounded">
+                <div class="row g-0">
+                    <!-- Conditionally apply classes based on the presence of a thumbnail -->
+                    <div class="{% if post.thumbnail %}col-md-7{% else %}col-12 text-center{% endif %} d-flex flex-column justify-content-center">
+                        <div class="card-body p-2">
+                            <!-- Título del post -->
+                            <h1 class="display-5 text-white">{{ post.title }}</h1>
+        
+                            <!-- Resumen del post -->
+                            <blockquote class="blockquote">
+                                <p class="mb-0 text-white">― {{ post.summary }}</p>
+                            </blockquote>
+        
+                            <!-- Información del autor, categoría, etiquetas y fechas -->
+                            <div class="mt-3">
+                                <div class="row">
+                                    <!-- Columna para la información del autor -->
+                                    <div class="d-flex align-items-center my-2">
+                                        {% if post.author.pfp %}
+                                            <img src="{{ post.author.pfp.url }}" class="rounded-circle me-2" alt="Author Thumbnail" style="width: 50px; height: 50px;">
+                                        {% else %}
+                                            <img src="https://storage.googleapis.com/bucket-weblio/media/profile_pictures/default_pfp.jpg" class="rounded-circle me-2" alt="Default Thumbnail" style="width: 50px; height: 50px;">
+                                        {% endif %}
+                                        <div class="text-start">
+                                            <p class="mb-1">
+                                                <strong>Autor: {{ post.author.first_name }} {{ post.author.last_name }}</strong><br>
+                                                <small class="text-white">
+                                                    Categoría: {{ post.category }} |
+                                                    Etiquetas: {{ post.keywords }} |
+                                                    {% if post.publish_start_date and post.publish_end_date %}
+                                                    <span id="availability" class="small-text" 
+                                                            data-start-date="{{ post.publish_start_date|date:"Y-m-d\TH:i:s" }}" 
+                                                            data-end-date="{{ post.publish_end_date|date:"Y-m-d\TH:i:s" }}">
+                                                        Calculando días...
+                                                    </span>
+                                                    {% else %}
+                                                        <span id="availability" class="small-text">Calculando días...</span>
+                                                    {% endif %}
+                                                </small>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+        
+                    <!-- Imagen del post (Portada) al lado derecho -->
+                    {% if post.thumbnail %}
+                    <div class="col-md-5 d-flex align-items-center">
+                        <img src="{{ post.thumbnail.url }}" class="img-fluid rounded" alt="Thumbnail" style="width: 100%; height: auto; max-height: 300px; object-fit: cover;">
+                    </div>
+                    {% endif %}
+                </div>
                 <hr>
                 <p>{{ post.body|safe }}</p>
-                <small>Autor: {{ post.author.first_name }} {{ post.author.last_name }}</small><br>
-                <small>Categoría: {{ post.category }}</small><br>
-                <small>Etiquetas: {{ post.keywords }}</small><br>
             </div>
-        </div>
+        </div>        
 
         <!-- Información adicional Tab -->
-        <div class="tab-pane fade" id="informacion-adicional" role="tabpanel"
-            aria-labelledby="informacion-adicional-tab">
-            <div class="py-3">
+        <div class="tab-pane fade" id="informacion-adicional" role="tabpanel" aria-labelledby="informacion-adicional-tab">
+            <div class="container py-4">
                 <div class="row">
-                    <!-- Columna para las fechas de publicación -->
-                    <div class="col-md-6">
-                        <!-- Contenedor que une las dos cartas de fechas -->
-                        <div class="d-flex flex-column h-100 justify-content-between">
-                            <!-- Carta para la fecha de inicio -->
-                            <div class="card bg-dark text-white mb-3 border border-light flex-fill">
+                    <!-- Column for publication dates -->
+                    <div class="col-md-6 d-flex flex-column">
+                        <div class="d-flex flex-column flex-fill">
+                            <!-- Start Date Card -->
+                            <div class="card text-white mb-3" style="background-color: #343a40; border: none;">
                                 <div class="card-body">
-                                    <h5 class="card-title">Fecha de inicio de publicación</h5>
+                                    <h5 class="card-title">
+                                        <i class="bi bi-calendar-event"></i> Fecha de inicio de publicación
+                                    </h5>
                                     <div class="form-group">
                                         {% if publish_start_date %}
-                                        <p>{{ publish_start_date|date:"l"|capitalize_first }},
-                                            {{ publish_start_date|date:"F"|capitalize_first }}
-                                            {{ publish_start_date|date:"j, Y, g:i A" }}</p>
+                                            <p>{{ publish_start_date|date:"l"|capitalize_first }}, {{ publish_start_date|date:"F"|capitalize_first }} {{ publish_start_date|date:"j, Y, g:i A" }}</p>
                                         {% else %}
-                                        <p>No hay una fecha de inicio de publicación disponible.</p>
+                                            <p>No hay una fecha de inicio de publicación disponible.</p>
                                         {% endif %}
                                     </div>
                                 </div>
                             </div>
-
-                            <!-- Carta para la fecha de fin -->
-                            <div class="card bg-dark text-white border border-light flex-fill">
+        
+                            <!-- End Date Card -->
+                            <div class="card text-white mt-3 flex-fill" style="background-color: #343a40; border: none;">
                                 <div class="card-body">
-                                    <h5 class="card-title">Fecha de fin de publicación</h5>
+                                    <h5 class="card-title">
+                                        <i class="bi bi-calendar-x"></i> Fecha de fin de publicación
+                                    </h5>
                                     <div class="form-group">
                                         {% if publish_end_date %}
-                                        <p>{{ publish_end_date|date:"l"|capitalize_first }},
-                                            {{ publish_end_date|date:"F"|capitalize_first }}
-                                            {{ publish_end_date|date:"j, Y, g:i A" }}</p>
+                                            <p>{{ publish_end_date|date:"l"|capitalize_first }}, {{ publish_end_date|date:"F"|capitalize_first }} {{ publish_end_date|date:"j, Y, g:i A" }}</p>
                                         {% else %}
-                                        <p>No hay una fecha de fin de publicación disponible.</p>
+                                            <p>No hay una fecha de fin de publicación disponible.</p>
                                         {% endif %}
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-
-                    <!-- Columna para la foto de portada -->
-                    <div class="col-md-6">
-                        <!-- Carta para la foto de portada -->
-                        <div class="card bg-dark border border-light text-white h-100">
-                            <div class="card-body">
-                                <h5 class="card-title">Foto de portada</h5>
-                                <div class="card-thumbnail-container">
+        
+                    <!-- Column for the thumbnail -->
+                    <div class="col-md-6 d-flex flex-column">
+                        <div class="card text-white h-100" style="background-color: #343a40; border: none;">
+                            <div class="card-body d-flex flex-column justify-content-center align-items-center">
+                                <h5 class="card-title">
+                                    <i class="bi bi-image"></i> Foto de portada
+                                </h5>
+                                <div class="card-thumbnail-container my-3 text-center flex-grow-1 d-flex align-items-center justify-content-center">
                                     {% if post.thumbnail %}
-                                    <img src="{{ post.thumbnail.url }}" class="img-fluid rounded" alt="{{ post.title }}">
+                                        <img src="{{ post.thumbnail.url }}" class="img-fluid rounded" alt="{{ post.title }}" style="max-height: 300px; object-fit: cover;">
                                     {% else %}
-                                    <p>No hay una foto de portada subida.</p>
+                                        <div class="no-thumbnail" style="background-color: #495057; padding: 20px; border-radius: 8px; text-align: center;">
+                                            <p class="mb-0">No hay una foto de portada subida.</p>
+                                            <i class="bi bi-file-earmark-image" style="font-size: 2rem; color: #adb5bd;"></i>
+                                        </div>
                                     {% endif %}
                                 </div>
                             </div>
@@ -103,28 +151,43 @@
                     </div>
                 </div>
             </div>
-        </div>
+        </div>        
 
         <!-- Nueva pestaña para la vista de la portada -->
         <div class="tab-pane fade" id="vista-portada" role="tabpanel" aria-labelledby="vista-portada-tab">
             <div class="py-3">
-                <div class="card mb-3 w-100">
+                <div class="card mb-3 w-100 card-hover position-relative">
                     <div class="row g-0">
+                        <!-- Conditionally show the image column only if there's a thumbnail -->
+                        {% if post.thumbnail %}
                         <div class="col-md-3">
                             <div class="thumbnail-container">
-                                {% if post.thumbnail %}
-                                <img src="{{ post.thumbnail.url }}" class="thumbnail-img rounded" alt="{{ post.title }}">
-                                {% else %}
-                                <p>No hay una foto de portada subida.</p>
-                                {% endif %}
+                                <img src="{{ post.thumbnail.url }}" class="img-fluid rounded-start thumbnail-img" alt="{{ post.title }}">
                             </div>
                         </div>
-                        <div class="col-md-9">
+                        <div class="col-md-9"> <!-- 9-column content when thumbnail exists -->
+                        {% else %}
+                        <div class="col-md-12"> <!-- Full width content when no thumbnail -->
+                        {% endif %}
                             <div class="card-body">
-                                <h5 class="card-title"><span class="text-decoration-underline text-primary">{{post.title }}</span></h5>
-                                <p class="card-text text-black">{{ post.summary|safe }}</p>
-                                <p class="card-text"><small class="text-muted">Autor: {{ post.author.first_name }} {{post.author.last_name }}</small></p>
-                                <p class="card-text"><small class="text-muted">Categoría: {{ post.category }}</small></p>
+                                <div>
+                                    <h4 class="card-title post-title">{{ post.title }}</h4>
+                                    <p class="card-text post-summary">— {{ post.summary }}</p>
+                                </div>
+                                <div class="post-extra-info d-flex align-items-center mt-auto">
+                                    <!-- Author's profile picture -->
+                                    <div class="d-flex align-items-center">
+                                        {% if post.author.pfp %}
+                                            <img src="{{ post.author.pfp.url }}" alt="{{ post.author.first_name }}" class="profile-picture rounded-circle me-2">
+                                        {% else %}
+                                            <img src="https://picsum.photos/200" alt="{{ post.author.first_name }}" class="profile-picture rounded-circle me-2">
+                                        {% endif %}
+                                        <!-- Author's name and category -->
+                                        <span class="text-muted">
+                                            <strong>{{ post.author.first_name }} {{ post.author.last_name }}</strong> en <strong>{{ post.category }}</strong>
+                                        </span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -283,14 +346,63 @@
         }
     });
 </script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        var availabilityElement = document.getElementById("availability");
+        if (availabilityElement) {
+            var startDate = availabilityElement.getAttribute("data-start-date");
+            var endDate = availabilityElement.getAttribute("data-end-date");
+
+            if (startDate && endDate) {
+                // Convert the date strings into Date objects
+                startDate = new Date(startDate);
+                endDate = new Date(endDate);
+
+                // Check if the dates are valid
+                if (!isNaN(startDate.getTime()) && !isNaN(endDate.getTime())) {
+                    var timeDiff = endDate - startDate; // Difference in milliseconds
+                    var daysBetween = Math.floor(timeDiff / (1000 * 60 * 60 * 24)); // Convert milliseconds to days
+                    
+                    if (daysBetween > 0) {
+                        availabilityElement.innerHTML = '<small class="text-white">Disponible por ' + daysBetween + ' días</small>';
+                    } else {
+                        // If no days, check the hours
+                        var hoursBetween = Math.floor(timeDiff / (1000 * 60 * 60)); // Convert milliseconds to hours
+                        
+                        if (hoursBetween > 0) {
+                            availabilityElement.innerHTML = '<small class="text-white">Disponible por ' + hoursBetween + ' horas</small>';
+                        } else {
+                            // If no hours, check the minutes
+                            var minutesBetween = Math.floor(timeDiff / (1000 * 60)); // Convert milliseconds to minutes
+                            
+                            if (minutesBetween > 0) {
+                                availabilityElement.innerHTML = '<small class="text-white">Disponible por ' + minutesBetween + ' minutos</small>';
+                            } else {
+                                availabilityElement.innerHTML = '<small class="text-white">Disponible por menos de un minuto</small>';
+                            }
+                        }
+                    }
+                } else {
+                    availabilityElement.innerHTML = '<small class="text-white">Fecha inválida</small>';
+                }
+            } else {
+                // Default to 7 days if dates are not available
+                availabilityElement.innerHTML = '<small class="text-white">Disponible por 7 días</small>';
+            }
+        }
+    });
+</script>
 <style>
+    .small-text {
+        font-size: 1.15em; /* Ajusta el tamaño según sea necesario */
+    }
+    /* Thumbnail and Profile Picture Styles */
     .thumbnail-container {
         width: 100%;
-        padding-top: 100%;
-        /* 1:1 Aspect Ratio */
+        padding-top: 100%; /* 1:1 Aspect Ratio */
         position: relative;
     }
-
+    
     .thumbnail-img {
         position: absolute;
         top: 0;
@@ -299,18 +411,85 @@
         height: 100%;
         object-fit: cover;
     }
-
-    .card-thumbnail-container {
-    display: flex;
-    justify-content: center; /* Centra la imagen horizontalmente */
-    align-items: center;     /* Centra la imagen verticalmente */
-    padding: 10px;           /* Añade un poco de padding alrededor de la imagen */
-    border-radius: 10px;     /* Bordes redondeados */
-    background-color: #212529; /* Fondo oscuro para la imagen */
+    
+    /* Profile Picture Styling */
+    .profile-picture {
+        width: 35px;
+        height: 35px;
+        object-fit: cover;
+    }
+    
+    /* Card body layout */
+    .card-body {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        height: 100%;
+    }
+    
+    /* Title styling */
+    .post-title {
+        font-size: 1.5rem;
+        color: #007bff;
+        margin-bottom: 0.5rem;
+    }
+    
+    /* Summary styling */
+    .post-summary {
+        font-size: 1.1rem;
+        color: #495057;
+        margin-bottom: 1rem;
+        line-height: 1.5;
+    }
+    
+    /* Extra info section */
+    .post-extra-info {
+        display: flex;
+        align-items: center;
+        font-size: 0.9rem;
+        color: #6c757d;
+        margin-top: auto;
+    }
+    
+    .post-extra-info img {
+        margin-right: 10px;
+    }
+    /* Center the title and content */
+    h1 {
+        text-align: center;
+    }
+    
+    .container {
+        max-width: 1000px; /* Restrict the container's max width to center the content */
+        margin: 0 auto; /* Center the container */
     }
 
+    /* Ensure that the cards stretch to the same height */
+    .flex-fill {
+        flex: 1;
+    }
+
+    /* Thumbnail and "No Thumbnail" Styling */
+    .no-thumbnail {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+        background-color: #495057;
+        border-radius: 8px;
+    }
+
+    .no-thumbnail i {
+        margin-top: 10px; /* Space above the icon */
+    }
+
+    /* Make sure the thumbnail fits within the card without overflow */
     .card-thumbnail-container img {
-    border-radius: 0.25rem; /* Ajusta el valor según tus necesidades */
+        max-width: 100%;
+        height: auto;
+        max-height: 300px;
+        object-fit: cover;
     }
 </style>
 {% endblock %}
