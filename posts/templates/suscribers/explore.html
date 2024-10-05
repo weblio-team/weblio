@@ -7,28 +7,28 @@
                 <div class="row" id="masonry-grid" data-masonry='{"percentPosition": true }'>
                     {% for post in object_list %}
                     <div class="col-md-4 mb-4">
-                        <div class="card w-100 h-100" style="height: {{ post.height }}px;">
-                            {% if post.thumbnail %}
-                                <!-- Mostrar imagen solo si existe -->
-                                <img src="{{ post.thumbnail.url }}" class="img-fluid rounded-top" alt="{{ post.title }}" style="object-fit: cover; width: 100%; height: {{ post.height }}px;">
-                            {% endif %}
-                            <div class="card-body d-flex flex-column">
-                                <h5 class="card-title">
-                                    <a href="{% url 'post' post.pk post.category.name|slugify post.date_posted|date:'m' post.date_posted|date:'Y' post.title|slugify %}">
-                                        {{ post.title }}
-                                    </a>
-                                </h5>
-                                <p class="card-text text-muted flex-grow-1">{{ post.summary|safe }}</p>
-                                <div class="mt-auto">
-                                    <p class="card-text">
-                                        <small class="text-muted">Autor: {{ post.author.first_name }} {{ post.author.last_name }}</small>
-                                    </p>
-                                    <p class="card-text">
-                                        <small class="text-muted">Categoría: {{ post.category }}</small>
-                                    </p>
+                        <a class="card-link" href="{% url 'post' post.pk post.category.name|slugify post.date_posted|date:'m' post.date_posted|date:'Y' post.title|slugify %}">
+                            <div class="card card-hover w-100 h-100" style="height: {{ post.height }}px;">
+                                {% if post.thumbnail %}
+                                    <!-- Mostrar imagen solo si existe -->
+                                    <img src="{{ post.thumbnail.url }}" class="img-fluid rounded-top" alt="{{ post.title }}" style="object-fit: cover; width: 100%; height: {{ post.height }}px;">
+                                {% endif %}
+                                <div class="card-body d-flex flex-column">
+                                    <h5 class="card-title post-title"> {{ post.title }} </h5>
+                                    <p class="card-text text-muted flex-grow-1">{{ post.summary|safe }}</p>
+                                    <div class="post-extra-info d-flex align-items-center mt-auto">
+                                        {% if post.author.pfp %}
+                                            <img src="{{ post.author.pfp.url }}" alt="{{ post.author.first_name }}" class="profile-picture rounded-circle me-2">
+                                        {% else %}
+                                            <img src="https://storage.googleapis.com/bucket-weblio/media/profile_pictures/default_pfp.jpg" alt="{{ post.author.first_name }}" class="profile-picture rounded-circle me-2">
+                                        {% endif %}
+                                        <span class="text-muted">
+                                            <strong>{{ post.author.first_name }} {{ post.author.last_name }}</strong> en <strong>{{ post.category }}</strong>
+                                        </span>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
+                        </a>
                     </div>
                     {% empty %}
                         <p>No se encontraron artículos.</p>
@@ -116,6 +116,58 @@
         /* Aumentando el espacio entre el nombre de la categoría y el badge del tipo */
         .ml-3 {
             margin-left: 0.75rem !important; /* Ajuste del margen izquierdo */
+        }
+        .profile-picture {
+            width: 35px;
+            height: 35px;
+            object-fit: cover;
+        }
+
+        .card-hover {
+            transition: transform 0.3s ease;
+        }
+
+        .card-hover:hover {
+            transform: scale(1.05);
+        }
+
+        .badge-container {
+            z-index: 1;
+        }
+
+        .post-extra-info {
+            display: flex;
+            align-items: center;
+            font-size: 0.9rem;
+            color: #6c757d;
+            margin-top: auto;
+        }
+
+        .post-extra-info img {
+            margin-right: 10px;
+        }
+
+        .card-link {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .post-title {
+            color: #007bff;
+            text-decoration: none;
+        }
+
+
+        .post-summary {
+            font-size: 1.1rem;
+            color: #495057;
+            margin-bottom: 1rem;
+            line-height: 1.5;
+        }
+
+
+        .card-link:hover .post-title {
+            text-decoration: underline;
         }
     </style>
 

@@ -869,7 +869,7 @@ class SuscriberExplorePostsView(ListView):
              num_posts=Count('post', filter=Q(post__status='published'))
         ).filter(num_posts__gt=0)
         # Generar una altura aleatoria para cada post en la lista de objetos (object_list)
-        [setattr(post, 'height', random.randint(250, 450)) for post in context['object_list']]
+        [setattr(post, 'height', random.randint(200, 500)) for post in context['object_list']]
         return context
 
 class SuscriberFeedPostsView(ListView):
@@ -913,7 +913,7 @@ class SuscriberFeedPostsView(ListView):
         context = super().get_context_data(**kwargs)
         context['categories'] = Category.objects.all()
         # Generar una altura aleatoria para cada post en la lista de objetos (object_list)
-        [setattr(post, 'height', random.randint(250, 450)) for post in context['object_list']]
+        [setattr(post, 'height', random.randint(200, 500)) for post in context['object_list']]
         return context
 
 class SearchExplorePostView(ListView):
