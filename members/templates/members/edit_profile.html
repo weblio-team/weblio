@@ -13,7 +13,7 @@
                 {% if user.pfp %}
                     <img src="{{ user.pfp.url }}" alt="Foto de perfil" class="img-fluid rounded-circle" id="profile-pic">
                 {% else %}
-                    <img src="https://picsum.photos/seed/picsum/150" alt="Foto de perfil" class="img-fluid rounded-circle" id="profile-pic">
+                    <img src="https://storage.googleapis.com/bucket-weblio/media/profile_pictures/default_pfp.jpg" alt="Foto de perfil" class="img-fluid rounded-circle" id="profile-pic">
                 {% endif %}
                 <div class="overlay"></div>
                 <label for="profile-pic-upload" class="upload-label text-center" id="change-photo-btn" data-has-photo="{{ user.pfp|yesno:'true,false' }}">

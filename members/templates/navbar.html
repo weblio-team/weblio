@@ -148,7 +148,7 @@
                             {% if user.pfp %}
                                 <img src="{{ user.pfp.url }}" height="40px" width="40px" alt="User Image" class="rounded-circle me-2">
                             {% else %}
-                                <img src="https://picsum.photos/seed/picsum/1080" height="40px" width="40px" alt="Default User Image" class="rounded-circle me-2">
+                                <img src="https://storage.googleapis.com/bucket-weblio/media/profile_pictures/default_pfp.jpg" height="40px" width="40px" alt="Default User Image" class="rounded-circle me-2">
                             {% endif %}
                             {{ user.first_name }} {{ user.last_name }}
                         </a>
