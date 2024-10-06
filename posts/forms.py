@@ -80,9 +80,9 @@ class CategoryForm(forms.ModelForm):
 
 class CategoryEditForm(forms.ModelForm):
     """
-    Formulario para editar categorías.
+    Formulario para crear y editar categorías.
 
-    Este formulario permite editar categorías solicitando un nombre, alias,
+    Este formulario permite crear y editar categorías solicitando un nombre, alias,
     descripción, tipo y precio. Valida que el precio sea requerido para categorías premium.
 
     Atributos:
@@ -161,6 +161,8 @@ class MyPostEditGeneralForm(forms.ModelForm):
 
     Atributos:
     ----------
+    change_reason : CharField
+        Campo oculto para almacenar la razón del cambio.
     Meta : class
         Clase interna que define el modelo, los campos, las etiquetas y los widgets del formulario.
     """
@@ -202,7 +204,35 @@ class MyPostEditGeneralForm(forms.ModelForm):
         }
 
 class MyPostEditThumbnailForm(forms.ModelForm):
+    """
+    Formulario para editar la miniatura de una publicación.
+
+    Este formulario permite editar la miniatura de una publicación solicitando una imagen.
+    Utiliza un widget personalizado para el campo de la miniatura.
+
+    Atributos:
+    ----------
+    Meta : class
+        Clase interna que define el modelo, los campos y los widgets del formulario.
+
+    Métodos:
+    --------
+    __init__(*args, **kwargs):
+        Inicializa el formulario y añade la URL de la miniatura actual si existe.
+    """
     class Meta:
+        """
+        Metadatos del formulario.
+
+        Atributos:
+        ----------
+        model : Model
+            El modelo que se utilizará para el formulario.
+        fields : list
+            Lista de campos que se incluirán en el formulario.
+        widgets : dict
+            Widgets personalizados para los campos del formulario.
+        """
         model = Post
         fields = ['thumbnail']
         widgets = {
@@ -214,13 +244,55 @@ class MyPostEditThumbnailForm(forms.ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
+        """
+        Inicializa el formulario y añade la URL de la miniatura actual si existe.
+
+        Args:
+        -----
+        *args : list
+            Argumentos posicionales.
+        **kwargs : dict
+            Argumentos clave.
+
+        Returns:
+        --------
+        None
+        """
         super(MyPostEditThumbnailForm, self).__init__(*args, **kwargs)
         # Si ya existe una imagen subida, puedes mostrar una vista previa
         if self.instance and self.instance.pk and self.instance.thumbnail:
             self.fields['thumbnail'].widget.attrs['data-current-url'] = self.instance.thumbnail.url
 
 class MyPostEditProgramForm(forms.ModelForm):
+    """
+    Formulario para editar las fechas de publicación de una publicación.
+
+    Este formulario permite editar las fechas de inicio y fin de publicación de una publicación.
+    Utiliza widgets personalizados para cada campo.
+
+    Atributos:
+    ----------
+    Meta : class
+        Clase interna que define el modelo, los campos y los widgets del formulario.
+
+    Métodos:
+    --------
+    __init__(*args, **kwargs):
+        Inicializa el formulario y establece los valores iniciales para las fechas de publicación.
+    """
     class Meta:
+        """
+        Metadatos del formulario.
+
+        Atributos:
+        ----------
+        model : Model
+            El modelo que se utilizará para el formulario.
+        fields : list
+            Lista de campos que se incluirán en el formulario.
+        widgets : dict
+            Widgets personalizados para los campos del formulario.
+        """
         model = Post
         fields = ['publish_start_date', 'publish_end_date']
         widgets = {
@@ -235,6 +307,20 @@ class MyPostEditProgramForm(forms.ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
+        """
+        Inicializa el formulario y establece los valores iniciales para las fechas de publicación.
+
+        Args:
+        -----
+        *args : list
+            Argumentos posicionales.
+        **kwargs : dict
+            Argumentos clave.
+
+        Returns:
+        --------
+        None
+        """
         super().__init__(*args, **kwargs)
         if self.instance and self.instance.pk:
             if self.instance.publish_start_date:
@@ -427,7 +513,35 @@ class MyPostAddGeneralForm(forms.ModelForm):
         }
 
 class MyPostAddThumbnailForm(forms.ModelForm):
+    """
+    Formulario para agregar una miniatura a una publicación.
+
+    Este formulario permite agregar una miniatura a una publicación solicitando una imagen.
+    Utiliza un widget personalizado para el campo de la miniatura.
+
+    Atributos:
+    ----------
+    Meta : class
+        Clase interna que define el modelo, los campos y los widgets del formulario.
+
+    Métodos:
+    --------
+    __init__(*args, **kwargs):
+        Inicializa el formulario y establece un valor vacío para la URL de la miniatura actual.
+    """
     class Meta:
+        """
+        Metadatos del formulario.
+
+        Atributos:
+        ----------
+        model : Model
+            El modelo que se utilizará para el formulario.
+        fields : list
+            Lista de campos que se incluirán en el formulario.
+        widgets : dict
+            Widgets personalizados para los campos del formulario.
+        """
         model = Post
         fields = ['thumbnail']
         widgets = {
@@ -439,12 +553,49 @@ class MyPostAddThumbnailForm(forms.ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
+        """
+        Inicializa el formulario y establece un valor vacío para la URL de la miniatura actual.
+
+        Args:
+        -----
+        *args : list
+            Argumentos posicionales.
+        **kwargs : dict
+            Argumentos clave.
+
+        Returns:
+        --------
+        None
+        """
         super(MyPostAddThumbnailForm, self).__init__(*args, **kwargs)
         # No hay imagen existente, ya que es una vista de agregar
         self.fields['thumbnail'].widget.attrs['data-current-url'] = ''
 
 class MyPostAddProgramForm(forms.ModelForm):
+    """
+    Formulario para agregar las fechas de publicación de una publicación.
+
+    Este formulario permite agregar las fechas de inicio y fin de publicación de una publicación.
+    Utiliza widgets personalizados para cada campo.
+
+    Atributos:
+    ----------
+    Meta : class
+        Clase interna que define el modelo, los campos y los widgets del formulario.
+    """
     class Meta:
+        """
+        Metadatos del formulario.
+
+        Atributos:
+        ----------
+        model : Model
+            El modelo que se utilizará para el formulario.
+        fields : list
+            Lista de campos que se incluirán en el formulario.
+        widgets : dict
+            Widgets personalizados para los campos del formulario.
+        """
         model = Post
         fields = ['publish_start_date', 'publish_end_date']
         widgets = {
@@ -547,9 +698,34 @@ class KanbanBoardForm(forms.ModelForm):
         fields = ['title', 'status', 'author', 'category']
 
 class ToPublishPostForm(forms.ModelForm):
+    """
+    Formulario para cambiar el estado de una publicación a "publicado".
+
+    Este formulario permite cambiar el estado de una publicación a "publicado".
+    Utiliza un campo oculto para almacenar la razón del cambio y un widget oculto para el campo de estado.
+
+    Atributos:
+    ----------
+    change_reason : CharField
+        Campo oculto para almacenar la razón del cambio.
+    Meta : class
+        Clase interna que define el modelo, los campos y los widgets del formulario.
+    """
     change_reason = forms.CharField(widget=forms.HiddenInput(), required=False)
 
     class Meta:
+        """
+        Metadatos del formulario.
+
+        Atributos:
+        ----------
+        model : Model
+            El modelo que se utilizará para el formulario.
+        fields : list
+            Lista de campos que se incluirán en el formulario.
+        widgets : dict
+            Widgets personalizados para los campos del formulario.
+        """
         model = Post
         fields = ['status']
         widgets = {
@@ -557,12 +733,52 @@ class ToPublishPostForm(forms.ModelForm):
         }
 
 class ReportForm(forms.ModelForm):
+    """
+    Formulario para crear un reporte de una publicación.
+
+    Este formulario permite crear un reporte de una publicación solicitando el correo electrónico
+    y la razón del reporte. Valida que no exista un reporte duplicado para la misma publicación
+    y correo electrónico.
+
+    Atributos:
+    ----------
+    post : ModelChoiceField
+        Campo oculto para seleccionar la publicación a reportar.
+    Meta : class
+        Clase interna que define el modelo y los campos del formulario.
+
+    Métodos:
+    --------
+    clean():
+        Valida que no exista un reporte duplicado para la misma publicación y correo electrónico.
+    """
     post = forms.ModelChoiceField(queryset=Post.objects.all(), widget=forms.HiddenInput())
     class Meta:
+        """
+        Metadatos del formulario.
+
+        Atributos:
+        ----------
+        model : Model
+            El modelo que se utilizará para el formulario.
+        fields : list
+            Lista de campos que se incluirán en el formulario.
+        """
         model = Report
         fields = ['post', 'email', 'reason']
 
     def clean(self):
+        """
+        Valida que no exista un reporte duplicado para la misma publicación y correo electrónico.
+
+        Si ya existe un reporte con el mismo correo electrónico para la publicación,
+        añade un error al formulario.
+
+        Returns:
+        --------
+        dict
+            Los datos limpiados del formulario.
+        """
         cleaned_data = super().clean()
         post = cleaned_data.get('post')
         email = cleaned_data.get('email')

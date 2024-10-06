@@ -1294,11 +1294,43 @@ class HistoryView(DetailView):
     
 # views for relevant posts
 class RelevantPostsView(ListView):
+    """
+    Vista para mostrar las publicaciones relevantes.
+
+    Esta vista muestra las publicaciones relevantes ordenadas por fecha de publicación y prioridad.
+    Permite filtrar las publicaciones por su estado y fechas de publicación.
+
+    Atributos:
+    ----------
+    model : Model
+        El modelo que se utilizará para la vista.
+    template_name : str
+        El nombre de la plantilla que se utilizará para renderizar la vista.
+    ordering : list
+        Lista de campos por los que se ordenarán las publicaciones.
+
+    Métodos:
+    --------
+    get_queryset():
+        Obtiene el conjunto de consultas para las publicaciones relevantes.
+    post(request, *args, **kwargs):
+        Maneja las acciones para hacer relevante o quitar relevancia a una publicación.
+    """
     model = Post
     template_name = 'relevant/relevant_posts.html'
     ordering = ['-date_posted']
 
     def get_queryset(self):
+        """
+        Obtiene el conjunto de consultas para las publicaciones relevantes.
+
+        Filtra las publicaciones por su estado y fechas de publicación, y las ordena por prioridad y fecha de publicación.
+
+        Returns:
+        --------
+        QuerySet
+            El conjunto de consultas para las publicaciones relevantes.
+        """
         now = timezone.now()
 
         # Condiciones para posts programados o regulares
@@ -1311,7 +1343,23 @@ class RelevantPostsView(ListView):
         ).order_by('-priority', '-date_posted')
 
     def post(self, request, *args, **kwargs):
-        """Maneja las acciones para hacer relevante o quitar relevancia a una publicación."""
+        """
+        Maneja las acciones para hacer relevante o quitar relevancia a una publicación.
+
+        Args:
+        -----
+        request : HttpRequest
+            La solicitud HTTP.
+        *args : list
+            Argumentos posicionales.
+        **kwargs : dict
+            Argumentos clave.
+
+        Returns:
+        --------
+        HttpResponse
+            La respuesta HTTP después de manejar la acción.
+        """
         post_id = request.POST.get('post_id')
         action = request.POST.get('action')
 
@@ -1503,7 +1551,32 @@ class TogglePostStatusView(LoginRequiredMixin, View):
         return redirect(f'{reverse("incidents")}')
     
 class SubscribeView(LoginRequiredMixin, View):
+    """
+    Vista para suscribirse a una categoría.
+
+    Esta vista permite a un usuario suscribirse a una categoría que no sea de tipo 'premium'.
+
+    Métodos:
+    --------
+    post(request, category_id):
+        Maneja la solicitud POST para suscribirse a una categoría.
+    """
     def post(self, request, category_id):
+        """
+        Maneja la solicitud POST para suscribirse a una categoría.
+
+        Args:
+        -----
+        request : HttpRequest
+            La solicitud HTTP.
+        category_id : int
+            El ID de la categoría a la que se desea suscribir.
+
+        Returns:
+        --------
+        HttpResponse
+            Redirige a la página de la categoría después de suscribirse.
+        """
         category = get_object_or_404(Category, id=category_id)
         if category.kind != 'premium':
             request.user.suscribed_categories.add(category)
@@ -1511,7 +1584,32 @@ class SubscribeView(LoginRequiredMixin, View):
         return redirect('category', pk=category.pk, name=category.name)
 
 class UnsubscribeView(LoginRequiredMixin, View):
+    """
+    Vista para desuscribirse de una categoría.
+
+    Esta vista permite a un usuario desuscribirse de una categoría a la que está suscrito.
+
+    Métodos:
+    --------
+    post(request, category_id):
+        Maneja la solicitud POST para desuscribirse de una categoría.
+    """
     def post(self, request, category_id):
+        """
+        Maneja la solicitud POST para desuscribirse de una categoría.
+
+        Args:
+        -----
+        request : HttpRequest
+            La solicitud HTTP.
+        category_id : int
+            El ID de la categoría de la que se desea desuscribir.
+
+        Returns:
+        --------
+        HttpResponse
+            Redirige a la página de la categoría después de desuscribirse.
+        """
         category = get_object_or_404(Category, id=category_id)
         if category in request.user.suscribed_categories.all():
             request.user.suscribed_categories.remove(category)
@@ -1519,9 +1617,35 @@ class UnsubscribeView(LoginRequiredMixin, View):
         return redirect('category', pk=category.pk, name=category.name)
 
 class MyCategoriesView(LoginRequiredMixin, ListView):
+    """
+    Vista para mostrar las categorías suscritas y compradas por el usuario.
+
+    Esta vista muestra las categorías a las que el usuario está suscrito o ha comprado,
+    utilizando una plantilla específica y un nombre de contexto personalizado.
+
+    Atributos:
+    ----------
+    template_name : str
+        El nombre de la plantilla que se utilizará para renderizar la vista.
+    context_object_name : str
+        El nombre del contexto que se pasará a la plantilla.
+
+    Métodos:
+    --------
+    get_queryset():
+        Obtiene el conjunto de consultas para las categorías suscritas y compradas por el usuario.
+    """
     template_name = 'suscribers/my_categories.html'
     context_object_name = 'suscribed_categories'
 
     def get_queryset(self):
+        """
+        Obtiene el conjunto de consultas para las categorías suscritas y compradas por el usuario.
+
+        Returns:
+        --------
+        QuerySet
+            El conjunto de consultas para las categorías suscritas y compradas por el usuario.
+        """
         user = self.request.user
         return user.suscribed_categories.all() | user.purchased_categories.all()

@@ -21,15 +21,26 @@ class Category(models.Model):
     Representa una categoría que agrupa diferentes publicaciones.
 
     Atributos:
-        name (str): Nombre de la categoría.
-        description (str): Descripción corta de la categoría.
-        alias (str): Alias o abreviatura de la categoría.
-        price (Decimal): Precio asociado a la categoría, con un valor mínimo de 0.00.
-        kind (str): Tipo de categoría, puede ser 'public', 'free' o 'premium'.
-    
+    ----------
+    name : str
+        Nombre de la categoría.
+    description : str
+        Descripción corta de la categoría.
+    alias : str
+        Alias o abreviatura de la categoría.
+    price : Decimal
+        Precio asociado a la categoría, con un valor mínimo de 0.00.
+    kind : str
+        Tipo de categoría, puede ser 'public', 'free' o 'premium'.
+    moderated : bool
+        Indica si la categoría está moderada.
+
     Métodos:
-        __str__: Retorna una representación legible de la categoría, incluyendo su nombre y tipo.
-        get_absolute_url: Devuelve la URL canónica para una instancia específica de la categoría.
+    --------
+    __str__():
+        Retorna una representación legible de la categoría, incluyendo su nombre y tipo.
+    get_absolute_url():
+        Devuelve la URL canónica para una instancia específica de la categoría.
     """
 
     name = models.CharField(max_length=100)
@@ -55,9 +66,25 @@ class Category(models.Model):
             slugify(self.name)])
 
 def get_default_category():
+    """
+    Obtiene o crea la categoría por defecto 'Uncategorized'.
+
+    Returns:
+    --------
+    int
+        ID de la categoría por defecto.
+    """
     return Category.objects.get_or_create(name='Uncategorized')[0].id
 
 def get_lorem_ipsum_text():
+    """
+    Obtiene texto de ejemplo de la API de Loripsum.
+
+    Returns:
+    --------
+    str
+        Texto de ejemplo obtenido de la API.
+    """
     response = requests.get('https://loripsum.net/api/15/long/headers/decorate/link/ul/ol/dl/bq/code')
     if response.status_code == 200:
         return response.text
@@ -68,23 +95,55 @@ class Post(models.Model):
     Representa una publicación o artículo que pertenece a una categoría.
 
     Atributos:
-        title (str): Título del post.
-        title_tag (str): Etiqueta del título para SEO.
-        summary (str): Resumen breve del post.
-        body (str): Contenido principal del post, que soporta texto enriquecido.
-        date_posted (datetime): Fecha y hora en que se creó el post.
-        author (Member): Autor del post, relacionado con un usuario.
-        status (str): Estado actual del post ('draft', 'to_edit', 'to_publish', 'published').
-        category (Category): Categoría a la que pertenece el post.
-        keywords (str): Palabras clave asociadas al post para SEO.
+    ----------
+    title : str
+        Título del post.
+    title_tag : str
+        Etiqueta del título para SEO.
+    summary : str
+        Resumen breve del post.
+    body : str
+        Contenido principal del post, que soporta texto enriquecido.
+    date_posted : datetime
+        Fecha y hora en que se creó el post.
+    author : Member
+        Autor del post, relacionado con un usuario.
+    status : str
+        Estado actual del post ('draft', 'to_edit', 'to_publish', 'published').
+    category : Category
+        Categoría a la que pertenece el post.
+    keywords : str
+        Palabras clave asociadas al post para SEO.
+    thumbnail : ImageField
+        Miniatura de la publicación.
+    publish_start_date : datetime
+        Fecha de inicio de publicación.
+    publish_end_date : datetime
+        Fecha de fin de publicación.
+    change_reason : str
+        Razón del cambio.
+    priority : int
+        Prioridad del post.
     
     Métodos:
-        __str__: Retorna una representación legible del post, incluyendo el título y el autor.
-        get_absolute_url: Devuelve la URL canónica para una instancia específica del post.
-    
+    --------
+    __str__():
+        Retorna una representación legible del post, incluyendo el título y el autor.
+    get_absolute_url():
+        Devuelve la URL canónica para una instancia específica del post.
+    calculate_priority():
+        Calcula la prioridad del post basado en el tipo de categoría (kind).
+    save(*args, **kwargs):
+        Sobrescribe el método save para establecer date_posted cuando el estado cambia a 'published'.
+    send_status_change_email(old_status):
+        Envía un correo electrónico notificando el cambio de estado del post.
+    get_status_display(status_value):
+        Traduce el valor del estado a una versión legible (en español).
+
     Meta:
-        permissions:
-            can_publish: Permite a un usuario publicar el post.
+    -----
+    permissions : list
+        Lista de permisos personalizados para el modelo.
     """
 
     title = models.CharField(max_length=100)
@@ -169,6 +228,18 @@ class Post(models.Model):
             self.send_status_change_email(old_status)
 
     def send_status_change_email(self, old_status):
+        """
+        Envía un correo electrónico notificando el cambio de estado del post.
+
+        Args:
+        -----
+        old_status : str
+            Estado anterior del post.
+
+        Returns:
+        --------
+        None
+        """
         # Recuperar el último historial
         last_history = self.history.order_by('-history_date').first()
         changed_by = last_history.history_user
@@ -266,7 +337,17 @@ class Post(models.Model):
 
     def get_status_display(self, status_value):
         """
-        Traducir el valor del estado a una versión legible (en español).
+        Traduce el valor del estado a una versión legible (en español).
+
+        Args:
+        -----
+        status_value : str
+            Valor del estado.
+
+        Returns:
+        --------
+        str
+            Estado traducido.
         """
         status_dict = {
             'draft': 'Borrador',
@@ -277,6 +358,27 @@ class Post(models.Model):
         return status_dict.get(status_value, 'Desconocido')
     
 class Report(models.Model):
+    """
+    Representa un reporte de una publicación.
+
+    Atributos:
+    ----------
+    post : ForeignKey
+        Publicación que está siendo reportada.
+    user : ForeignKey
+        Usuario que realiza el reporte (opcional).
+    email : EmailField
+        Correo electrónico del usuario que realiza el reporte (opcional).
+    reason : TextField
+        Razón del reporte.
+    timestamp : DateTimeField
+        Fecha y hora en que se creó el reporte.
+
+    Métodos:
+    --------
+    __str__():
+        Retorna una representación legible del reporte, incluyendo el usuario o correo electrónico y la publicación.
+    """
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='reports')
     user = models.ForeignKey(Member, on_delete=models.CASCADE, null=True, blank=True)
     email = models.EmailField(null=True, blank=True)
@@ -287,4 +389,12 @@ class Report(models.Model):
         unique_together = ('post', 'email')
 
     def __str__(self):
+        """
+        Retorna una representación legible del reporte, incluyendo el usuario o correo electrónico y la publicación.
+
+        Returns:
+        --------
+        str
+            Representación legible del reporte.
+        """
         return f'Reporte por {self.user or self.email} a {self.post}'
