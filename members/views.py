@@ -276,7 +276,7 @@ class GroupEditView(FormView):
         form = GroupEditForm(request.POST, instance=group)
         if form.is_valid():
             form.save()
-            messages.success(request, f'El grupo "{group.name}" ha sido actualizado.')
+            messages.success(request, f'El rol "{group.name}" ha sido actualizado.')
             return redirect('group-list')
         context = {
             'form': form,
@@ -465,7 +465,7 @@ class CreateGroupView(LoginRequiredMixin, PermissionRequiredMixin, FormView):
             HttpResponse: Redirige a `success_url` después de crear el grupo.
         """
         form.save()
-        messages.success(self.request, "El grupo ha sido creado.")
+        messages.success(self.request, "El rol ha sido creado.")
         return super().form_valid(form)
 
 # views for members
@@ -747,7 +747,7 @@ class MemberEditPermissionView(LoginRequiredMixin, PermissionRequiredMixin, view
         """
         Agrupa y traduce los permisos de los grupos para mostrarlos en la vista.
         """
-        permissions = Permission.objects.filter(group__in=member.groups.all()).distinct()
+        permissions = Permission.objects.filter(group__in=member.groups.all()).exclude(content_type__model__in=['historicalpost', 'contenttype', 'logentry', 'site']).distinct()
 
         grouped_permissions = {}
         for perm in permissions:
@@ -1062,7 +1062,7 @@ class MemberJoinView(CreateView):
             El contexto actualizado con los roles disponibles.
         """
         context = super().get_context_data(**kwargs)
-        roles = Group.objects.exclude(name='suscriptor')
+        roles = Group.objects.exclude(name='suscriptor').exclude(name__icontains='admin')
         context['roles'] = roles
         return context
 

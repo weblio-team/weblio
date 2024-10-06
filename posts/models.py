@@ -279,9 +279,12 @@ class Post(models.Model):
 class Report(models.Model):
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='reports')
     user = models.ForeignKey(Member, on_delete=models.CASCADE, null=True, blank=True)
-    email = models.EmailField(unique=True)
-    reason = models.TextField()
+    email = models.EmailField(null=True, blank=True)
+    reason = models.TextField(default='')
     timestamp = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('post', 'email')
 
     def __str__(self):
         return f'Reporte por {self.user or self.email} a {self.post}'

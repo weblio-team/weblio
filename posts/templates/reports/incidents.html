@@ -2,13 +2,16 @@
 
 {% block content %}
     <main role="main" class="container py-4">
+        
+        <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+
         <h2 class="text-light">Posts Reportados</h2>
         <!-- Tabla responsiva -->
         <div class="table-responsive">
             <table 
                 id="postsTable"
                 class="table table-dark table-striped table-bordered"
-                data-toggle="table"
                 data-search="true"
                 data-pagination="true"
                 data-page-size="5"
@@ -22,25 +25,31 @@
                         <th data-field="author" data-sortable="true">Autor</th>
                         <th data-field="category" data-sortable="true">Categoría</th>
                         <th data-field="report_count" data-sortable="true">Número de Reportes</th>
+                        <th data-field="details" style="width: 1%;">Detalles</th>
                         {% if can_delete_post %}
                             <th data-field="actions" style="width: 1%;">Acciones</th> <!-- Ajustar el tamaño de la columna -->
                         {% endif %}
                     </tr>
                 </thead>
-                <tbody id="postsBody">
-                    {% for post in reported_posts %}
-                    <tr>
+                <tbody>
+                    {% for post in posts_with_reports %}
+                    <tr data-index="{{ forloop.counter0 }}">
                         <td>
-                            <a href="{% url 'post' post.pk post.category.name|slugify post.date_posted|date:'m' post.date_posted|date:'Y' post.title|slugify %}">
+                            <a href="{% url 'post' post.id post.category|slugify post.date_posted|date:'m' post.date_posted|date:'Y' post.title|slugify %}">
                                 {{ post.title }}
                             </a>
                         </td>
                         <td>{{ post.author }}</td>
                         <td>{{ post.category }}</td>
-                        <td>{{ post.reports.count }}</td>
+                        <td>{{ post.report_count }}</td>
+                        <td class="text-center">
+                            <button type="button" class="btn btn-info details-btn" data-toggle="modal" data-target="#detailsModal" data-reports='{{ post.reports }}'>
+                                Ver Detalles
+                            </button>
+                        </td>
                         {% if can_delete_post %}
                             <td class="text-center">
-                                <form method="post" class="d-inline" action="{% url 'toggle_post_status' post.pk %}">
+                                <form method="post" class="d-inline" action="{% url 'toggle_post_status' post.id %}">
                                     {% csrf_token %}
                                     {% if post.status == 'inactive' %}
                                         <button type="submit" class="btn btn-success">Activar</button>
@@ -137,4 +146,117 @@
         }
 
     </style>
+    <!-- Bootstrap Modal -->
+    <div class="modal fade modal-dark" id="detailsModal" tabindex="-1" aria-labelledby="detailsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content text-light" style="background-color: #333;">
+                <div class="modal-header border-0" style="background-color: #444;">
+                    <h5 class="modal-title" id="detailsModalLabel">Detalle de Reportes</h5>
+                    <button type="button" class="btn-close btn-close-white" data-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="modalContent">
+                        <!-- Details will be populated here -->
+                    </div>
+                </div>
+                <div class="modal-footer border-0" style="background-color: #444;">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <style>
+        /* Custom style for dark modal */
+        .modal-dark .modal-content {
+            background-color: #333;  /* Dark background for modal content */
+            color: #e0e0e0;  /* Light text color */
+        }
+    
+        .modal-dark .modal-header {
+            background-color: #444;  /* Slightly darker background for header */
+            border-bottom: 1px solid #555;  /* Border color */
+        }
+    
+        .modal-dark .modal-footer {
+            background-color: #444;  /* Same as header for consistency */
+            border-top: 1px solid #555;  /* Border color */
+        }
+    
+        .modal-dark .btn-close {
+            filter: invert(1);  /* Make the close button white */
+        }
+    
+        .modal-dark .btn-secondary {
+            background-color: #555;
+            color: #fff;
+            border-color: #666;
+        }
+    
+        .modal-dark .btn-secondary:hover {
+            background-color: #666;
+            border-color: #777;
+        }
+    </style>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var detailsButtons = document.querySelectorAll('.details-btn');
+            console.log(detailsButtons);
+            detailsButtons.forEach(function(button) {
+                button.addEventListener('click', function() {
+                    var reports = button.getAttribute('data-reports');
+                    console.log(reports);
+                    var modalContent = document.getElementById('modalContent');
+
+                    // Clear previous content
+                    modalContent.innerHTML = '';
+
+                    try {
+                        reports = JSON.parse(reports);
+                    } catch (e) {
+                        console.log(e);
+                        modalContent.innerHTML = '<div>Invalid report data format.</div>';
+                        return;
+                    }
+
+                    if (!reports || reports.length === 0) {
+                        modalContent.innerHTML = '<div>No reports available for this post.</div>';
+                        return;
+                    }
+
+                    // Build table rows from report data
+                    let reportRows = reports.map(report => `
+                        <tr>
+                            {% if can_delete_post %}
+                                <td>${report.email}</td>
+                            {% endif %}
+                            <td>${report.reason}</td>
+                            <td>${report.timestamp}</td>
+                        </tr>
+                    `).join('');
+
+                    // Set the modal content with the report details
+                    modalContent.innerHTML = `
+                        <div class="table-responsive">
+                            <table class="table table-dark table-bordered">
+                                <thead>
+                                    <tr>
+                                        {% if can_delete_post %}
+                                            <th>Email</th>
+                                        {% endif %}
+                                        <th>Reason</th>
+                                        <th>Date Reported</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${reportRows}
+                                </tbody>
+                            </table>
+                        </div>
+                    `;
+                });
+            });
+        });
+    </script>
 {% endblock %}
