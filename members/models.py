@@ -13,19 +13,25 @@ class Member(AbstractBaseUser, PermissionsMixin):
         - PermissionsMixin: Agrega campos y métodos de permisos al modelo de usuario.
 
     Atributos:
-        - email (EmailField): Dirección de email del usuario. Es el identificador único.
-        - is_staff (BooleanField): Indica si el usuario puede acceder al sitio de administración.
-        - is_active (BooleanField): Indica si el usuario está activo.
-        - date_joined (DateTimeField): La fecha y hora en que el usuario se unió.
-        - group (ForeignKey): El singular rol al cual el usuario pertenece.
+        username (CharField): Nombre de usuario único.
+        first_name (CharField): Primer nombre del usuario.
+        last_name (CharField): Apellido del usuario.
+        email (EmailField): Dirección de email del usuario. Es el identificador único.
+        is_active (BooleanField): Indica si el usuario está activo.
+        is_staff (BooleanField): Indica si el usuario puede acceder al sitio de administración.
+        date_joined (DateTimeField): La fecha y hora en que el usuario se unió.
+        pfp (ImageField): Imagen de perfil del usuario.
+        purchased_categories (ManyToManyField): Categorías compradas por el usuario.
+        suscribed_categories (ManyToManyField): Categorías a las que el usuario está suscrito.
 
     Atributos de clase:
-        - USERNAME_FIELD (str): Define el campo que se usa como identificador único (email).
-        - REQUIRED_FIELDS (list): Lista de campos obligatorios para el usuario, además de USERNAME_FIELD.
-        - objects (MemberManager): El gestor de modelos personalizado para manejar la creación de usuarios y superusuarios.
+        USERNAME_FIELD (str): Define el campo que se usa como identificador único (username).
+        REQUIRED_FIELDS (list): Lista de campos obligatorios para el usuario, además de USERNAME_FIELD.
+        objects (MemberManager): El gestor de modelos personalizado para manejar la creación de usuarios y superusuarios.
 
     Métodos:
-        - __str__(): Retorna el email del usuario como representación en cadena.
+        __str__(): Retorna el username del usuario como representación en cadena.
+        get_pfp_url(): Retorna la URL de la imagen de perfil del usuario o una URL por defecto si no tiene imagen.
     """
 
     username = models.CharField(max_length=150, unique=True, default = '')
@@ -61,11 +67,17 @@ class Member(AbstractBaseUser, PermissionsMixin):
         Retorna la representación en cadena del usuario.
 
         Retorna:
-            - str: El username del usuario.
+            str: El username del usuario.
         """
         return self.username
     
     def get_pfp_url(self):
+        """
+        Retorna la URL de la imagen de perfil del usuario o una URL por defecto si no tiene imagen.
+
+        Retorna:
+            str: La URL de la imagen de perfil del usuario o una URL por defecto.
+        """
         if self.pfp:
             return self.pfp.url
         return 'https://picsum.photos/seed/picsum/1080'  # URL de imagen por defecto
@@ -73,11 +85,13 @@ class Member(AbstractBaseUser, PermissionsMixin):
 class Notification(models.Model):
     """
     Clase Notification que representa las notificaciones de un usuario.
+
     Atributos:
         user (ForeignKey): Referencia al modelo Member, con eliminación en cascada.
         notifications (ManyToManyField): Relación con el modelo 'posts.Category', con nombre relacionado 'notificaciones' y opcional.
         additional_notifications (JSONField): Campo JSON para notificaciones adicionales, con valor por defecto una lista vacía.
         receive (BooleanField): Indica si el usuario desea recibir notificaciones, por defecto True.
+
     Métodos:
         __str__(): Retorna una cadena representativa de las notificaciones del usuario.
         get_additional_notifications(): Retorna una lista de notificaciones adicionales basadas en los permisos del usuario.
@@ -99,6 +113,7 @@ class Notification(models.Model):
     def get_additional_notifications(self):
         """
         Obtiene una lista de notificaciones adicionales basadas en los permisos del usuario.
+
         Returns:
             list: Una lista de cadenas que representan notificaciones adicionales.
         """
