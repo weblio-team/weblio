@@ -297,9 +297,17 @@
                         </div>
     
                         <!-- Estado del post (si no está publicado) -->
-                        {% if post.status != 'published' %}
+                        {% if post.status != 'published' and post.status != 'inactive' %}
                         <p class="card-text mb-0">
-                            <span class="badge bg-warning text-dark">Estado: {{ post.status|yesno:"En edición,A publicar" }}</span>
+                          Estado: <span class="badge bg-warning text-dark">{{ post.status|yesno:"En edición,A publicar" }}</span>
+                        </p>
+                        {% elif post.status == 'published' %}
+                        <p class="card-text mb-0">
+                          Estado: <span class="badge bg-success text-white">Publicado</span>
+                        </p>
+                        {% elif post.status == 'inactive' %}
+                        <p class="card-text mb-0">
+                          Estado: <span class="badge bg-info text-dark">Inactivo</span>
                         </p>
                         {% endif %}
                     </div>
@@ -334,6 +342,15 @@
           <button type="button" class="btn btn-danger my-0" data-bs-toggle="modal"
             data-bs-target="#deleteModal">Eliminar</button>
         </div>
+        {% elif post.status == 'published' %}
+        <button type="button" class="btn btn-primary my-0" data-bs-toggle="modal"
+        data-bs-target="#changeReasonModal" id="changeStatusButton">Mandar a edición</button>
+        <input type="hidden" name="operation" value="inactive">
+        <input type="hidden" name="post_id" value="{{post.pk}}">
+        {% elif post.status == 'inactive' %}
+        <button type="button" class="btn btn-danger my-0" data-bs-toggle="modal"
+            data-bs-target="#deleteModal">Eliminar</button>
+        <input type="hidden" name="operation" value="delete">
         {% endif %}
       </div>
     </form>
@@ -408,19 +425,19 @@
       // Handle the change reason modal
       document.getElementById('submit-change-reason').addEventListener('click', function () {
         var reason = document.getElementById('changeReasonInput').value;
-        var moderated = document.getElementById('changeStatusButton').textContent;
-        if (reason || moderated === 'Publicar') {
+        var operation = document.getElementById('changeStatusButton').textContent;
+        if (reason || operation === 'Publicar' || operation === 'Inactivar') {
           var changeReasonInput = document.createElement('input');
           changeReasonInput.type = 'hidden';
           changeReasonInput.name = 'change_reason';
-          changeReasonInput.value = moderated === 'Publicar' ? 'Publicado sin moderacion' : reason;
+          changeReasonInput.value = operation === 'Publicar' ? 'Publicado sin moderacion' : (operation === 'Inactivar' ? 'Inactivación del articulo' : reason);
           document.getElementById('post-form').appendChild(changeReasonInput);
 
           var statusInput = document.createElement('input');
           var statusButton = document.getElementById('changeStatusButton');
           statusInput.type = 'hidden';
           statusInput.name = 'status';
-          statusInput.value = statusButton.textContent === 'Publicar' ? 'published' : 'to_edit';
+          statusInput.value = operation === 'Publicar' ? 'published' : (operation === 'Inactivar' ? 'inactive' : 'to_edit');
           document.getElementById('post-form').appendChild(statusInput);
 
           document.getElementById('post-form').submit(); // Submit the form after reason is filled
@@ -564,8 +581,6 @@
             changeReasonInput.style.display = 'none';
             changeReasonLabel.textContent = '¿Estás seguro de que quieres publicar este artículo?';
             changeReasonLabelDescription.textContent = 'Este artículo no requiere una observación para ser publicado. Ya que no está en una categoría moderada, puedes publicarlo directamente.';
-            
-
           } else {
             changeStatusButton.textContent = 'Mandar a edición';
             changeReasonInput.style.display = 'block';
@@ -584,6 +599,11 @@
         console.log('Category details:', categories.find(category => category.id == categoryField.value));
         updateButtonText();
       });
+    } else if ('{{ post.status }}' === 'published') {
+      document.getElementById('changeStatusButton').textContent = 'Inactivar';
+      document.getElementById('changeReasonInput').style.display = 'none';
+      document.getElementById('changeReasonLabel').textContent = '¿Estás seguro de que quieres inactivar este artículo?';
+      document.getElementById('changeReasonLabelDescription').textContent = 'Este artículo dejará de ser visible para los suscriptores. Solo podrás verlo tú y el administrador.';
     }
   });
 </script>

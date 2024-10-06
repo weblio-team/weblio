@@ -1,6 +1,7 @@
 from pyexpat.errors import messages
 from django.views.generic import FormView, TemplateView,  CreateView, UpdateView
 from django.urls import reverse_lazy, reverse
+from django.views import View
 
 from django.contrib.auth.models import Group
 from django.contrib.auth.views import LoginView, PasswordChangeView
@@ -28,26 +29,73 @@ from services.views import SendLoginEmailView, AccountStatusEmailView, UserPermi
 from dicts import translated_module_dict, translated_submodule_dict, translated_permission_dict
 from django.urls import resolve
 
-@login_required
-def edit_profile(request):
-    if request.method == 'POST':
+class EditProfileView(LoginRequiredMixin, View):
+    """
+    Vista para editar el perfil del usuario.
+
+    Métodos:
+        get(request):
+            Muestra el formulario de edición de perfil.
+
+        post(request):
+            Procesa el formulario de edición de perfil.
+    """
+
+    def get(self, request):
+        """
+        Muestra el formulario de edición de perfil.
+
+        Args:
+            request (HttpRequest): La solicitud HTTP.
+
+        Returns:
+            HttpResponse: La respuesta HTTP con el formulario de edición de perfil.
+        """
+        form = EditProfileForm(instance=request.user)
+        return render(request, 'members/edit_profile.html', {'form': form})
+
+    def post(self, request):
+        """
+        Procesa el formulario de edición de perfil.
+
+        Args:
+            request (HttpRequest): La solicitud HTTP.
+
+        Returns:
+            JsonResponse: La respuesta JSON con el resultado de la operación.
+        """
         form = EditProfileForm(request.POST, request.FILES, instance=request.user)
         if form.is_valid():
             form.save()
             return JsonResponse({'success': True, 'redirect_url': reverse('profile')})
         else:
             return JsonResponse({'success': False, 'errors': form.errors})
-    else:
-        form = EditProfileForm(instance=request.user)
-    return render(request, 'members/edit_profile.html', {'form': form})
 
-@login_required
-def update_profile_picture(request):
-    if request.method == 'POST' and request.FILES.get('profile-pic'):
-        request.user.pfp = request.FILES['profile-pic']
-        request.user.save()
-        return JsonResponse({'success': True, 'redirect_url': reverse('profile')})
-    return JsonResponse({'success': False})
+
+class UpdateProfilePictureView(LoginRequiredMixin, View):
+    """
+    Vista para actualizar la foto de perfil del usuario.
+
+    Métodos:
+        post(request):
+            Procesa la solicitud para actualizar la foto de perfil.
+    """
+
+    def post(self, request):
+        """
+        Procesa la solicitud para actualizar la foto de perfil.
+
+        Args:
+            request (HttpRequest): La solicitud HTTP.
+
+        Returns:
+            JsonResponse: La respuesta JSON con el resultado de la operación.
+        """
+        if request.FILES.get('profile-pic'):
+            request.user.pfp = request.FILES['profile-pic']
+            request.user.save()
+            return JsonResponse({'success': True, 'redirect_url': reverse('profile')})
+        return JsonResponse({'success': False})
 
 
 class HomeView(TemplateView):
@@ -276,7 +324,7 @@ class GroupEditView(FormView):
         form = GroupEditForm(request.POST, instance=group)
         if form.is_valid():
             form.save()
-            messages.success(request, f'El grupo "{group.name}" ha sido actualizado.')
+            messages.success(request, f'El rol "{group.name}" ha sido actualizado.')
             return redirect('group-list')
         context = {
             'form': form,
@@ -465,7 +513,7 @@ class CreateGroupView(LoginRequiredMixin, PermissionRequiredMixin, FormView):
             HttpResponse: Redirige a `success_url` después de crear el grupo.
         """
         form.save()
-        messages.success(self.request, "El grupo ha sido creado.")
+        messages.success(self.request, "El rol ha sido creado.")
         return super().form_valid(form)
 
 # views for members
@@ -546,8 +594,22 @@ class MemberListView(LoginRequiredMixin, PermissionRequiredMixin, TemplateView):
 class MemberEditGroupView(LoginRequiredMixin, PermissionRequiredMixin, views.View):
     """
     Vista para editar los grupos de un miembro.
+
     Atributos:
         permission_required (list): Lista de permisos requeridos para acceder a la vista.
+
+    Métodos:
+        get(request, pk):
+            Obtiene el formulario de edición de grupos para un miembro existente.
+
+        post(request, pk):
+            Procesa el formulario enviado para actualizar los roles del miembro.
+
+        get_translated_groups():
+            Agrupa y traduce los permisos de los grupos para mostrarlos en la vista.
+
+        get_grouped_permissions(group):
+            Agrupa y traduce los permisos de un grupo para mostrarlos en la vista.
     """
 
     permission_required = ['auth.change_member']
@@ -555,11 +617,13 @@ class MemberEditGroupView(LoginRequiredMixin, PermissionRequiredMixin, views.Vie
     def get(self, request, pk):
         """
         Obtiene el formulario de edición de grupos para un miembro existente.
-        Parámetros:
-        - request: La solicitud HTTP recibida.
-        - pk: El ID del miembro a editar.
-        Retorna:
-        - Una respuesta HTTP con el formulario de edición de grupos y el miembro.
+
+        Args:
+            request (HttpRequest): La solicitud HTTP recibida.
+            pk (int): El ID del miembro a editar.
+
+        Returns:
+            HttpResponse: Una respuesta HTTP con el formulario de edición de grupos y el miembro.
         """
         member = get_object_or_404(Member, pk=pk)
         form = MemberEditGroupForm(instance=member)
@@ -582,6 +646,13 @@ class MemberEditGroupView(LoginRequiredMixin, PermissionRequiredMixin, views.Vie
     def post(self, request, pk):
         """
         Procesa el formulario enviado para actualizar los roles del miembro.
+
+        Args:
+            request (HttpRequest): La solicitud HTTP recibida.
+            pk (int): El ID del miembro a editar.
+
+        Returns:
+            HttpResponse: Una respuesta HTTP después de procesar el formulario.
         """
         member = get_object_or_404(Member, pk=pk)
         form = MemberEditGroupForm(request.POST, instance=member)
@@ -624,7 +695,7 @@ class MemberEditGroupView(LoginRequiredMixin, PermissionRequiredMixin, views.Vie
         """
         Agrupa y traduce los permisos de los grupos para mostrarlos en la vista.
         Excluye los grupos como 'Admin', 'Contenttypes', y sus permisos.
-        
+
         Returns:
             list: Lista de grupos traducidos con sus permisos agrupados.
         """
@@ -645,6 +716,12 @@ class MemberEditGroupView(LoginRequiredMixin, PermissionRequiredMixin, views.Vie
     def get_grouped_permissions(self, group):
         """
         Agrupa y traduce los permisos de un grupo para mostrarlos en la vista.
+
+        Args:
+            group (Group): El grupo cuyos permisos se van a agrupar y traducir.
+
+        Returns:
+            dict: Un diccionario con los permisos agrupados y traducidos.
         """
         permissions = group.permissions.exclude(content_type__model__in=['historicalpost', 'contenttype', 'session', 'logentry', 'site', 'notification', 'report', 'purchase']).select_related('content_type')
         
@@ -684,6 +761,19 @@ class MemberEditPermissionView(LoginRequiredMixin, PermissionRequiredMixin, view
     """
     Vista de edición de permisos de miembro.
     Esta vista permite editar los permisos de un miembro específico.
+
+    Atributos:
+        permission_required (list): Lista de permisos requeridos para acceder a esta vista.
+
+    Métodos:
+        get(request, pk):
+            Obtiene el formulario de edición de permisos y los permisos actuales del miembro.
+
+        post(request, pk):
+            Guarda los cambios realizados en el formulario de edición de permisos.
+
+        get_translated_permissions(member):
+            Agrupa y traduce los permisos de los grupos para mostrarlos en la vista.
     """
 
     permission_required = ['auth.change_member']
@@ -691,6 +781,13 @@ class MemberEditPermissionView(LoginRequiredMixin, PermissionRequiredMixin, view
     def get(self, request, pk):
         """
         Obtiene el formulario de edición de permisos y los permisos actuales del miembro.
+
+        Args:
+            request (HttpRequest): La solicitud HTTP.
+            pk (int): El ID del miembro.
+
+        Returns:
+            HttpResponse: La respuesta HTTP con el formulario de edición de permisos.
         """
         member = get_object_or_404(Member, pk=pk)
         form = MemberEditPermissionForm(instance=member)
@@ -710,6 +807,13 @@ class MemberEditPermissionView(LoginRequiredMixin, PermissionRequiredMixin, view
     def post(self, request, pk):
         """
         Guarda los cambios realizados en el formulario de edición de permisos.
+
+        Args:
+            request (HttpRequest): La solicitud HTTP.
+            pk (int): El ID del miembro.
+
+        Returns:
+            HttpResponse: La respuesta HTTP después de procesar el formulario.
         """
         member = get_object_or_404(Member, pk=pk)
         form = MemberEditPermissionForm(request.POST, instance=member)
@@ -746,8 +850,14 @@ class MemberEditPermissionView(LoginRequiredMixin, PermissionRequiredMixin, view
     def get_translated_permissions(self, member):
         """
         Agrupa y traduce los permisos de los grupos para mostrarlos en la vista.
+
+        Args:
+            member (Member): El miembro cuyos permisos se van a traducir.
+
+        Returns:
+            dict: Un diccionario con los permisos agrupados y traducidos.
         """
-        permissions = Permission.objects.filter(group__in=member.groups.all()).distinct()
+        permissions = Permission.objects.filter(group__in=member.groups.all()).exclude(content_type__model__in=['historicalpost', 'contenttype', 'logentry', 'site']).distinct()
 
         grouped_permissions = {}
         for perm in permissions:
@@ -1062,7 +1172,7 @@ class MemberJoinView(CreateView):
             El contexto actualizado con los roles disponibles.
         """
         context = super().get_context_data(**kwargs)
-        roles = Group.objects.exclude(name='suscriptor')
+        roles = Group.objects.exclude(name='suscriptor').exclude(name__icontains='admin')
         context['roles'] = roles
         return context
 
@@ -1253,11 +1363,41 @@ class PasswordsChangeView(PasswordChangeView):
     success_url = reverse_lazy('profile')
 
 class UserAddRoleView(LoginRequiredMixin, FormView):
+    """
+    Vista para agregar un rol a un usuario.
+    Esta vista requiere que el usuario esté autenticado y extiende de FormView.
+
+    Atributos:
+        template_name (str): Nombre de la plantilla HTML a renderizar.
+        form_class (Form): Clase del formulario utilizado en la vista.
+        success_url (str): URL a la que redirigir después de un envío exitoso del formulario.
+
+    Métodos:
+        get_form_kwargs():
+            Obtiene los argumentos para instanciar el formulario.
+            Añade el usuario actual a los argumentos del formulario.
+
+        get_context_data(**kwargs):
+            Añade los roles disponibles al contexto de la plantilla.
+
+        form_valid(form):
+            Asigna el rol al usuario y redirige a la URL de éxito si el formulario es válido.
+
+        form_invalid(form):
+            Maneja el caso en que el formulario no es válido.
+    """
     template_name = 'members/add_role.html'
     form_class = UserAddRoleForm
     success_url = reverse_lazy('success_url_name')  # Cambia esto a la URL de éxito deseada
 
     def get_form_kwargs(self):
+        """
+        Obtiene los argumentos para instanciar el formulario.
+        Añade el usuario actual a los argumentos del formulario.
+
+        Returns:
+            dict: Los argumentos para instanciar el formulario.
+        """
         kwargs = super().get_form_kwargs()
         kwargs['user'] = self.request.user
         return kwargs
@@ -1283,7 +1423,7 @@ class UserAddRoleView(LoginRequiredMixin, FormView):
 
     def form_valid(self, form):
         """
-        Asignar el rol al usuario y redirigir a la URL de éxito si el formulario es válido.
+        Asigna el rol al usuario y redirige a la URL de éxito si el formulario es válido.
 
         Args:
             form (AddRoleForm): El formulario utilizado para agregar un rol a un usuario.
@@ -1308,6 +1448,15 @@ class UserAddRoleView(LoginRequiredMixin, FormView):
         return redirect('posts')
 
     def form_invalid(self, form):
+        """
+        Maneja el caso en que el formulario no es válido.
+
+        Args:
+            form (AddRoleForm): El formulario que no es válido.
+
+        Returns:
+            HttpResponse: La respuesta HTTP después de procesar el formulario.
+        """
         if not form.cleaned_data.get('group'):
             messages.error(self.request, "Por favor, seleccione un rol antes de enviar.")
         return super().form_invalid(form)
@@ -1316,8 +1465,10 @@ class UserNotificationsView(LoginRequiredMixin, TemplateView):
     """
     Vista para manejar las notificaciones de usuario.
     Esta vista requiere que el usuario esté autenticado y extiende de TemplateView.
+
     Atributos:
         template_name (str): Nombre de la plantilla HTML a renderizar.
+
     Métodos:
         get_context_data(**kwargs):
             Obtiene el contexto para renderizar la plantilla.
@@ -1335,8 +1486,10 @@ class UserNotificationsView(LoginRequiredMixin, TemplateView):
         Obtiene el contexto adicional para la vista.
         Este método extiende el contexto proporcionado por la clase base con información adicional
         específica del usuario actual, incluyendo categorías compradas y suscritas, y notificaciones.
+
         Args:
             **kwargs: Argumentos adicionales pasados al método.
+
         Returns:
             dict: Un diccionario que contiene el contexto extendido con las siguientes claves:
                 - 'combined_categories': Lista combinada de categorías compradas y suscritas por el usuario.
@@ -1370,10 +1523,12 @@ class UserNotificationsView(LoginRequiredMixin, TemplateView):
     def post(self, request, *args, **kwargs):
         """
         Maneja la solicitud POST para alternar las notificaciones de un usuario.
+
         Args:
             request (HttpRequest): La solicitud HTTP que contiene los datos POST.
             *args: Argumentos adicionales.
             **kwargs: Palabras clave adicionales.
+
         Funcionalidad:
             - Obtiene el usuario actual de la solicitud.
             - Intenta obtener el objeto Notification asociado al usuario, o lo crea si no existe.
@@ -1381,10 +1536,12 @@ class UserNotificationsView(LoginRequiredMixin, TemplateView):
               o notificaciones adicionales según los datos POST recibidos.
             - Guarda los cambios en el objeto Notification.
             - Redirige a la vista de notificaciones.
+
         Datos POST:
             - action (str): La acción a realizar, en este caso 'toggle_notification'.
             - category_id (str): El ID de la categoría a alternar (opcional).
             - additional_notification (str): Notificación adicional a alternar (opcional).
+
         Returns:
             HttpResponseRedirect: Redirige a la vista de notificaciones.
         """

@@ -24,9 +24,9 @@
 
         <!-- Botones de acciones -->
         <div class="d-flex flex-column flex-md-row gap-2">
-            <a href="{% url 'categories' %}" class="btn btn-primary">Volver</a>
+            <a href="{{ next_url|default:'/posts/category/' }}" class="btn btn-primary">Volver</a>
 
-            {% if category.kind != 'premium' and perms.posts.view_post%}
+            {% if category.kind != 'premium' and perms.posts.view_post %}
                 {% if category in request.user.suscribed_categories.all %}
                     <form method="post" action="{% url 'unsubscribe' category.id %}">
                         {% csrf_token %}

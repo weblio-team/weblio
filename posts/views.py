@@ -7,6 +7,7 @@ from django.contrib.auth.mixins import PermissionRequiredMixin, LoginRequiredMix
 from django.utils.decorators import method_decorator
 from django.views import View
 from .models import Category, Post, Report, Member
+from services.models import Purchase
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView, TemplateView
 from .forms import CategoryForm, CategoryEditForm, KanbanBoardForm, MyPostAddBodyForm, MyPostAddGeneralForm, MyPostAddProgramForm, MyPostAddThumbnailForm, MyPostEditGeneralForm, MyPostEditBodyForm, MyPostEditProgramForm, MyPostEditThumbnailForm, ToEditPostGeneralForm, ToEditPostBodyForm, ToPublishPostForm
 from django.db.models import Q, OuterRef, Subquery, Count
@@ -17,9 +18,7 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.core.exceptions import PermissionDenied
 from django.conf import settings
 from .forms import ReportForm
-from django.utils.text import slugify
-from django.db.models import Count
-
+from django.core.serializers.json import DjangoJSONEncoder
 from simple_history.utils import update_change_reason
 import random
 from django.core.files.storage import default_storage
@@ -100,6 +99,7 @@ class CategoryDetailView(DetailView):
         context['category_count'] = Category.objects.count()
         context['posts'] = Post.objects.filter(category=self.get_object(), status='published')
         context['DEBUG'] = settings.DEBUG
+        context['next_url'] = self.request.GET.get('next', '')
         return context
 
 
@@ -173,7 +173,14 @@ class MyPostsView(PermissionRequiredMixin, LoginRequiredMixin, ListView):
     permission_required = 'posts.add_post'
     
     def get_queryset(self):
-        """Obtiene las publicaciones del usuario autenticado, ordenadas por la fecha de la última versión del historial donde el autor es el history_user."""
+        """Obtiene las publicaciones del usuario autenticado, ordenadas por la fecha de la última versión del historial donde el autor es el history_user."""        
+        # Actualizar el estado de los posts cuya fecha actual es mayor a publish_end_date
+        now = timezone.now()
+        Post.objects.filter(
+            publish_end_date__lt=now,
+            publish_end_date__isnull=False
+        ).update(status='inactive')
+
         PostHistory = Post.history.model
         latest_history = PostHistory.objects.filter(
             id=OuterRef('id'),
@@ -320,6 +327,19 @@ class MyPostEditView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
                 'thumbnail': post_version.thumbnail
             })
         
+        elif post_data.get('operation') == 'delete':
+            post_version = get_object_or_404(Post, pk=post_data.get('post_id'))
+            post_version.delete()
+            messages.success(self.request, 'La publicación ha sido eliminada correctamente.')
+            return redirect('my-posts')
+
+        elif post_data.get('operation') == 'inactive':
+            post_version = get_object_or_404(Post, pk=post_data.get('post_id'))
+            post_version.status = 'inactive'
+            post_version.save()
+            messages.success(self.request, 'La publicación ha sido desactivada correctamente.')
+            return redirect('my-posts')
+
         # Si no se solicita restaurar una versión anterior o se está guardando una nueva versión o se está guardando una versión anterior
         else:
             # Check if 'status' is missing and set it to the existing status from the post instance
@@ -1084,7 +1104,16 @@ class SuscriberPostDetailView(DetailView):
 
         if request.user.is_anonymous and post.category.kind != 'public':
             messages.warning(request, "Debe registrarse para ver publicaciones para suscriptores.")
-            return redirect(reverse_lazy('posts'))  # Reemplaza 'home' con el nombre de tu URL de inicio
+            return redirect(reverse_lazy('member-login'))  
+        
+        if request.user.is_authenticated and post.category.kind != 'public':
+        
+            if not Purchase.objects.filter(user=request.user, category=post.category).exists():
+                messages.warning(request, "Debe comprar la categoría para ver esta publicación.")
+                previous_url = request.META.get('HTTP_REFERER', '/')
+                if '/posts/category/' in previous_url:
+                    previous_url = ''
+                return redirect(f'{reverse_lazy("category", kwargs={"pk": post.category.pk, "name" : post.category.name})}?next={previous_url}')
 
         return super().dispatch(request, *args, **kwargs)
 
@@ -1265,11 +1294,43 @@ class HistoryView(DetailView):
     
 # views for relevant posts
 class RelevantPostsView(ListView):
+    """
+    Vista para mostrar las publicaciones relevantes.
+
+    Esta vista muestra las publicaciones relevantes ordenadas por fecha de publicación y prioridad.
+    Permite filtrar las publicaciones por su estado y fechas de publicación.
+
+    Atributos:
+    ----------
+    model : Model
+        El modelo que se utilizará para la vista.
+    template_name : str
+        El nombre de la plantilla que se utilizará para renderizar la vista.
+    ordering : list
+        Lista de campos por los que se ordenarán las publicaciones.
+
+    Métodos:
+    --------
+    get_queryset():
+        Obtiene el conjunto de consultas para las publicaciones relevantes.
+    post(request, *args, **kwargs):
+        Maneja las acciones para hacer relevante o quitar relevancia a una publicación.
+    """
     model = Post
     template_name = 'relevant/relevant_posts.html'
     ordering = ['-date_posted']
 
     def get_queryset(self):
+        """
+        Obtiene el conjunto de consultas para las publicaciones relevantes.
+
+        Filtra las publicaciones por su estado y fechas de publicación, y las ordena por prioridad y fecha de publicación.
+
+        Returns:
+        --------
+        QuerySet
+            El conjunto de consultas para las publicaciones relevantes.
+        """
         now = timezone.now()
 
         # Condiciones para posts programados o regulares
@@ -1282,7 +1343,23 @@ class RelevantPostsView(ListView):
         ).order_by('-priority', '-date_posted')
 
     def post(self, request, *args, **kwargs):
-        """Maneja las acciones para hacer relevante o quitar relevancia a una publicación."""
+        """
+        Maneja las acciones para hacer relevante o quitar relevancia a una publicación.
+
+        Args:
+        -----
+        request : HttpRequest
+            La solicitud HTTP.
+        *args : list
+            Argumentos posicionales.
+        **kwargs : dict
+            Argumentos clave.
+
+        Returns:
+        --------
+        HttpResponse
+            La respuesta HTTP después de manejar la acción.
+        """
         post_id = request.POST.get('post_id')
         action = request.POST.get('action')
 
@@ -1322,7 +1399,7 @@ class ReportPostView(View):
     """
     template_name = 'reports/report_post.html'
 
-    def get(self, request, *args, **kwargs):
+    def get(self, request, **kwargs):
         """
         Maneja las solicitudes GET para mostrar el formulario de reporte.
 
@@ -1335,7 +1412,7 @@ class ReportPostView(View):
             HttpResponse: El objeto de respuesta con la plantilla renderizada.
         """
         post = get_object_or_404(Post, id=kwargs.get('pk'))
-        form = ReportForm()
+        form = ReportForm(initial={'post': post})
         member = None
         if request.user.is_authenticated:
             member = get_object_or_404(Member, username=request.user)
@@ -1356,9 +1433,10 @@ class ReportPostView(View):
         post = get_object_or_404(Post, id=post_id)
         
         form = ReportForm(request.POST)
+        form.instance.post = post
+
         if form.is_valid():
             report = form.save(commit=False)
-            report.post = post
             if request.user.is_authenticated:
                 report.member = get_object_or_404(Member, username=request.user)
                 report.email = request.user.email
@@ -1372,9 +1450,12 @@ class ReportPostView(View):
                 messages.error(request, 'Ya existe un reporte con tu correo.')
         else:
             # Imprimir errores del formulario para depuración
-            print(form.errors)
-            if 'email' in form.errors:
-                messages.error(request, form.errors['email'][0])
+            print(f"Error:{form.errors}")
+            if '__all__' in form.errors:
+                for error in form.errors['__all__']:
+                    if 'Ya existe un reporte con este correo.' in error:
+                        messages.error(request, 'Ya existe un reporte con este correo.')
+                        break
             else:
                 messages.error(request, "Hubo un error con tu envío.")
         
@@ -1408,10 +1489,30 @@ class ReportedPostsView(View):
         reported_posts = Post.objects.annotate(report_count=Count('reports')).filter(report_count__gt=0).order_by('-report_count')
         if not request.user.has_perm('posts.change_post') and not request.user.has_perm('posts.can_publish'):
             reported_posts = reported_posts.filter(author=request.user)
-
+        #print(reported_posts)
+        posts_with_reports = []
+        for post in reported_posts:
+            reports = list(post.reports.values('email', 'reason', 'timestamp'))
+            for report in reports:
+                report['timestamp'] = report['timestamp'].strftime('%Y-%m-%d %H:%M:%S')
+                #report['timestamp'] = format(report['timestamp'], 'Y-m-d H:i:s')
+            posts_with_reports.append({
+                'id': post.id,
+                'title': post.title,
+                'author': post.author.username,
+                'category': post.category.name,
+                'date_posted': post.date_posted,
+                'date_posted_m': post.date_posted.strftime('%m'),
+                'date_posted_Y': post.date_posted.strftime('%Y'),
+                'report_count': post.reports.count(),
+                'status' : post.status,
+                'reports': json.dumps(reports, cls=DjangoJSONEncoder)
+            })
+        print(posts_with_reports)
         return render(request, self.template_name, {
             'reported_posts': reported_posts,
-            'can_delete_post':can_delete_post
+            'posts_with_reports': posts_with_reports,
+            'can_delete_post': can_delete_post
         })
     
 class TogglePostStatusView(LoginRequiredMixin, View):
@@ -1450,7 +1551,32 @@ class TogglePostStatusView(LoginRequiredMixin, View):
         return redirect(f'{reverse("incidents")}')
     
 class SubscribeView(LoginRequiredMixin, View):
+    """
+    Vista para suscribirse a una categoría.
+
+    Esta vista permite a un usuario suscribirse a una categoría que no sea de tipo 'premium'.
+
+    Métodos:
+    --------
+    post(request, category_id):
+        Maneja la solicitud POST para suscribirse a una categoría.
+    """
     def post(self, request, category_id):
+        """
+        Maneja la solicitud POST para suscribirse a una categoría.
+
+        Args:
+        -----
+        request : HttpRequest
+            La solicitud HTTP.
+        category_id : int
+            El ID de la categoría a la que se desea suscribir.
+
+        Returns:
+        --------
+        HttpResponse
+            Redirige a la página de la categoría después de suscribirse.
+        """
         category = get_object_or_404(Category, id=category_id)
         if category.kind != 'premium':
             request.user.suscribed_categories.add(category)
@@ -1458,7 +1584,32 @@ class SubscribeView(LoginRequiredMixin, View):
         return redirect('category', pk=category.pk, name=category.name)
 
 class UnsubscribeView(LoginRequiredMixin, View):
+    """
+    Vista para desuscribirse de una categoría.
+
+    Esta vista permite a un usuario desuscribirse de una categoría a la que está suscrito.
+
+    Métodos:
+    --------
+    post(request, category_id):
+        Maneja la solicitud POST para desuscribirse de una categoría.
+    """
     def post(self, request, category_id):
+        """
+        Maneja la solicitud POST para desuscribirse de una categoría.
+
+        Args:
+        -----
+        request : HttpRequest
+            La solicitud HTTP.
+        category_id : int
+            El ID de la categoría de la que se desea desuscribir.
+
+        Returns:
+        --------
+        HttpResponse
+            Redirige a la página de la categoría después de desuscribirse.
+        """
         category = get_object_or_404(Category, id=category_id)
         if category in request.user.suscribed_categories.all():
             request.user.suscribed_categories.remove(category)
@@ -1466,9 +1617,35 @@ class UnsubscribeView(LoginRequiredMixin, View):
         return redirect('category', pk=category.pk, name=category.name)
 
 class MyCategoriesView(LoginRequiredMixin, ListView):
+    """
+    Vista para mostrar las categorías suscritas y compradas por el usuario.
+
+    Esta vista muestra las categorías a las que el usuario está suscrito o ha comprado,
+    utilizando una plantilla específica y un nombre de contexto personalizado.
+
+    Atributos:
+    ----------
+    template_name : str
+        El nombre de la plantilla que se utilizará para renderizar la vista.
+    context_object_name : str
+        El nombre del contexto que se pasará a la plantilla.
+
+    Métodos:
+    --------
+    get_queryset():
+        Obtiene el conjunto de consultas para las categorías suscritas y compradas por el usuario.
+    """
     template_name = 'suscribers/my_categories.html'
     context_object_name = 'suscribed_categories'
 
     def get_queryset(self):
+        """
+        Obtiene el conjunto de consultas para las categorías suscritas y compradas por el usuario.
+
+        Returns:
+        --------
+        QuerySet
+            El conjunto de consultas para las categorías suscritas y compradas por el usuario.
+        """
         user = self.request.user
         return user.suscribed_categories.all() | user.purchased_categories.all()
