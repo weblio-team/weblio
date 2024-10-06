@@ -18,11 +18,7 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.core.exceptions import PermissionDenied
 from django.conf import settings
 from .forms import ReportForm
-from django.utils.text import slugify
-from django.db.models import Count
 from django.core.serializers.json import DjangoJSONEncoder
-import json
-
 from simple_history.utils import update_change_reason
 import random
 from django.core.files.storage import default_storage
@@ -177,7 +173,14 @@ class MyPostsView(PermissionRequiredMixin, LoginRequiredMixin, ListView):
     permission_required = 'posts.add_post'
     
     def get_queryset(self):
-        """Obtiene las publicaciones del usuario autenticado, ordenadas por la fecha de la última versión del historial donde el autor es el history_user."""
+        """Obtiene las publicaciones del usuario autenticado, ordenadas por la fecha de la última versión del historial donde el autor es el history_user."""        
+        # Actualizar el estado de los posts cuya fecha actual es mayor a publish_end_date
+        now = timezone.now()
+        Post.objects.filter(
+            publish_end_date__lt=now,
+            publish_end_date__isnull=False
+        ).update(status='inactive')
+
         PostHistory = Post.history.model
         latest_history = PostHistory.objects.filter(
             id=OuterRef('id'),
@@ -324,6 +327,19 @@ class MyPostEditView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
                 'thumbnail': post_version.thumbnail
             })
         
+        elif post_data.get('operation') == 'delete':
+            post_version = get_object_or_404(Post, pk=post_data.get('post_id'))
+            post_version.delete()
+            messages.success(self.request, 'La publicación ha sido eliminada correctamente.')
+            return redirect('my-posts')
+
+        elif post_data.get('operation') == 'inactive':
+            post_version = get_object_or_404(Post, pk=post_data.get('post_id'))
+            post_version.status = 'inactive'
+            post_version.save()
+            messages.success(self.request, 'La publicación ha sido desactivada correctamente.')
+            return redirect('my-posts')
+
         # Si no se solicita restaurar una versión anterior o se está guardando una nueva versión o se está guardando una versión anterior
         else:
             # Check if 'status' is missing and set it to the existing status from the post instance
