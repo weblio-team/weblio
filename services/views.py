@@ -112,7 +112,34 @@ stripe.api_key = settings.STRIPE_SECRET_KEY
 # Clase para crear la sesión de Stripe
 @method_decorator(csrf_exempt, name='dispatch')
 class CreateCheckoutSessionView(View):
+    """
+    Vista para crear una sesión de pago en Stripe.
+
+    Esta vista maneja la creación de una sesión de pago en Stripe para una categoría premium.
+
+    Métodos:
+    --------
+    post(request, category_id, *args, **kwargs):
+        Maneja la solicitud POST para crear una sesión de pago en Stripe.
+    get(request, *args, **kwargs):
+        Maneja la solicitud GET devolviendo un 405 (Método no permitido).
+    """
     def post(self, request, category_id, *args, **kwargs):
+        """
+        Maneja la solicitud POST para crear una sesión de pago en Stripe.
+
+        Args:
+        -----
+        request : HttpRequest
+            La solicitud HTTP.
+        category_id : int
+            El ID de la categoría para la cual se desea crear la sesión de pago.
+
+        Returns:
+        --------
+        JsonResponse
+            Redirige al cliente a la página de pago de Stripe o devuelve un error en caso de fallo.
+        """
         category = get_object_or_404(Category, pk=category_id)
 
         if category.kind != 'premium':
@@ -151,13 +178,54 @@ class CreateCheckoutSessionView(View):
             return JsonResponse({'error': str(e)}, status=500)
     
     def get(self, request, *args, **kwargs):
+        """
+        Maneja la solicitud GET devolviendo un 405 (Método no permitido).
+
+        Args:
+        -----
+        request : HttpRequest
+            La solicitud HTTP.
+
+        Returns:
+        --------
+        HttpResponseNotAllowed
+            Respuesta HTTP indicando que el método GET no está permitido.
+        """
         # Si llega una solicitud GET, devolver un 405 (Método no permitido)
         return HttpResponseNotAllowed(['POST'])
 
 # Clase para manejar la confirmación del pago
 @method_decorator(csrf_exempt, name='dispatch')
 class PaymentSuccessView(View):
+    """
+    Vista para manejar la confirmación del pago exitoso.
+
+    Esta vista maneja la confirmación del pago exitoso de una categoría premium,
+    agregando la categoría a las compradas por el usuario y creando un registro de la compra.
+
+    Métodos:
+    --------
+    get(request, *args, **kwargs):
+        Maneja la solicitud GET para confirmar el pago exitoso.
+    """
     def get(self, request, *args, **kwargs):
+        """
+        Maneja la solicitud GET para confirmar el pago exitoso.
+
+        Args:
+        -----
+        request : HttpRequest
+            La solicitud HTTP.
+        *args : list
+            Argumentos posicionales.
+        **kwargs : dict
+            Argumentos clave.
+
+        Returns:
+        --------
+        JsonResponse or HttpResponseRedirect
+            Devuelve una respuesta JSON en caso de error o redirige a la página de la categoría en caso de éxito.
+        """
         session_id = request.GET.get('session_id')
         if not session_id:
             return JsonResponse({'error': 'No session_id provided'}, status=400)
@@ -215,7 +283,37 @@ class PaymentSuccessView(View):
 # Clase para manejar el cancelamiento del pago
 @method_decorator(csrf_exempt, name='dispatch')
 class PaymentCancelView(View):
+    """
+    Vista para manejar la cancelación del pago.
+
+    Esta vista maneja la cancelación del pago de una categoría, mostrando un mensaje de advertencia
+    y redirigiendo al usuario a la página de la categoría correspondiente.
+
+    Métodos:
+    --------
+    get(request, category_id, *args, **kwargs):
+        Maneja la solicitud GET para cancelar el pago.
+    """
     def get(self, request, category_id, *args, **kwargs):
+        """
+        Maneja la solicitud GET para cancelar el pago.
+
+        Args:
+        -----
+        request : HttpRequest
+            La solicitud HTTP.
+        category_id : int
+            El ID de la categoría para la cual se desea cancelar el pago.
+        *args : list
+            Argumentos posicionales.
+        **kwargs : dict
+            Argumentos clave.
+
+        Returns:
+        --------
+        HttpResponseRedirect
+            Redirige al usuario a la página de la categoría correspondiente.
+        """
         # Obtener la categoría usando el category_id
         category = get_object_or_404(Category, pk=category_id)
 
@@ -793,13 +891,53 @@ class SendLoginEmailView(View):
         return ip
 
 class CustomPasswordResetView(PasswordResetView):
+    """
+    Vista personalizada para el restablecimiento de contraseña.
+
+    Esta vista maneja el proceso de restablecimiento de contraseña, enviando un correo electrónico
+    con un enlace para restablecer la contraseña. Utiliza plantillas personalizadas para el correo
+    electrónico y el formulario de restablecimiento.
+
+    Atributos:
+    ----------
+    email_template_name : str
+        Ruta de la plantilla de correo electrónico en texto plano.
+    html_email_template_name : str
+        Ruta de la plantilla de correo electrónico en HTML.
+    template_name : str
+        Ruta de la plantilla del formulario de restablecimiento de contraseña.
+
+    Métodos:
+    --------
+    send_mail(subject_template_name, email_template_name, context, from_email, to_email, html_email_template_name=None):
+        Envía un correo electrónico con el enlace para restablecer la contraseña.
+    """
     email_template_name = 'emails/password-reset/password_reset_email.html'
     html_email_template_name = 'emails/password-reset/password_reset_email.html'  # Añadir HTML para asegurarnos
     template_name = 'emails/password-reset/password_reset_form.html'
 
     def send_mail(self, subject_template_name, email_template_name, context, from_email, to_email, html_email_template_name=None):
         """
-        Enviar correo como HTML utilizando EmailMultiAlternatives.
+        Envía un correo electrónico con el enlace para restablecer la contraseña.
+
+        Args:
+        -----
+        subject_template_name : str
+            Ruta de la plantilla del asunto del correo electrónico.
+        email_template_name : str
+            Ruta de la plantilla del cuerpo del correo electrónico en texto plano.
+        context : dict
+            Contexto para renderizar las plantillas.
+        from_email : str
+            Dirección de correo electrónico del remitente.
+        to_email : str
+            Dirección de correo electrónico del destinatario.
+        html_email_template_name : str, optional
+            Ruta de la plantilla del cuerpo del correo electrónico en HTML (por defecto es None).
+
+        Returns:
+        --------
+        None
         """
         subject = render_to_string(subject_template_name, context).strip()
         body = render_to_string(email_template_name, context)
@@ -816,6 +954,24 @@ class CustomPasswordResetView(PasswordResetView):
         email_message.send()
 
 class AccountStatusEmailView(View):
+    """
+    Vista para enviar correos electrónicos sobre el estado de la cuenta.
+
+    Esta vista maneja el envío de correos electrónicos para notificar a los usuarios sobre cambios
+    en el estado de su cuenta, utilizando plantillas personalizadas para el correo electrónico.
+
+    Atributos:
+    ----------
+    email_template_name : str
+        Ruta de la plantilla de correo electrónico en texto plano.
+    html_email_template_name : str
+        Ruta de la plantilla de correo electrónico en HTML.
+
+    Métodos:
+    --------
+    send_account_status_email(user, account_status, to_email):
+        Envía un correo electrónico con el estado de la cuenta al usuario.
+    """
     email_template_name = 'emails/account-status/account_status_email.html'
     html_email_template_name = 'emails/account-status/account_status_email.html'
 
@@ -841,6 +997,26 @@ class AccountStatusEmailView(View):
         email_message.send()
 
 class UserPermissionsEmailView(View):
+    """
+    Vista para enviar correos electrónicos sobre los permisos de usuario.
+
+    Esta vista maneja el envío de correos electrónicos para notificar a los usuarios sobre
+    sus permisos, utilizando plantillas personalizadas para el correo electrónico.
+
+    Atributos:
+    ----------
+    email_template_name : str
+        Ruta de la plantilla de correo electrónico en texto plano.
+    html_email_template_name : str
+        Ruta de la plantilla de correo electrónico en HTML.
+
+    Métodos:
+    --------
+    get_translated_permissions(user):
+        Obtiene los permisos agrupados y traducidos para un usuario específico.
+    send_permissions_email(user, to_email):
+        Envía un correo electrónico con los permisos del usuario.
+    """
     email_template_name = 'emails/account-status/user_permissions_email.html'
     html_email_template_name = 'emails/account-status/user_permissions_email.html'
 
@@ -895,9 +1071,40 @@ class UserPermissionsEmailView(View):
 
 # viers for finances reports
 class FinancesDashboardView(TemplateView):
+    """
+    Vista para mostrar el panel de control de finanzas.
+
+    Esta vista muestra un panel de control con información financiera, incluyendo los ingresos
+    totales y el número total de compras. También filtra las categorías premium.
+
+    Atributos:
+    ----------
+    template_name : str
+        El nombre de la plantilla que se utilizará para renderizar la vista.
+
+    Métodos:
+    --------
+    get_context_data(**kwargs):
+        Obtiene el contexto para la plantilla, incluyendo los ingresos totales, el número total
+        de compras y las categorías premium.
+    """
     template_name = 'finances/dashboard.html'
 
     def get_context_data(self, **kwargs):
+        """
+        Obtiene el contexto para la plantilla, incluyendo los ingresos totales, el número total
+        de compras y las categorías premium.
+
+        Args:
+        -----
+        **kwargs : dict
+            Argumentos clave adicionales.
+
+        Returns:
+        --------
+        dict
+            El contexto para la plantilla.
+        """
         context = super().get_context_data(**kwargs)
 
         # Total revenue and purchases
@@ -924,17 +1131,75 @@ class FinancesDashboardView(TemplateView):
 
 
 class FinancesMembersView(TemplateView):
+    """
+    Vista para mostrar las compras realizadas por los miembros.
+
+    Esta vista muestra una lista de todas las compras realizadas por los miembros,
+    incluyendo la categoría y el usuario asociado a cada compra.
+
+    Atributos:
+    ----------
+    template_name : str
+        El nombre de la plantilla que se utilizará para renderizar la vista.
+
+    Métodos:
+    --------
+    get_context_data(**kwargs):
+        Obtiene el contexto para la plantilla, incluyendo todas las compras realizadas por los miembros.
+    """
     template_name = 'finances/member.html'
 
     def get_context_data(self, **kwargs):
+        """
+        Obtiene el contexto para la plantilla, incluyendo todas las compras realizadas por los miembros.
+
+        Args:
+        -----
+        **kwargs : dict
+            Argumentos clave adicionales.
+
+        Returns:
+        --------
+        dict
+            El contexto para la plantilla.
+        """
         context = super().get_context_data(**kwargs)
         context['purchases'] = Purchase.objects.select_related('category', 'user').all()
         return context
 
 class FinancesCategoriesView(TemplateView):
+    """
+    Vista para mostrar el resumen financiero por categorías.
+
+    Esta vista muestra un resumen financiero agrupado por categorías, incluyendo el total
+    de ingresos por cada categoría.
+
+    Atributos:
+    ----------
+    template_name : str
+        El nombre de la plantilla que se utilizará para renderizar la vista.
+
+    Métodos:
+    --------
+    get_context_data(**kwargs):
+        Obtiene el contexto para la plantilla, incluyendo el total de ingresos agrupados por categoría.
+    """
     template_name = 'finances/category.html'
 
     def get_context_data(self, **kwargs):
+        """
+        Obtiene el contexto para la plantilla, incluyendo el total de ingresos agrupados por categoría.
+
+        Args:
+        -----
+        **kwargs : dict
+            Argumentos clave adicionales.
+
+        Returns:
+        --------
+        dict
+            El contexto para la plantilla.
+        """
         context = super().get_context_data(**kwargs)
         
         # Group by category name and sum the price
