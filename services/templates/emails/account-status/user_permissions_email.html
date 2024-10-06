@@ -1,36 +1,146 @@
-<!-- templates/emails/user-permissions/user_permissions_email.html -->
 <!DOCTYPE html>
-<html>
+<html lang="es">
+
 <head>
-    <title>Permisos de Usuario</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Actualización de permisos en tu cuenta</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+        }
+
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #2c2c2c;
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        .email-title {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #007bff;
+        }
+
+        .email-body {
+            font-size: 16px;
+            line-height: 1.6;
+        }
+
+        .btn {
+            display: block;
+            width: fit-content;
+            margin: 20px auto 0 auto;
+            background-color: #007bff;
+            color: white !important;
+            padding: 12px 20px;
+            border-radius: 5px;
+            text-decoration: none;
+        }
+
+        .btn:hover {
+            background-color: #0056b3;
+        }
+
+        footer {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 14px;
+            color: white;
+        }
+
+        .permissions-list {
+            margin-top: 20px;
+        }
+
+        .permissions-list ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+
+        .permissions-list li {
+            margin-bottom: 10px;
+        }
+
+        .permissions-list strong {
+            color: #007bff;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .divider {
+            width: 80%;
+            height: 1px;
+            background-color: #444;
+            margin: 20px auto;
+        }
+    </style>
 </head>
+
 <body>
-    <p>Hola {{ user.get_full_name }},</p>
-    <p>Estos son los permisos que tienes disponibles:</p>
-    <ul>
-        {% for module, submodules in translated_permissions.items %}
-            <li><strong>{{ module }}</strong>
+    <div class="email-container">
+        <h1 class="email-title">Actualización de permisos en tu cuenta</h1>
+        <div class="email-body">
+            <p>Hola {{ user.username }},</p>
+            <p>Queremos informarte que los permisos de tu cuenta en nuestro blog han sido actualizados. Te invitamos a iniciar sesión en el sitio para explorar todas las funcionalidades que tienes disponibles con tus permisos actualizados.</p>
+            <p>Si tienes alguna pregunta o necesitas asistencia, no dudes en contactarnos.</p>
+
+            <!-- Permission Details -->
+            <div class="permissions-list">
+                <p>Estos son los permisos que tienes disponibles:</p>
                 <ul>
-                    {% for submodule, permissions in submodules.items %}
-                        <li>{{ submodule }}:
-                            <ul>
-                                {% for permission in permissions %}
-                                    <li>{{ permission }}</li>
-                                {% endfor %}
-                            </ul>
-                        </li>
+                    {% if translated_permissions %}
+                    <ul>
+                        {% for module, submodules in translated_permissions.items %}
+                            <li><strong>{{ module }}</strong>
+                                <ul>
+                                    {% for submodule, permissions in submodules.items %}
+                                        <li>{{ submodule }}:
+                                            <ul>
+                                                {% for permission in permissions %}
+                                                    <li>{{ permission }}</li>
+                                                {% endfor %}
+                                            </ul>
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p>No tienes permisos asignados.</p>
+                {% endif %}
+
+                <p><strong>Estos son los roles que tienes asignados:</strong></p>
+                <ul>
+                    {% for group in groups %}
+                        <li>{{ group.name }}</li>
                     {% endfor %}
                 </ul>
-            </li>
-        {% endfor %}
-    </ul>
-    <p>Estos son los roles que tienes asignados:</p>
-    <ul>
-        {% for group in groups %}
-            <li>{{ group.name }}</li>
-        {% endfor %}
-    </ul>
-    <p>Gracias,</p>
-    <p>El equipo de soporte</p>
+            </div>
+
+            <!-- Login Button -->
+            <a href="{{ login_url }}" class="btn text-white">Iniciar Sesión</a>
+
+            <p class="text-center">Saludos, El equipo de Weblio</p>
+        </div>
+
+        <!-- Separador -->
+        <div class="divider"></div>
+
+        <!-- Footer -->
+        <footer>
+            © 2024 Weblio. Todos los derechos reservados.
+        </footer>
+    </div>
 </body>
+
 </html>

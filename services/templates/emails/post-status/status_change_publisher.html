@@ -24,7 +24,6 @@
             color: #fff;
             padding: 20px;
             margin: 0;
-            text-align: center;
         }
 
         .container {
@@ -38,7 +37,7 @@
         }
 
         h2 {
-            color: #00bfff;
+            color: #007bff;
             margin-bottom: 20px;
             font-size: 28px;
         }
@@ -54,21 +53,18 @@
         }
 
         .btn {
-            display: inline-block;
-            margin: 20px auto;
-            padding: 12px 24px;
-            background-color: #00bfff;
-            color: #fff;
-            text-decoration: none;
+            display: block;
+            width: fit-content;
+            margin: 20px auto 0 auto;
+            background-color: #007bff;
+            color: white !important;
+            padding: 12px 20px;
             border-radius: 5px;
-            font-size: 18px;
-            font-weight: bold;
-            text-align: center;
-            transition: background-color 0.3s ease;
+            text-decoration: none;
         }
 
         .btn:hover {
-            background-color: #008fb3;
+            background-color: #0056b3;
         }
 
         .divider {
@@ -102,12 +98,14 @@
         <!-- Botón de acción -->
         <a href="{{ post_url }}" class="btn">Ver artículo</a>
 
+        <p class="text-center">Saludos, El equipo de Weblio</p>
+        
         <!-- Separador -->
         <div class="divider"></div>
 
-        <!-- Footer -->
+        <!-- Footer (inside the email-container) -->
         <footer>
-            <p>Gracias,<br>El equipo de Weblio</p>
+            © 2024 Weblio. Todos los derechos reservados.
         </footer>
     </div>
 </body>

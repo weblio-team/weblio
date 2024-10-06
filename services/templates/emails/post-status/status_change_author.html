@@ -38,7 +38,7 @@
         }
 
         h2 {
-            color: #00bfff;
+            color: #007bff;
             margin-bottom: 20px;
             font-size: 28px;
         }
@@ -54,21 +54,18 @@
         }
 
         .btn {
-            display: inline-block;
-            margin: 20px auto;
-            padding: 12px 24px;
-            background-color: #00bfff;
-            color: #fff;
-            text-decoration: none;
+            display: block;
+            width: fit-content;
+            margin: 20px auto 0 auto;
+            background-color: #007bff;
+            color: white !important;
+            padding: 12px 20px;
             border-radius: 5px;
-            font-size: 18px;
-            font-weight: bold;
-            text-align: center;
-            transition: background-color 0.3s ease;
+            text-decoration: none;
         }
 
         .btn:hover {
-            background-color: #008fb3;
+            background-color: #0056b3;
         }
 
         .divider {
@@ -83,6 +80,10 @@
             font-size: 14px;
             color: #bbb;
         }
+
+        .text-center {
+            text-align: center;
+        }
     </style>
 </head>
 <body>
@@ -91,24 +92,26 @@
         <h2>Cambio en el estado de tu artículo</h2>
 
         <!-- Mensaje principal -->
-        <p>Hola <strong>{{ post.author.first_name }}</strong>,</p>
+        <p>Hola <strong>{{ post.author.username }}</strong>,</p>
         <p>El estado de tu artículo "<strong>{{ post.title }}</strong>" ha sido cambiado de 
         <strong>{{ old_status }}</strong> a <strong>{{ new_status }}</strong>.</p>
 
         <!-- Detalles del cambio -->
         <p><strong>Razón del cambio:</strong> {{ change_reason }}</p>
-        <p><strong>Cambiado por:</strong> {{ changed_by.first_name }} {{ changed_by.last_name }}</p>
+        <p><strong>Cambiado por:</strong> {{ changed_by.username }}</p>
         <p><strong>Fecha del cambio:</strong> {{ change_date }}</p>
 
         <!-- Botón de acción -->
         <a href="{{ post_url }}" class="btn">Ver artículo</a>
 
+        <p class="text-center">Saludos, El equipo de Weblio</p>
+        
         <!-- Separador -->
         <div class="divider"></div>
 
-        <!-- Footer -->
+        <!-- Footer (inside the email-container) -->
         <footer>
-            <p>Gracias,<br>El equipo de Weblio</p>
+            © 2024 Weblio. Todos los derechos reservados.
         </footer>
     </div>
 </body>

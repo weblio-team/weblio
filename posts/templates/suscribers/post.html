@@ -5,17 +5,61 @@
 	<p id="DEBUG" style="display: none;">{{ DEBUG }}</p>
 	<p id="AUTH" style="display: none;">{{ user.is_authenticated }}</p>	
 	<main role="main" class="container py-4">
-		<h1>{{post.title}}</h1>
-		<blockquote class="blockquote">
-			<small>{{post.summary}}</small>
-		</blockquote>
-		<hr>
-		<p>{{post.body|safe}}</p>
-		<small>Autor: {{post.author.first_name}} {{post.author.last_name}}</small></br>
-		<small>Inicio de publicación: {{ post.publish_start_date }}</small></br>
-		<small>Fin de publicación: {{ post.publish_end_date }}</small></br>
-		<small>Categoria: {{post.category}}</small></br>
-		<small>Etiquetas: {{post.keywords}}</small></br>
+		<div class="container my-3 p-3 bg-dark text-white rounded">
+			<div class="row g-0">
+				<!-- Conditionally apply classes based on the presence of a thumbnail -->
+				<div class="{% if post.thumbnail %}col-md-7{% else %}col-12 text-center{% endif %} d-flex flex-column justify-content-between">
+					<div class="card-body p-2">
+						<!-- Título del post -->
+						<h1 class="display-5 text-white">{{ post.title }}</h1>
+			
+						<!-- Resumen del post -->
+						<blockquote class="blockquote">
+							<p class="mb-0 text-white">― {{ post.summary }}</p>
+						</blockquote>
+					</div>
+					<div class="post-details mt-3">
+						<div class="row">
+							<!-- Columna para la información del autor -->
+							<div class="d-flex align-items-center my-2">
+								{% if post.author.pfp %}
+									<img src="{{ post.author.pfp.url }}" class="rounded-circle me-2" alt="Author Thumbnail" style="width: 50px; height: 50px;">
+								{% else %}
+									<img src="https://storage.googleapis.com/bucket-weblio/media/profile_pictures/default_pfp.jpg" class="rounded-circle me-2" alt="Default Thumbnail" style="width: 50px; height: 50px;">
+								{% endif %}
+								<div class="text-start">
+									<p class="mb-1">
+										<strong>Autor: {{ post.author.first_name }} {{ post.author.last_name }}</strong><br>
+										<small class="text-white">
+											Categoría: {{ post.category }} |
+											Etiquetas: {{ post.keywords }} |
+											{% if post.publish_start_date and post.publish_end_date %}
+											<span id="availability" class="small-text"
+													data-start-date="{{ post.publish_start_date|date:"Y-m-d\TH:i:s" }}" 
+													data-end-date="{{ post.publish_end_date|date:"Y-m-d\TH:i:s" }}">
+												Calculando días...
+											</span>
+											{% else %}
+												<span id="availability" class="small-texet">Calculando días...</span>
+											{% endif %}
+										</small>
+									</p>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			
+				<!-- Imagen del post (Portada) al lado derecho -->
+				{% if post.thumbnail %}
+				<div class="col-md-5 d-flex align-items-center">
+					<img src="{{ post.thumbnail.url }}" class="img-fluid rounded" alt="Thumbnail" style="width: 100%; height: auto; max-height: 300px; object-fit: cover;">
+				</div>
+				{% endif %}
+			</div>
+			<hr>
+			<p>{{ post.body|safe }}</p>
+		</div>
 		<div class="container mb-4 py-4">
 			{% if DEBUG and user.is_authenticated %}
 				<div class="alert alert-warning d-flex align-items-center" role="alert" style="font-size: 1.25rem;">
@@ -118,6 +162,10 @@
 						font-size: 1.5rem;
 						margin-bottom: 1.5rem;
 					}
+
+					.small-text {
+						font-size: 3rem !important;
+					}
 				
 					/* Estilos para los íconos sociales y el texto */
 					.social-item {
@@ -151,6 +199,132 @@
 					.mx-2 {
 						margin-left: 10px;
 						margin-right: 10px;
+					}
+
+					/* Thumbnail and Profile Picture Styles */
+					.thumbnail-container {
+						width: 100%;
+						padding-top: 100%; /* 1:1 Aspect Ratio */
+						position: relative;
+					}
+					
+					.thumbnail-img {
+						position: absolute;
+						top: 0;
+						left: 0;
+						width: 100%;
+						height: 100%;
+						object-fit: cover;
+					}
+					
+					/* Profile Picture Styling */
+					.profile-picture {
+						width: 35px;
+						height: 35px;
+						object-fit: cover;
+					}
+					
+					/* Card body layout */
+					.card-body {
+						display: flex;
+						flex-direction: column;
+						justify-content: space-between;
+						height: 100%;
+					}
+					
+					/* Title styling */
+					.post-title {
+						font-size: 1.5rem;
+						color: #007bff;
+						margin-bottom: 0.5rem;
+					}
+					
+					/* Summary styling */
+					.post-summary {
+						font-size: 1.1rem;
+						color: #495057;
+						margin-bottom: 1rem;
+						line-height: 1.5;
+					}
+					
+					/* Extra info section */
+					.post-extra-info {
+						display: flex;
+						align-items: center;
+						font-size: 0.9rem;
+						color: #6c757d;
+						margin-top: auto;
+					}
+					
+					.post-extra-info img {
+						margin-right: 10px;
+					}
+					/* Center the title and content */
+					h1 {
+						text-align: center;
+					}
+					
+					.container {
+						max-width: 1000px; /* Restrict the container's max width to center the content */
+						margin: 0 auto; /* Center the container */
+					}
+
+					/* Ensure that the cards stretch to the same height */
+					.flex-fill {
+						flex: 1;
+					}
+
+					/* Thumbnail and "No Thumbnail" Styling */
+					.no-thumbnail {
+						display: flex;
+						flex-direction: column;
+						justify-content: center;
+						align-items: center;
+						padding: 20px;
+						background-color: #495057;
+						border-radius: 8px;
+					}
+
+					.no-thumbnail i {
+						margin-top: 10px; /* Space above the icon */
+					}
+
+					/* Make sure the thumbnail fits within the card without overflow */
+					.card-thumbnail-container img {
+						max-width: 100%;
+						height: auto;
+						max-height: 300px;
+						object-fit: cover;
+					}
+
+					/* Flexbox layout for title, summary, and post details */
+					.card-body {
+						display: flex;
+						flex-direction: column;
+						justify-content: flex-start;
+					}
+
+					.post-details {
+						margin-top: auto;
+					}
+
+					/* Media query to handle different thumbnail sizes */
+					@media (min-width: 768px) {
+						.row.g-0 {
+							display: flex;
+							align-items: flex-start;
+						}
+
+						.col-md-7 {
+							display: flex;
+							flex-direction: column;
+							justify-content: space-between;
+						}
+
+						.col-md-5 {
+							display: flex;
+							align-items: flex-start;
+						}
 					}
 				</style>
 			{% elif not DEBUG and not user.is_authenticated %}
@@ -194,6 +368,61 @@
 				  		console.error("Error:", error);
 					});
 				});
+		</script>
+		<script>
+			document.addEventListener("DOMContentLoaded", function() {
+				var availabilityElement = document.getElementById("availability");
+				if (availabilityElement) {
+					var startDate = availabilityElement.getAttribute("data-start-date");
+					var endDate = availabilityElement.getAttribute("data-end-date");
+					var now = new Date(); // Get the current time
+		
+					if (startDate && endDate) {
+						// Convert the date strings into Date objects
+						startDate = new Date(startDate);
+						endDate = new Date(endDate);
+		
+						// Check if the dates are valid
+						if (!isNaN(startDate.getTime()) && !isNaN(endDate.getTime())) {
+							// Check if the current time is within the start and end dates
+							if (now >= startDate && now <= endDate) {
+								var timeDiff = endDate - now; // Difference between end date and current time
+								var daysRemaining = Math.floor(timeDiff / (1000 * 60 * 60 * 24)); // Convert milliseconds to days
+		
+								if (daysRemaining >= 1) {
+									availabilityElement.innerHTML = '<p>Disponible por ' + daysRemaining + ' días</p>';
+								} else {
+									// If less than a day, calculate the hours remaining
+									var hoursRemaining = Math.floor(timeDiff / (1000 * 60 * 60)); // Convert milliseconds to hours
+		
+									if (hoursRemaining >= 1) {
+										availabilityElement.innerHTML = '<p">Disponible por ' + hoursRemaining + ' horas</p>';
+									} else {
+										// If less than an hour, calculate the minutes remaining
+										var minutesRemaining = Math.floor(timeDiff / (1000 * 60)); // Convert milliseconds to minutes
+		
+										if (minutesRemaining > 0) {
+											availabilityElement.innerHTML = '<p>Disponible por ' + minutesRemaining + ' minutos</p>';
+										} else {
+											availabilityElement.innerHTML = '<p>Disponible por menos de un minuto</p>';
+										}
+									}
+								}
+							} else if (now > endDate) {
+								availabilityElement.innerHTML = '<small class="text-white">Este artículo ya no está disponible</small>';
+							} else {
+								availabilityElement.innerHTML = '<small class="text-white">El artículo estará disponible en el futuro</small>';
+							}
+						} else {
+							availabilityElement.innerHTML = '<small class="text-white">Fecha inválida</small>';
+						}
+					} else {
+						// Default to 7 days from now if dates are not available
+						var defaultDays = 7;
+						availabilityElement.innerHTML = '<p">Disponible por ' + defaultDays + ' días</p>';
+					}
+				}
+			});
 		</script>
 		<script src="{% if DEBUG or not user.is_authenticated %} {% else %} https://unpkg.com/@lyket/widget@latest/dist/lyket.js?apiKey={{ LYKET_API_KEY }} {% endif %}"></script>
 		{% if not DEBUG and user.is_authenticated%} <div class="commentbox"></div> {% endif %}

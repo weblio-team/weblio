@@ -827,14 +827,15 @@ class MemberEditPermissionView(LoginRequiredMixin, PermissionRequiredMixin, view
             except Notification.DoesNotExist:
                 notification = None
 
+            # Asignar los permisos seleccionados
+            member.user_permissions.set(form.cleaned_data['permissions'])
+        
             # Verificar si la notificación de "Informar sobre actualización de permisos" está activada
             if notification and 'Informar sobre actualización de permisos' in notification.additional_notifications and not settings.DEBUG:
                 # Enviar correo de notificación al usuario
                 email_view = UserPermissionsEmailView()
                 email_view.send_permissions_email(member, member.email)
-
-            # Asignar los permisos seleccionados
-            member.user_permissions.set(form.cleaned_data['permissions'])
+            
             messages.success(self.request, "Los permisos del miembro han sido actualizados.")
             return redirect('member-list')
 
