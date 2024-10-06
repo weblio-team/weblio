@@ -7,6 +7,7 @@ from django.contrib.auth.mixins import PermissionRequiredMixin, LoginRequiredMix
 from django.utils.decorators import method_decorator
 from django.views import View
 from .models import Category, Post, Report, Member
+from services.models import Purchase
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView, TemplateView
 from .forms import CategoryForm, CategoryEditForm, KanbanBoardForm, MyPostAddBodyForm, MyPostAddGeneralForm, MyPostAddProgramForm, MyPostAddThumbnailForm, MyPostEditGeneralForm, MyPostEditBodyForm, MyPostEditProgramForm, MyPostEditThumbnailForm, ToEditPostGeneralForm, ToEditPostBodyForm, ToPublishPostForm
 from django.db.models import Q, OuterRef, Subquery, Count
@@ -102,6 +103,7 @@ class CategoryDetailView(DetailView):
         context['category_count'] = Category.objects.count()
         context['posts'] = Post.objects.filter(category=self.get_object(), status='published')
         context['DEBUG'] = settings.DEBUG
+        context['next_url'] = self.request.GET.get('next', '')
         return context
 
 
@@ -1087,6 +1089,15 @@ class SuscriberPostDetailView(DetailView):
         if request.user.is_anonymous and post.category.kind != 'public':
             messages.warning(request, "Debe registrarse para ver publicaciones para suscriptores.")
             return redirect(reverse_lazy('member-login'))  
+        
+        if request.user.is_authenticated and post.category.kind != 'public':
+        
+            if not Purchase.objects.filter(user=request.user, category=post.category).exists():
+                messages.warning(request, "Debe comprar la categoría para ver esta publicación.")
+                previous_url = request.META.get('HTTP_REFERER', '/')
+                if '/posts/category/' in previous_url:
+                    previous_url = ''
+                return redirect(f'{reverse_lazy("category", kwargs={"pk": post.category.pk, "name" : post.category.name})}?next={previous_url}')
 
         return super().dispatch(request, *args, **kwargs)
 
