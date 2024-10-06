@@ -557,12 +557,15 @@ class ToPublishPostForm(forms.ModelForm):
         }
 
 class ReportForm(forms.ModelForm):
+    post = forms.ModelChoiceField(queryset=Post.objects.all(), widget=forms.HiddenInput())
     class Meta:
         model = Report
-        fields = ['email', 'reason']
+        fields = ['post', 'email', 'reason']
 
-    def clean_email(self):
-        email = self.cleaned_data.get('email')
-        if Report.objects.filter(email=email).exists():
+    def clean(self):
+        cleaned_data = super().clean()
+        post = cleaned_data.get('post')
+        email = cleaned_data.get('email')
+        if Report.objects.filter(post=post, email=email).exists():
             raise forms.ValidationError('Ya existe un reporte con este correo.')
-        return email
+        return cleaned_data

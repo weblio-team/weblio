@@ -19,6 +19,8 @@ from django.conf import settings
 from .forms import ReportForm
 from django.utils.text import slugify
 from django.db.models import Count
+from django.core.serializers.json import DjangoJSONEncoder
+import json
 
 from simple_history.utils import update_change_reason
 import random
@@ -1322,7 +1324,7 @@ class ReportPostView(View):
     """
     template_name = 'reports/report_post.html'
 
-    def get(self, request, *args, **kwargs):
+    def get(self, request, **kwargs):
         """
         Maneja las solicitudes GET para mostrar el formulario de reporte.
 
@@ -1335,7 +1337,7 @@ class ReportPostView(View):
             HttpResponse: El objeto de respuesta con la plantilla renderizada.
         """
         post = get_object_or_404(Post, id=kwargs.get('pk'))
-        form = ReportForm()
+        form = ReportForm(initial={'post': post})
         member = None
         if request.user.is_authenticated:
             member = get_object_or_404(Member, username=request.user)
@@ -1356,9 +1358,10 @@ class ReportPostView(View):
         post = get_object_or_404(Post, id=post_id)
         
         form = ReportForm(request.POST)
+        form.instance.post = post
+
         if form.is_valid():
             report = form.save(commit=False)
-            report.post = post
             if request.user.is_authenticated:
                 report.member = get_object_or_404(Member, username=request.user)
                 report.email = request.user.email
@@ -1372,9 +1375,12 @@ class ReportPostView(View):
                 messages.error(request, 'Ya existe un reporte con tu correo.')
         else:
             # Imprimir errores del formulario para depuración
-            print(form.errors)
-            if 'email' in form.errors:
-                messages.error(request, form.errors['email'][0])
+            print(f"Error:{form.errors}")
+            if '__all__' in form.errors:
+                for error in form.errors['__all__']:
+                    if 'Ya existe un reporte con este correo.' in error:
+                        messages.error(request, 'Ya existe un reporte con este correo.')
+                        break
             else:
                 messages.error(request, "Hubo un error con tu envío.")
         
@@ -1408,10 +1414,30 @@ class ReportedPostsView(View):
         reported_posts = Post.objects.annotate(report_count=Count('reports')).filter(report_count__gt=0).order_by('-report_count')
         if not request.user.has_perm('posts.change_post') and not request.user.has_perm('posts.can_publish'):
             reported_posts = reported_posts.filter(author=request.user)
-
+        #print(reported_posts)
+        posts_with_reports = []
+        for post in reported_posts:
+            reports = list(post.reports.values('email', 'reason', 'timestamp'))
+            for report in reports:
+                report['timestamp'] = report['timestamp'].strftime('%Y-%m-%d %H:%M:%S')
+                #report['timestamp'] = format(report['timestamp'], 'Y-m-d H:i:s')
+            posts_with_reports.append({
+                'id': post.id,
+                'title': post.title,
+                'author': post.author.username,
+                'category': post.category.name,
+                'date_posted': post.date_posted,
+                'date_posted_m': post.date_posted.strftime('%m'),
+                'date_posted_Y': post.date_posted.strftime('%Y'),
+                'report_count': post.reports.count(),
+                'status' : post.status,
+                'reports': json.dumps(reports, cls=DjangoJSONEncoder)
+            })
+        print(posts_with_reports)
         return render(request, self.template_name, {
             'reported_posts': reported_posts,
-            'can_delete_post':can_delete_post
+            'posts_with_reports': posts_with_reports,
+            'can_delete_post': can_delete_post
         })
     
 class TogglePostStatusView(LoginRequiredMixin, View):
