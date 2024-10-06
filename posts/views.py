@@ -1106,7 +1106,7 @@ class SuscriberPostDetailView(DetailView):
             messages.warning(request, "Debe registrarse para ver publicaciones para suscriptores.")
             return redirect(reverse_lazy('member-login'))  
         
-        if request.user.is_authenticated and post.category.kind != 'public':
+        if request.user.is_authenticated and post.category.kind == 'premium':
         
             if not Purchase.objects.filter(user=request.user, category=post.category).exists():
                 messages.warning(request, "Debe comprar la categoría para ver esta publicación.")
