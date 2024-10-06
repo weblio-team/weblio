@@ -1084,7 +1084,7 @@ class SuscriberPostDetailView(DetailView):
 
         if request.user.is_anonymous and post.category.kind != 'public':
             messages.warning(request, "Debe registrarse para ver publicaciones para suscriptores.")
-            return redirect(reverse_lazy('posts'))  # Reemplaza 'home' con el nombre de tu URL de inicio
+            return redirect(reverse_lazy('member-login'))  
 
         return super().dispatch(request, *args, **kwargs)
 
