@@ -167,24 +167,24 @@
     </div>
     
     <style>
-        /* Custom style for dark modal */
+        
         .modal-dark .modal-content {
-            background-color: #333;  /* Dark background for modal content */
-            color: #e0e0e0;  /* Light text color */
+            background-color: #333;  
+            color: #e0e0e0; 
         }
     
         .modal-dark .modal-header {
-            background-color: #444;  /* Slightly darker background for header */
-            border-bottom: 1px solid #555;  /* Border color */
+            background-color: #444;  
+            border-bottom: 1px solid #555;  
         }
     
         .modal-dark .modal-footer {
-            background-color: #444;  /* Same as header for consistency */
-            border-top: 1px solid #555;  /* Border color */
+            background-color: #444;  
+            border-top: 1px solid #555;  
         }
     
         .modal-dark .btn-close {
-            filter: invert(1);  /* Make the close button white */
+            filter: invert(1);  
         }
     
         .modal-dark .btn-secondary {
@@ -209,7 +209,7 @@
                     console.log(reports);
                     var modalContent = document.getElementById('modalContent');
 
-                    // Clear previous content
+                    
                     modalContent.innerHTML = '';
 
                     try {
@@ -225,7 +225,7 @@
                         return;
                     }
 
-                    // Build table rows from report data
+                    
                     let reportRows = reports.map(report => `
                         <tr>
                             {% if can_delete_post %}
@@ -236,7 +236,7 @@
                         </tr>
                     `).join('');
 
-                    // Set the modal content with the report details
+                    
                     modalContent.innerHTML = `
                         <div class="table-responsive">
                             <table class="table table-dark table-bordered">
