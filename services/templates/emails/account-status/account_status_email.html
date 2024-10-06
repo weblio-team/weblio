@@ -1,12 +1,121 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
+
 <head>
-    <title>Estado de la Cuenta</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>
+        {% if account_status == 'activada' %} 
+            Tu cuenta ha sido activada 
+        {% else %} 
+            Tu cuenta ha sido desactivada 
+        {% endif %}
+    </title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+        }
+
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #2c2c2c;
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        .email-title {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #007bff;
+            text-align: center;
+        }
+
+        .email-body {
+            font-size: 16px;
+            line-height: 1.6;
+        }
+
+        .btn {
+            display: block;
+            width: fit-content;
+            margin: 20px auto 0 auto;
+            background-color: #007bff;
+            color: white !important; /* Force white text */
+            padding: 12px 20px;
+            border-radius: 5px;
+            text-decoration: none;
+            text-align: center;
+        }
+
+        .btn:hover {
+            background-color: #0056b3;
+            color: white !important; /* Ensure text stays white on hover */
+        }
+
+        footer {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 14px;
+            color: white;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .divider {
+            width: 80%;
+            height: 1px;
+            background-color: #444;
+            margin: 20px auto;
+        }
+    </style>
 </head>
+
 <body>
-    <p>Hola {{ user.get_full_name }},</p>
-    <p>Tu cuenta ha sido {{ account_status }}.</p>
-    <p>Gracias,</p>
-    <p>El equipo de soporte</p>
+    <div class="email-container">
+        <h1 class="email-title">
+            {% if account_status == 'activada' %}
+                ¡Tu cuenta ha sido activada!
+            {% else %}
+                Tu cuenta ha sido desactivada
+            {% endif %}
+        </h1>
+        <div class="email-body">
+            <p>Hola {{ user.username }},</p>
+
+            <!-- Conditional Content -->
+            {% if account_status == 'activada' %}
+                <p>Nos complace informarte que tu cuenta en nuestro blog ha sido activada exitosamente. Ahora puedes iniciar
+                    sesión y explorar todas las funcionalidades que hemos preparado para ti.</p>
+                <p>Si tienes alguna pregunta o necesitas asistencia, no dudes en contactarnos.</p>
+                <p>¡Esperamos que disfrutes de la experiencia!</p>
+                <a href= "{{ login_url }}" class="btn">Iniciar Sesión</a>
+            {% else %}
+                <p>Queremos informarte que tu cuenta en nuestro blog ha sido desactivada. Si crees que esto ha ocurrido por
+                    error o tienes alguna duda, por favor ponte en contacto con nuestro equipo de soporte, y con gusto te
+                    ayudaremos a resolverlo.</p>
+                <p>Lamentamos cualquier inconveniente que esto pueda causar.</p>
+                <a href="mailto:weblio.team@gmail.com?subject=Mi%20cuenta%20ha%20sido%20desactivada%20y%20creo%20que%20es%20un%20error"
+                    class="btn">Contactar Soporte</a>
+            {% endif %}
+
+            <p class="text-center">Saludos, El equipo de Weblio</p>
+        </div>
+
+        <!-- Separador -->
+        <div class="divider"></div>
+
+        <!-- Footer (inside the email-container) -->
+        <footer>
+            © 2024 Weblio. Todos los derechos reservados.
+        </footer>
+    </div>
 </body>
+
 </html>

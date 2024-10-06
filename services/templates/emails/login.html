@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Notificación de inicio de sesión</title>
     <style>
-        /* Estilos básicos para asegurar que el diseño sea responsivo */
         @media only screen and (max-width: 600px) {
             .container {
                 width: 100% !important;
@@ -38,7 +37,7 @@
         }
 
         h2 {
-            color: #00bfff;
+            color: #007bff;
             margin-bottom: 20px;
             font-size: 28px;
         }
@@ -55,21 +54,18 @@
         }
 
         .btn {
-            display: inline-block;
-            margin: 20px auto;
-            padding: 12px 24px;
-            background-color: #00bfff;
-            color: #fff;
-            text-decoration: none;
+            display: block;
+            width: fit-content;
+            margin: 20px auto 0 auto;
+            background-color: #007bff;
+            color: white !important;
+            padding: 12px 20px;
             border-radius: 5px;
-            font-size: 18px;
-            font-weight: bold;
-            text-align: center;
-            transition: background-color 0.3s ease;
+            text-decoration: none;
         }
 
         .btn:hover {
-            background-color: #008fb3;
+            background-color: #0056b3;
         }
 
         .divider {
@@ -83,6 +79,18 @@
             margin-top: 20px;
             font-size: 14px;
             color: #bbb;
+            text-align: center;
+        }
+
+        .text-center{
+            text-align: center;
+        }
+
+        .divider {
+            width: 80%;
+            height: 1px;
+            background-color: #444;
+            margin: 20px auto;
         }
     </style>
 </head>
@@ -93,7 +101,7 @@
 
         <!-- Mensaje principal -->
         <p>Hola <strong>{{ username }}</strong>,</p>
-        <p>Has iniciado sesión en tu cuenta con los siguientes detalles:</p>
+        <p>Se ha iniciado sesión en tu cuenta con los siguientes detalles:</p>
 
         <!-- Lista de detalles -->
         <ul>
@@ -103,14 +111,19 @@
         </ul>
 
         <!-- Mensaje de seguridad -->
-        <p>Si no has sido tú, por favor contacta con el administrador de inmediato.</p>
+        <p>Si no has sido tú, por favor contacta con el equipo de soporte de inmediato.</p>
 
-        <!-- Botón de acción -->
-        <a href="#" class="btn">Ver más detalles</a>
+        <!-- Botón de contacto -->
+        <a href="mailto:soporte@tusitio.com?subject=Han%20iniciado%20sesion%20en%20mi%20cuenta%20y%20no%20he%20sido%20yo" class="btn">Contactar a Soporte</a>
 
-        <!-- Footer -->
+        <p class="text-center">Saludos, El equipo de Weblio</p>
+        
+        <!-- Separador -->
+        <div class="divider"></div>
+
+        <!-- Footer (inside the email-container) -->
         <footer>
-            <p>&copy; 2024 Weblio. Todos los derechos reservados.</p>
+            © 2024 Weblio. Todos los derechos reservados.
         </footer>
     </div>
 </body>

@@ -1,4 +1,4 @@
-from django.http import Http404, JsonResponse
+from django.http import Http404, HttpRequest, JsonResponse
 from django.core.files.storage import default_storage
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
@@ -24,6 +24,7 @@ from django.db import models
 import json
 from django.db.models import Sum, Value, DecimalField
 from django.db.models.functions import Coalesce
+from django.contrib.sites.models import Site
 
 class CustomImageUploadView(View):
     """
@@ -979,9 +980,15 @@ class AccountStatusEmailView(View):
         """
         Enviar correo como HTML utilizando EmailMultiAlternatives.
         """
+        current_site = Site.objects.get_current()
+        current_site.domain = settings.SITE_DOMAIN
+        site_protocol = settings.SITE_PROTOCOL
+        login_url = f"{site_protocol}://{current_site.domain}/members/login/"
+        
         context = {
             'user': user,
-            'account_status': account_status
+            'account_status': account_status,
+            'login_url': login_url
         }
         subject = f'Tu cuenta ha sido {account_status}'
         body = render_to_string(self.email_template_name, context)
@@ -1049,12 +1056,18 @@ class UserPermissionsEmailView(View):
         """
         Enviar correo como HTML utilizando EmailMultiAlternatives.
         """
+        current_site = Site.objects.get_current()
+        current_site.domain = settings.SITE_DOMAIN
+        site_protocol = settings.SITE_PROTOCOL
+
+        login_url = f"{site_protocol}://{current_site.domain}/members/login/"
         translated_permissions = self.get_translated_permissions(user)
         groups = user.groups.all()
         context = {
             'user': user,
             'translated_permissions': translated_permissions,
-            'groups': groups
+            'groups': groups,
+            'login_url': login_url
         }
         subject = 'Actualización de tus permisos de usuario'
         body = render_to_string(self.email_template_name, context)
