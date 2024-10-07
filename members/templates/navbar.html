@@ -94,14 +94,14 @@
                             Reportes
                         </a>
                         <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="{% url 'posts_claps' %}">Views por articulo</a></li>
-                            <li><a class="dropdown-item" href="{% url 'posts_updowns' %}">Likes/Dislikes por articulo</a></li>
-                            <li><a class="dropdown-item" href="{% url 'posts_rates' %}">Estrellas por articulo</a></li>
+                            <li><a class="dropdown-item" href="{% url 'posts_claps' %}">Vistas por artículo</a></li>
+                            <li><a class="dropdown-item" href="{% url 'posts_updowns' %}">Likes/Dislikes por artículo</a></li>
+                            <li><a class="dropdown-item" href="{% url 'posts_rates' %}">Estrellas por artículo</a></li>
                             <li><hr class="dropdown-divider"></li>
                             {% if perms.posts.change_post or perms.posts.can_publish or perms.members.view_dashboard %}
-                                <li><a class="dropdown-item" href="{% url 'categories_claps' %}">Views por categoria</a></li>
-                                <li><a class="dropdown-item" href="{% url 'categories_updowns' %}">Likes/Dislikes por categoria</a></li>
-                                <li><a class="dropdown-item" href="{% url 'categories_rates' %}">Estrellas por categoria</a></li>
+                                <li><a class="dropdown-item" href="{% url 'categories_claps' %}">Vistas por categoría</a></li>
+                                <li><a class="dropdown-item" href="{% url 'categories_updowns' %}">Likes/Dislikes por categoría</a></li>
+                                <li><a class="dropdown-item" href="{% url 'categories_rates' %}">Estrellas por categoría</a></li>
                                 <li><hr class="dropdown-divider"></li>
                                 <li><a class="dropdown-item" href="{% url 'engagement_dashboard' %}">Dashboard</a></li>
                             {% endif %}
@@ -117,7 +117,7 @@
                         </a>
                         <ul class="dropdown-menu">
                             <li><a class="dropdown-item" href="{% url 'members_finances' %}">Reportes de ventas por usuario</a></li>
-                            <li><a class="dropdown-item" href="{% url 'categories_finances' %}">Reportes de ventas por categoria</a></li>
+                            <li><a class="dropdown-item" href="{% url 'categories_finances' %}">Reportes de ventas por categoría</a></li>
                             <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item" href="{% url 'finances_dashboard' %}">Dashboard</a></li>
                         </ul>
@@ -132,8 +132,8 @@
                                             {% elif request.path == '/posts/feed/' or request.path == '/posts/feed/search/' %}
                                                 {% url 'post_search_feed' %}
                                             {% endif %}" class="d-flex flex-grow-1 me-4" role="search">
-                <input class="form-control bg-dark text-white me-2" type="search" placeholder="Search" aria-label="Search" name="q">
-                <button class="btn btn-outline-success text-white" type="submit">Search</button>
+                <input class="form-control bg-dark text-white me-2" type="search" placeholder="Buscar" aria-label="Search" name="q">
+                <button class="btn btn-outline-success text-white" type="submit">Buscar</button>
                 </form>
             {% endif %}
 
