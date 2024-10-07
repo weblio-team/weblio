@@ -165,7 +165,7 @@ CKEDITOR_CONFIGS = {
             {'name': 'insert', 'items': ['Image', 'Table', 'HorizontalRule', 'CodeSnippet']},
             {'name': 'styles', 'items': ['Format', 'Font', 'FontSize']},
             {'name': 'colors', 'items': ['TextColor', 'BGColor']},
-            {'name': 'tools', 'items': ['Maximize']},
+            {'name': 'tools', 'items': ['Maximize', 'Source']},  # Added 'Source' for HTML editing
         ],
         'skin': 'moono-lisa',
         'codeSnippet_theme': 'monokai',
