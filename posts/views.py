@@ -327,13 +327,13 @@ class MyPostEditView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
                 'thumbnail': post_version.thumbnail
             })
         
-        elif post_data.get('operation') == 'delete':
+        elif post_data.get('operation') == 'delete' and post_data.get('old_status') == 'inactive':
             post_version = get_object_or_404(Post, pk=post_data.get('post_id'))
             post_version.delete()
             messages.success(self.request, 'La publicación ha sido eliminada correctamente.')
             return redirect('my-posts')
 
-        elif post_data.get('operation') == 'inactive':
+        elif post_data.get('operation') == 'inactive' and post_data.get('old_status') == 'published':
             post_version = get_object_or_404(Post, pk=post_data.get('post_id'))
             post_version.status = 'inactive'
             post_version.save()
