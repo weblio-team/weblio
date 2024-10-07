@@ -347,10 +347,13 @@
         data-bs-target="#changeReasonModal" id="changeStatusButton">Mandar a edición</button>
         <input type="hidden" name="operation" value="inactive">
         <input type="hidden" name="post_id" value="{{post.pk}}">
+        <input type="hidden" name="old_status" value="{{post.status}}">
         {% elif post.status == 'inactive' %}
         <button type="button" class="btn btn-danger my-0" data-bs-toggle="modal"
             data-bs-target="#deleteModal">Eliminar</button>
         <input type="hidden" name="operation" value="delete">
+        <input type="hidden" name="post_id" value="{{post.pk}}">
+        <input type="hidden" name="old_status" value="{{post.status}}">
         {% endif %}
       </div>
     </form>
