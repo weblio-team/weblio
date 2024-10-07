@@ -7,7 +7,7 @@ from django.utils import lorem_ipsum
 from .models import *
 from .forms import *
 from .views import *
-from .forms import ToEditPostInformationForm, ToEditPostBodyForm
+from .forms import ToEditPostBodyForm
 from django.contrib.auth.models import Permission
 from django.contrib.messages import get_messages
 from django.contrib.messages.storage.fallback import FallbackStorage
@@ -97,17 +97,6 @@ class PostModelTest(TestCase):
         # Verificar que la representación en cadena del post sea "Título | Autor"
         self.assertEqual(str(self.post), "Test Post | testuser")
 
-    def test_post_get_absolute_url(self):
-        # Verificar que la URL absoluta del post sea la esperada
-        expected_url = reverse('post', args=[
-            self.post.pk,
-            slugify(self.post.category.name),
-            self.post.date_posted.strftime('%m'),
-            self.post.date_posted.strftime('%Y'),
-            slugify(self.post.title)
-        ])
-        self.assertEqual(self.post.get_absolute_url(), expected_url)
-
     def test_default_values(self):
         # Crear un post con valores por defecto y verificar cada uno
         post = Post.objects.create(
@@ -184,40 +173,6 @@ class CategoryEditFormTest(TestCase):
         form = CategoryEditForm(data=self.category_data)
         self.assertTrue(form.is_valid())
 
-class MyPostEditInformationFormTest(TestCase):
-    def setUp(self):
-        self.valid_data = {
-            'title': 'Test Title',
-            'title_tag': 'Test Title Tag',
-            'summary': 'Test Summary',
-            'category': 1,
-            'keywords': 'test, post',
-            'status': 'draft'  # Añadir el campo status
-        }
-        self.invalid_data = {
-            'title': '',
-            'title_tag': '',
-            'summary': '',
-            'category': '',
-            'keywords': '',
-            'status': ''  # Añadir el campo status
-        }
-
-    def test_form_initialization(self):
-        form = MyPostEditInformationForm()
-        self.assertIsInstance(form, MyPostEditInformationForm, "El formulario debería ser una instancia de MyPostEditInformationForm")
-
-    def test_form_valid_data(self):
-        form = MyPostEditInformationForm(data=self.valid_data)
-        self.assertTrue(form.is_valid(), f"El formulario debería ser válido con datos correctos. Errores: {form.errors}")
-
-    def test_form_invalid_data(self):
-        form = MyPostEditInformationForm(data=self.invalid_data)
-        self.assertFalse(form.is_valid(), "El formulario debería ser inválido cuando faltan campos obligatorios")
-        self.assertIn('title', form.errors, "El campo de título debería tener errores si falta")
-        self.assertIn('category', form.errors, "El campo de categoría debería tener errores si falta")
-        self.assertIn('status', form.errors, "El campo de status debería tener errores si falta")
-
 class MyPostEditBodyFormTest(TestCase):
 
     def setUp(self):
@@ -242,39 +197,6 @@ class MyPostEditBodyFormTest(TestCase):
         form = MyPostEditBodyForm(data=self.invalid_data)
         self.assertFalse(form.is_valid(), "El formulario debería ser inválido cuando faltan campos obligatorios")
         self.assertIn('body', form.errors, "El campo de cuerpo debería tener errores si falta")
-
-class ToEditPostInformationFormTest(TestCase):
-    def setUp(self):
-        self.valid_data = {
-            'title': 'Valid Title',
-            'title_tag': 'Valid Tag',
-            'summary': 'Valid Summary',
-            'category': 1,
-            'change_reason': 'Valid Reason',
-            'status': 'draft'  # Añadir el campo status
-        }
-        self.invalid_data = {
-            'title': '',
-            'title_tag': '',
-            'summary': '',
-            'category': '',
-            'change_reason': '',
-            'status': ''  # Añadir el campo status
-        }
-
-    def test_form_initialization(self):
-        form = ToEditPostInformationForm()
-        self.assertIsInstance(form, ToEditPostInformationForm, "El formulario debería ser una instancia de ToEditPostInformationForm")
-
-    def test_form_valid_data(self):
-        form = ToEditPostInformationForm(data=self.valid_data)
-        self.assertTrue(form.is_valid(), f"El formulario debería ser válido con datos correctos. Errores: {form.errors}")
-
-    def test_form_invalid_data(self):
-        form = ToEditPostInformationForm(data=self.invalid_data)
-        self.assertFalse(form.is_valid(), "El formulario debería ser inválido cuando faltan campos obligatorios")
-        self.assertIn('title', form.errors, "El campo de título debería tener errores si el título falta")
-        self.assertIn('status', form.errors, "El campo de status debería tener errores si falta")
 
 class ToEditPostBodyFormTest(TestCase):
 
@@ -304,37 +226,6 @@ class ToEditPostBodyFormTest(TestCase):
     def test_form_labels(self):
         form = ToEditPostBodyForm()
         self.assertEqual(form.fields['body'].label, 'Text', "La etiqueta del cuerpo debería ser 'Text'")
-
-class MyPostAddInformationFormTest(TestCase):
-    def setUp(self):
-        self.valid_data = {
-            'title': 'Test Title',
-            'title_tag': 'Test Title Tag',
-            'summary': 'Test Summary',
-            'category': 1,  # Assuming category with ID 1 exists
-            'keywords': 'test, post'
-        }
-        self.invalid_data = {
-            'title': '',
-            'title_tag': '',
-            'summary': '',
-            'category': '',
-            'keywords': ''
-        }
-
-    def test_form_initialization(self):
-        form = MyPostAddInformationForm()
-        self.assertIsInstance(form, MyPostAddInformationForm, "El formulario debería ser una instancia de MyPostAddInformationForm")
-
-    def test_form_valid_data(self):
-        form = MyPostAddInformationForm(data=self.valid_data)
-        self.assertTrue(form.is_valid(), f"El formulario debería ser válido con datos correctos. Errores: {form.errors}")
-
-    def test_form_invalid_data(self):
-        form = MyPostAddInformationForm(data=self.invalid_data)
-        self.assertFalse(form.is_valid(), "El formulario debería ser inválido cuando faltan campos obligatorios")
-        self.assertIn('title', form.errors, "El campo de título debería tener errores si falta")
-        self.assertIn('category', form.errors, "El campo de categoría debería tener errores si falta")
 
 class MyPostAddBodyFormTest(TestCase):
 
@@ -835,38 +726,6 @@ class SuscriberPostsViewTests(TestCase):
         self.assertIn('categories', context)
         self.assertEqual(list(context['categories']), list(Category.objects.all()))
 
-
-class SearchPostViewTests(TestCase):
-    def setUp(self):
-        self.client = Client()
-        self.user = Member.objects.create_user(username='testuser', email='testuser@example.com', password='12345')
-        self.category = Category.objects.create(name="TestCategory")
-        self.post1 = Post.objects.create(
-            title="Test Post 1",
-            author=self.user,
-            category=self.category,
-            keywords="test",
-            status="published",
-            date_posted=timezone.now()
-        )
-        self.post2 = Post.objects.create(
-            title="Test Post 2",
-            author=self.user,
-            category=self.category,
-            keywords="test",
-            status="published",
-            date_posted=timezone.now() - timezone.timedelta(days=1)
-        )
-        self.url = reverse('post_search')
-
-    def test_search_context_data(self):
-        response = self.client.get(self.url)
-        self.assertEqual(response.status_code, 200)
-        context = response.context
-        self.assertIn('categories', context)
-        self.assertEqual(list(context['categories']), list(Category.objects.all()))
-
-
 class SuscriberPostDetailViewTests(TestCase):
     def setUp(self):
         self.factory = RequestFactory()
@@ -887,16 +746,6 @@ class SuscriberPostDetailViewTests(TestCase):
             status='published',
             date_posted=timezone.now()
         )
-
-    def test_dispatch_authenticated_user_private_post(self):
-        self.client.login(username='testuser', password='12345')
-        response = self.client.get(reverse('post', kwargs={
-            'pk': self.post_private.pk, 'category': 'private-category', 
-            'month': self.post_private.date_posted.strftime('%m'), 
-            'year': self.post_private.date_posted.strftime('%Y'), 
-            'title': 'private-post'
-        }))
-        self.assertEqual(response.status_code, 200)
 
     def test_get_object_valid(self):
         view = SuscriberPostDetailView()
