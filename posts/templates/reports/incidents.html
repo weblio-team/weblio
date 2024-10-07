@@ -131,7 +131,7 @@
 
         /* Estilo personalizado para el encabezado de la tabla */
         .table thead th {
-            background-color: #222;  /* Fondo oscuro para el encabezado */
+            background-color: #212529;  /* Fondo oscuro para el encabezado */
             color: #fff;  /* Texto blanco */
         }
 
@@ -149,8 +149,8 @@
     <!-- Bootstrap Modal -->
     <div class="modal fade modal-dark" id="detailsModal" tabindex="-1" aria-labelledby="detailsModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
-            <div class="modal-content text-light" style="background-color: #333;">
-                <div class="modal-header border-0" style="background-color: #444;">
+            <div class="modal-content text-light" style="background-color: #212529;">
+                <div class="modal-header border-0"">
                     <h5 class="modal-title" id="detailsModalLabel">Detalle de Reportes</h5>
                     <button type="button" class="btn-close btn-close-white" data-dismiss="modal" aria-label="Close"></button>
                 </div>
@@ -159,7 +159,7 @@
                         <!-- Details will be populated here -->
                     </div>
                 </div>
-                <div class="modal-footer border-0" style="background-color: #444;">
+                <div class="modal-footer border-0">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
                 </div>
             </div>
@@ -169,18 +169,18 @@
     <style>
         
         .modal-dark .modal-content {
-            background-color: #333;  
+            background-color: #212529;  
             color: #e0e0e0; 
         }
     
         .modal-dark .modal-header {
-            background-color: #444;  
-            border-bottom: 1px solid #555;  
+            background-color: #212529;  
+            border-bottom: 1px solid #3e454d;
         }
     
         .modal-dark .modal-footer {
-            background-color: #444;  
-            border-top: 1px solid #555;  
+            background-color: #212529;  
+            border-top: 1px solid #3e454d;
         }
     
         .modal-dark .btn-close {
@@ -188,14 +188,14 @@
         }
     
         .modal-dark .btn-secondary {
-            background-color: #555;
+            background-color: #212529;
             color: #fff;
-            border-color: #666;
+            border-color: #3e454d;
         }
     
         .modal-dark .btn-secondary:hover {
-            background-color: #666;
-            border-color: #777;
+            background-color: #32383e;
+            border-color: #394048;
         }
     </style>
 
@@ -245,8 +245,8 @@
                                         {% if can_delete_post %}
                                             <th>Email</th>
                                         {% endif %}
-                                        <th>Reason</th>
-                                        <th>Date Reported</th>
+                                        <th>Razón</th>
+                                        <th>Fecha</th>
                                     </tr>
                                 </thead>
                                 <tbody>
