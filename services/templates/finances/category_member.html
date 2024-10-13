@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+{% block content %}
+    <main role="main" class="container py-4">
+        <span id="view-count"></span>
+
+        <h2>Lista de categorías compradas</h2>
+
+        <!-- Widget for total categories and total sum -->
+        <div class="widget-container">
+            <div class="widget">
+                <div class="widget-icon">
+                    <i class="bi bi-tags-fill"></i>
+                </div>
+                <div class="widget-info">
+                    <h4>Categorías Compradas</h4>
+                    <p>{{ total_categories }}</p>
+                </div>
+            </div>
+            <div class="widget">
+                <div class="widget-icon">
+                    <i class="bi bi-currency-dollar"></i>
+                </div>
+                <div class="widget-info">
+                    <h4>Total Monto</h4>
+                    <p>$ {{ total_sum|floatformat:2 }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Responsive Bootstrap Table in Dark Mode -->
+        <div class="table-responsive">
+            <table 
+                id="incomeTable"
+                class="table table-dark table-striped table-bordered"
+                data-toggle="table"
+                data-search="true"
+                data-pagination="true"
+                data-page-size="5"
+                data-page-list="[5, 10, 20, 50]"
+                data-sortable="true"
+                data-click-to-select="true"
+                data-locale="es-ES"
+                data-sort-name="total"
+                data-sort-order="desc"
+                data-show-export="true"
+                data-export-types="['csv', 'excel', 'xlsx']"
+            >
+                <thead>
+                    <tr>
+                        <th data-field="category" data-sortable="true">Categoría</th>
+                        <th data-field="total" data-sortable="true">Precio</th>
+                        <th data-field="purchase_date" data-sortable="true">Fecha de Compra</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for category in categories %}
+                        <tr>
+                            <td>{{ category.category__name }}</td>
+                            <td>$ {{ category.total|floatformat:2 }}</td>
+                            <td>{{ category.purchase_date|date:"d/m/Y H:i" }}</td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="3">No hay categorías compradas</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <style>
+        /* Dark Mode for Search Input */
+        .bootstrap-table .search input {
+            background-color: #333;
+            color: #fff;
+            border-color: #444;
+        }
+
+        /* White placeholder text */
+        .bootstrap-table .search input::placeholder {
+            color: #fff;
+        }
+    
+        /* Dark Mode for Paginator */
+        .pagination li.active a,
+        .pagination li.active a:hover,
+        .pagination li.active a:focus {
+            background-color: #555;
+            border-color: #666;
+            color: #fff;
+        }
+
+        .pagination li a {
+            background-color: #333;
+            color: #fff;
+            border-color: #444;
+        }
+
+        .pagination li a:hover {
+            background-color: #555;
+        }
+
+        /* Additional Dark Mode Tweaks */
+        .btn {
+            background-color: #333;
+            color: #fff;
+            border-color: #444;
+        }
+
+        .btn:hover {
+            background-color: #555;
+        }
+
+        /* Minimalist Dark Mode for Total Sum */
+        .total-sum-container {
+            background-color: #333;
+            color: #fff;
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 5px;
+            text-align: center;
+        }
+
+        .total-sum-container small {
+            font-size: 0.875em;
+            color: #bbb;
+        }
+
+        /* Widget Styles */
+        .widget-container {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+        }
+
+        .widget {
+            background-color: #444;
+            color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .widget:hover {
+            transform: translateY(-5px);
+        }
+
+        .widget-icon {
+            font-size: 2em;
+            margin-right: 10px;
+        }
+
+        .widget-info h4 {
+            margin: 0;
+            font-size: 1.2em;
+        }
+
+        .widget-info p {
+            margin: 0;
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+    </style>
+{% endblock %}

@@ -129,6 +129,9 @@ class HomeView(TemplateView):
                 'finances_dashboard': "El dashboard de finanzas solo está disponible en producción.",
                 'members_finances': "Las finanzas por miembros solo están disponibles en producción.",
                 'categories_finances': "Las finanzas por categorías solo están disponibles en producción.",
+
+                # URLs for member purchase (development)
+                'member_purchase': "El historia de compra del usuario solo está disponible en producción.",
                 
                 # URLs for password reset email (development)
                 'reset_password_email': "El reseteo de contraseña por correo solo está disponible en producción.",

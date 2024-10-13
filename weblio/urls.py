@@ -42,6 +42,9 @@ if settings.DEBUG:
         path('stats/finances/posts/', HomeView.as_view(), name='members_finances'),
         path('stats/finances/categories/', HomeView.as_view(), name='categories_finances'),
 
+        # urls for member purchase
+        path('member-purchase/', HomeView.as_view(), name='member_purchase'),
+
         # URLs for password reset email (development)
         path('members/reset_password/', HomeView.as_view(), name='reset_password_email'),
         path('members/password_reset_done/', HomeView.as_view(), name='password_reset_done_email'),

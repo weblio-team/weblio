@@ -1190,11 +1190,25 @@ class KanbanBoardView(PermissionRequiredMixin, LoginRequiredMixin, TemplateView)
             to_publish_posts = Post.objects.filter(status='to_publish', category__in=moderated_categories)
             published_posts = Post.objects.filter(status='published', category__in=moderated_categories)
 
+        # Combine all posts into a single queryset
+        all_posts = draft_posts | to_edit_posts | to_publish_posts | published_posts
+
+        # Serialize posts to JSON
+        posts_json = json.dumps(list(all_posts.values('id', 'title', 'category__name')), cls=DjangoJSONEncoder)
+
+        # Mes y año actual
+        now = timezone.now()
+        current_month = now.month
+        current_year = now.year
+
         context.update({
             'draft_posts': draft_posts,
             'to_edit_posts': to_edit_posts,
             'to_publish_posts': to_publish_posts,
             'published_posts': published_posts,
+            'posts_json': posts_json,
+            'current_month': current_month,
+            'current_year': current_year,
             'form': KanbanBoardForm(),
         })
         return context
@@ -1249,10 +1263,11 @@ class UpdatePostsStatusView(PermissionRequiredMixin, LoginRequiredMixin, View):
             for item in movedPosts:
                 post_id = item.get('post_id')
                 status_id = item.get('status_id')
+                reason = item.get('reason') if item.get('reason') else 'Actualizado desde el tablero Kanban'
                 try:
                     post = Post.objects.get(pk=post_id)
                     post.status = status_id
-                    post.change_reason = "Actualizado desde el tablero Kanban"
+                    post.change_reason = reason
                     post.save()
                 except Post.DoesNotExist:
                     pass

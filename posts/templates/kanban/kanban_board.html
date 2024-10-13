@@ -166,12 +166,60 @@ document.addEventListener("DOMContentLoaded", () => {
             console.log(`Trying to move post ID: ${curPost.id} from ${postStatus} to ${targetStatus}`);
 
             if (canMovePost(postStatus, targetStatus, postAuthorId)) {
-                console.log(`Move allowed for post ID: ${curPost.id}`);
-                zone.appendChild(curPost);
-                const post_id = curPost.id.split('-')[1]; // Extract post ID from card ID
-                curPost.dataset.status = targetStatus; // Update the data-status attribute
-                updatePostLink(curPost, post_id, targetStatus); // Update the post link
-                movedPosts.push({ post_id, status_id: targetStatus });
+                if ((postStatus === 'to_edit' && targetStatus === 'draft') || (postStatus === 'to_publish' && targetStatus === 'to_edit')) {
+                    // Show modal for reason input
+                    const modalHtml = `
+                        <div class="modal fade" id="reasonModal" tabindex="-1" aria-labelledby="reasonModalLabel" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content bg-dark text-white">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="reasonModalLabel">Razón del cambio de estado</h5>
+                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="mb-3">
+                                            <label for="reasonInput" class="form-label">Por favor, proporciona una razón para este cambio:</label>
+                                            <input type="text" class="form-control bg-dark text-white" id="reasonInput">
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                        <button type="button" class="btn btn-primary" id="confirmReasonButton">Aceptar</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    document.body.insertAdjacentHTML('beforeend', modalHtml);
+                    const reasonModal = new bootstrap.Modal(document.getElementById('reasonModal'));
+                    reasonModal.show();
+
+                    document.getElementById('confirmReasonButton').addEventListener('click', () => {
+                        const reason = document.getElementById('reasonInput').value;
+                        console.log(`Razón del cambio: ${reason} del post ID: ${curPost.id}`);
+                        reasonModal.hide();
+                        document.getElementById('reasonModal').remove();
+
+                        // Proceed with the move
+                        zone.appendChild(curPost);
+                        const post_id = curPost.id.split('-')[1]; // Extract post ID from card ID
+                        curPost.dataset.status = targetStatus; // Update the data-status attribute
+                        updatePostLink(curPost, post_id, targetStatus); // Update the post link
+                        movedPosts.push({ post_id, status_id: targetStatus, reason });
+                    });
+
+                    document.querySelector('.modal .btn-close, .modal .btn-secondary').addEventListener('click', () => {
+                        reasonModal.hide();
+                        document.getElementById('reasonModal').remove();
+                    });
+                } else {
+                    // Proceed with the move
+                    zone.appendChild(curPost);
+                    const post_id = curPost.id.split('-')[1]; // Extract post ID from card ID
+                    curPost.dataset.status = targetStatus; // Update the data-status attribute
+                    updatePostLink(curPost, post_id, targetStatus); // Update the post link
+                    movedPosts.push({ post_id, status_id: targetStatus });
+                }
             }
         });
     });
@@ -198,7 +246,24 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function updatePostLink(postElement, postId, statusId) {
         const titleElement = postElement.querySelector('.card-title');
+        const posts = JSON.parse('{{ posts_json|escapejs }}');
+        const currentMonth = '{{ current_month }}';
+        const currentYear = '{{ current_year }}'
         let url = '';
+
+        function getPostById(postId) {
+            return posts.find(post => post.id === parseInt(postId));
+        }
+
+        function slugify(text) {
+            return text.toString().toLowerCase()
+                .replace(/\s+/g, '-')           // Replace spaces with -
+                .replace(/[^\w\-]+/g, '')       // Remove all non-word chars
+                .replace(/\-\-+/g, '-')         // Replace multiple - with single -
+                .replace(/^-+/, '')             // Trim - from start of text
+                .replace(/-+$/, '');            // Trim - from end of text
+        }
+
         switch (statusId) {
             case 'draft':
                 url = `{% url 'edit-my-post' 0 %}`.replace('0', postId);
@@ -213,13 +278,23 @@ document.addEventListener("DOMContentLoaded", () => {
                 titleElement.innerHTML = `<a href="${url}" class="card-link">${titleElement.textContent}</a>`;
                 break;
             case 'published':
-                url = `{% url 'post' 0 'category' 'month' 'year' 'title' %}`
-                    .replace('0', postId)
-                    .replace('category', postElement.querySelector('.card-text.text-muted').textContent.split(': ')[1].toLowerCase())
-                    .replace('month', '01') // Replace with actual month
-                    .replace('year', '2023') // Replace with actual year
-                    .replace('title', titleElement.textContent.toLowerCase().replace(/ /g, '-'));
-                titleElement.innerHTML = `<a href="${url}" class="card-link">${titleElement.textContent}</a>`;
+                const post = getPostById(postId);
+                if (post) {
+                    const category = slugify(post.category__name);
+                    const title = slugify(post.title);
+        
+                    url = `{% url 'post' 0 'category' 'month' 'year' 'title' %}`
+                        .replace('0', postId)
+                        .replace('category', category)
+                        .replace('month', currentMonth)
+                        .replace('year', currentYear)
+                        .replace('title', title);
+        
+                    titleElement.innerHTML = `<a href="${url}" class="card-link">${titleElement.textContent}</a>`;
+                }
+                else {
+                    console.error(`Post with ID ${postId} not found in the posts list.`);
+                }
                 break;
         }
     }

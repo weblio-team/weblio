@@ -22,9 +22,10 @@ from dicts import translated_module_dict, translated_submodule_dict, translated_
 from .models import Purchase
 from django.db import models
 import json
-from django.db.models import Sum, Value, DecimalField
+from django.db.models import Sum, Value, DecimalField, Max
 from django.db.models.functions import Coalesce
 from django.contrib.sites.models import Site
+from django.contrib.auth.mixins import LoginRequiredMixin
 
 class CustomImageUploadView(View):
     """
@@ -1218,4 +1219,50 @@ class FinancesCategoriesView(TemplateView):
         # Group by category name and sum the price
         context['categories'] = Purchase.objects.values('category__name').annotate(total=models.Sum('price'))
         
+        return context
+
+class MemberPurchaseView(LoginRequiredMixin, TemplateView):
+    """
+    Vista para mostrar el resumen financiero por categorías del miembro.
+
+    Esta vista muestra un resumen financiero agrupado por categorías, incluyendo el total
+    de ingresos por cada categoría.
+
+    Atributos:
+    ----------
+    template_name : str
+        El nombre de la plantilla que se utilizará para renderizar la vista.
+
+    Métodos:
+    --------
+    get_context_data(**kwargs):
+        Obtiene el contexto para la plantilla, incluyendo el total de ingresos agrupados por categoría.
+    """
+    template_name = 'finances/category_member.html'
+
+    def get_context_data(self, **kwargs):
+        """
+        Obtiene el contexto para la plantilla, incluyendo el total de ingresos agrupados por categoría.
+
+        Args:
+        -----
+        **kwargs : dict
+            Argumentos clave adicionales.
+
+        Returns:
+        --------
+        dict
+            El contexto para la plantilla.
+        """
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+        purchases = Purchase.objects.filter(user=user).values('category__name').annotate(
+            total=Sum('price'),
+            purchase_date=Max('date')
+        )
+        total_sum = purchases.aggregate(total_sum=Sum('total'))['total_sum']
+        total_categories = purchases.count()
+        context['categories'] = purchases
+        context['total_sum'] = total_sum
+        context['total_categories'] = total_categories
         return context

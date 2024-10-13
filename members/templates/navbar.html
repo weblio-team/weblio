@@ -33,6 +33,8 @@
                         {% if user.is_authenticated and perms.posts.view_post %}
                         <li><a class="dropdown-item" href="{% url 'my_categories' %}">Mis categorías</a></li>
                         <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="{% url 'member_purchase' %}">Mis compras</a></li>
+                        <li><hr class="dropdown-divider"></li>
                         {% endif %}
                         <li><a class="dropdown-item" href="{% url 'categories' %}">Explorar categorías</a></li>
                         {% if perms.posts.add_category %}

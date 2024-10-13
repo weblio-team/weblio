@@ -8,6 +8,7 @@ from django.contrib.auth import views as auth_views
 from django.urls import reverse_lazy
 from .views import CustomPasswordResetView
 from .views import FinancesDashboardView, FinancesMembersView, FinancesCategoriesView
+from .views import MemberPurchaseView
 
 urlpatterns = [
 
@@ -33,6 +34,9 @@ urlpatterns = [
     path('stats/finances/dashboard/', FinancesDashboardView.as_view(), name='finances_dashboard'),
     path('stats/finances/members/', FinancesMembersView.as_view(), name='members_finances'),
     path('stats/finances/categories/', FinancesCategoriesView.as_view(), name='categories_finances'),
+
+    # urls for member purchase
+    path('member-purchase/', MemberPurchaseView.as_view(), name='member_purchase'),
 
     # urls for password reset
     path('password-reset-email/', CustomPasswordResetView.as_view(
