@@ -1,6 +1,10 @@
 from django.test import TestCase, RequestFactory, Client
 from members.models import Member
 from django.contrib.auth import get_user_model
+from django.core.exceptions import ValidationError
+from django.core.files.uploadedfile import SimpleUploadedFile
+from django.utils.module_loading import import_string
+from django.template.response import TemplateResponse
 from django.urls import reverse
 from django.utils.text import slugify
 from django.utils import lorem_ipsum
@@ -14,7 +18,6 @@ from django.contrib.messages.storage.fallback import FallbackStorage
 from django.http import Http404
 
 #################################### Pruebas unitarias para modelos ########################################
-
 class CategoryModelTest(TestCase):
 
     def setUp(self):
@@ -116,8 +119,68 @@ class PostModelTest(TestCase):
         # Verificar que el modelo Post tiene el permiso personalizado 'can_publish'
         self.assertIn(('can_publish', 'Can publish post'), Post._meta.permissions)
 
-#################################### Pruebas unitarias para formularios ########################################
+class ReportModelTests(TestCase):
+    def setUp(self):
+        self.category = Category.objects.create(
+            name='Test Category',
+            description='Test Description',
+            alias='TC',
+            price=0.00,
+            kind='free',
+            moderated=True
+        )
+        self.member = Member.objects.create_user(
+            username='testuser',
+            email='testuser@example.com',
+            password='12345'
+        )
+        self.post = Post.objects.create(
+            title='Test Post',
+            title_tag='Test Post Tag',
+            summary='Test Summary',
+            body='Test Body',
+            author=self.member,
+            status='draft',
+            category=self.category,
+            date_posted=timezone.now()
+        )
 
+    def test_report_creation(self):
+        report = Report.objects.create(
+            post=self.post,
+            user=self.member,
+            email='testuser@example.com',
+            reason='Test Reason'
+        )
+        self.assertEqual(report.post, self.post)
+        self.assertEqual(report.user, self.member)
+        self.assertEqual(report.email, 'testuser@example.com')
+        self.assertEqual(report.reason, 'Test Reason')
+        self.assertIsNotNone(report.timestamp)
+
+    def test_unique_constraint(self):
+        Report.objects.create(
+            post=self.post,
+            email='testuser@example.com',
+            reason='Test Reason'
+        )
+        with self.assertRaises(ValidationError):
+            report = Report(
+                post=self.post,
+                email='testuser@example.com',
+                reason='Another Reason'
+            )
+            report.full_clean()  
+
+    def test_str_representation(self):
+        report = Report.objects.create(
+            post=self.post,
+            user=self.member,
+            email='testuser@example.com',
+            reason='Test Reason'
+        )
+        self.assertEqual(str(report), f'Reporte por {self.member} a {self.post}')
+#################################### Pruebas unitarias para formularios ########################################
 class CategoryFormTest(TestCase):
 
     def test_valid_form(self):
@@ -173,6 +236,147 @@ class CategoryEditFormTest(TestCase):
         form = CategoryEditForm(data=self.category_data)
         self.assertTrue(form.is_valid())
 
+class MyPostEditGeneralFormTests(TestCase):
+
+    def setUp(self):
+        self.user = Member.objects.create_user(
+            username='testuser',
+            email='testuser@example.com',
+            password='12345'
+        )
+        self.category = Category.objects.create(name='Test Category')
+        self.post = Post.objects.create(
+            title='Test Post',
+            title_tag='Test Tag',
+            summary='Test Summary',
+            body='Test Body',
+            author=self.user,
+            category=self.category,
+            status='draft'
+        )
+        self.form_data = {
+            'title': 'Updated Test Post',
+            'title_tag': 'Updated Test Tag',
+            'summary': 'Updated Test Summary',
+            'category': self.category.id,
+            'status': 'to_edit',
+            'keywords': 'test, post, updated'
+        }
+
+    def test_form_valid(self):
+        form = MyPostEditGeneralForm(data=self.form_data, instance=self.post)
+        self.assertTrue(form.is_valid(), "El formulario debería ser válido con datos correctos")
+
+    def test_form_invalid(self):
+        invalid_data = self.form_data.copy()
+        invalid_data['title'] = ''  # Title is required
+        form = MyPostEditGeneralForm(data=invalid_data, instance=self.post)
+        self.assertFalse(form.is_valid(), "El formulario debería ser inválido si falta el título")
+        self.assertIn('title', form.errors, "El formulario debería contener errores para el campo 'title'")
+
+    def test_form_save(self):
+        form = MyPostEditGeneralForm(data=self.form_data, instance=self.post)
+        self.assertTrue(form.is_valid(), "El formulario debería ser válido con datos correctos")
+        updated_post = form.save()
+        self.assertEqual(updated_post.title, 'Updated Test Post', "El título del post debería actualizarse correctamente")
+        self.assertEqual(updated_post.title_tag, 'Updated Test Tag', "La etiqueta del título del post debería actualizarse correctamente")
+        self.assertEqual(updated_post.summary, 'Updated Test Summary', "El resumen del post debería actualizarse correctamente")
+        self.assertEqual(updated_post.category, self.category, "La categoría del post debería actualizarse correctamente")
+        self.assertEqual(updated_post.status, 'to_edit', "El estado del post debería actualizarse correctamente")
+        self.assertEqual(updated_post.keywords, 'test, post, updated', "Las palabras clave del post deberían actualizarse correctamente")
+
+class MyPostEditThumbnailFormTests(TestCase):
+
+    def setUp(self):
+        self.user = Member.objects.create_user(
+            username='testuser',
+            email='testuser@example.com',
+            password='12345'
+        )
+        self.category = Category.objects.create(name='Test Category')
+        self.post = Post.objects.create(
+            title='Test Post',
+            title_tag='Test Tag',
+            summary='Test Summary',
+            body='Test Body',
+            author=self.user,
+            category=self.category,
+            status='draft'
+        )
+        self.form_data = {
+            'thumbnail': SimpleUploadedFile(name='test_image.jpg', content=b'', content_type='image/jpeg')
+        }
+
+    def test_form_initialization_with_thumbnail(self):
+        self.post.thumbnail = SimpleUploadedFile(name='test_image.jpg', content=b'', content_type='image/jpeg')
+        self.post.save()
+        form = MyPostEditThumbnailForm(instance=self.post)
+        self.assertIn('data-current-url', form.fields['thumbnail'].widget.attrs)
+        self.assertEqual(form.fields['thumbnail'].widget.attrs['data-current-url'], self.post.thumbnail.url)
+
+    def test_form_initialization_without_thumbnail(self):
+        form = MyPostEditThumbnailForm(instance=self.post)
+        self.assertIn('data-current-url', form.fields['thumbnail'].widget.attrs)
+        self.assertEqual(form.fields['thumbnail'].widget.attrs['data-current-url'], '')
+
+    def test_form_invalid(self):
+        invalid_data = {'thumbnail': SimpleUploadedFile(name='test_image.txt', content=b'', content_type='text/plain')}
+        form = MyPostEditThumbnailForm(data={}, files=invalid_data, instance=self.post)
+        self.assertFalse(form.is_valid(), "El formulario debería ser inválido si el archivo no es una imagen")
+
+class MyPostEditProgramFormTests(TestCase):
+
+    def setUp(self):
+        self.user = Member.objects.create_user(
+            username='testuser',
+            email='testuser@example.com',
+            password='12345'
+        )
+        self.category = Category.objects.create(name='Test Category')
+        self.post = Post.objects.create(
+            title='Test Post',
+            title_tag='Test Tag',
+            summary='Test Summary',
+            body='Test Body',
+            author=self.user,
+            category=self.category,
+            status='draft'
+        )
+        self.form_data = {
+            'publish_start_date': timezone.now().strftime('%Y-%m-%dT%H:%M'),
+            'publish_end_date': (timezone.now() + timezone.timedelta(days=1)).strftime('%Y-%m-%dT%H:%M')
+        }
+
+    def test_form_initialization_with_dates(self):
+        self.post.publish_start_date = timezone.now()
+        self.post.publish_end_date = timezone.now() + timezone.timedelta(days=1)
+        self.post.save()
+        form = MyPostEditProgramForm(instance=self.post)
+        self.assertEqual(form.fields['publish_start_date'].initial, self.post.publish_start_date.strftime('%Y-%m-%dT%H:%M'))
+        self.assertEqual(form.fields['publish_end_date'].initial, self.post.publish_end_date.strftime('%Y-%m-%dT%H:%M'))
+
+    def test_form_initialization_without_dates(self):
+        form = MyPostEditProgramForm(instance=self.post)
+        self.assertIsNone(form.fields['publish_start_date'].initial)
+        self.assertIsNone(form.fields['publish_end_date'].initial)
+
+    def test_form_valid(self):
+        form = MyPostEditProgramForm(data=self.form_data, instance=self.post)
+        self.assertTrue(form.is_valid(), "El formulario debería ser válido con datos correctos")
+
+    def test_form_invalid(self):
+        invalid_data = self.form_data.copy()
+        invalid_data['publish_end_date'] = 'invalid-date'
+        form = MyPostEditProgramForm(data=invalid_data, instance=self.post)
+        self.assertFalse(form.is_valid(), "El formulario debería ser inválido si la fecha de fin no es válida")
+
+    def test_form_save(self):
+        form = MyPostEditProgramForm(data=self.form_data, instance=self.post)
+        self.assertTrue(form.is_valid(), "El formulario debería ser válido con datos correctos")
+        updated_post = form.save()
+        self.assertEqual(updated_post.publish_start_date.strftime('%Y-%m-%dT%H:%M'), self.form_data['publish_start_date'])
+        self.assertEqual(updated_post.publish_end_date.strftime('%Y-%m-%dT%H:%M'), self.form_data['publish_end_date'])
+
 class MyPostEditBodyFormTest(TestCase):
 
     def setUp(self):
@@ -197,6 +401,63 @@ class MyPostEditBodyFormTest(TestCase):
         form = MyPostEditBodyForm(data=self.invalid_data)
         self.assertFalse(form.is_valid(), "El formulario debería ser inválido cuando faltan campos obligatorios")
         self.assertIn('body', form.errors, "El campo de cuerpo debería tener errores si falta")
+
+class ToEditPostGeneralFormTests(TestCase):
+
+    def setUp(self):
+        self.user = Member.objects.create_user(
+            username='testuser',
+            email='testuser@example.com',
+            password='12345'
+        )
+        self.category = Category.objects.create(name='Test Category')
+        self.post = Post.objects.create(
+            title='Test Post',
+            title_tag='Test Tag',
+            summary='Test Summary',
+            body='Test Body',
+            author=self.user,
+            category=self.category,
+            status='draft'
+        )
+        self.form_data = {
+            'title': 'Updated Test Post',
+            'title_tag': 'Updated Test Tag',
+            'summary': 'Updated Test Summary',
+            'category': self.category.id,
+            'keywords': 'test, post, updated',
+            'status': 'draft'
+        }
+
+    def test_form_initialization(self):
+        form = ToEditPostGeneralForm(instance=self.post)
+        self.assertIn('title', form.fields)
+        self.assertIn('title_tag', form.fields)
+        self.assertIn('summary', form.fields)
+        self.assertIn('category', form.fields)
+        self.assertIn('keywords', form.fields)
+        self.assertIn('status', form.fields)
+        self.assertEqual(form.fields['title'].widget.attrs['class'], 'form-control')
+        self.assertEqual(form.fields['title'].widget.attrs['placeholder'], 'Insertar título')
+
+    def test_form_valid(self):
+        form = ToEditPostGeneralForm(data=self.form_data, instance=self.post)
+        self.assertTrue(form.is_valid(), "El formulario debería ser válido con datos correctos")
+
+    def test_form_invalid(self):
+        invalid_data = self.form_data.copy()
+        invalid_data['title'] = ''  # El título es un campo obligatorio
+        form = ToEditPostGeneralForm(data=invalid_data, instance=self.post)
+        self.assertFalse(form.is_valid(), "El formulario debería ser inválido si el título está vacío")
+
+    def test_form_save(self):
+        form = ToEditPostGeneralForm(data=self.form_data, instance=self.post)
+        self.assertTrue(form.is_valid(), "El formulario debería ser válido con datos correctos")
+        updated_post = form.save()
+        self.assertEqual(updated_post.title, 'Updated Test Post', "El título del post debería actualizarse correctamente")
+        self.assertEqual(updated_post.title_tag, 'Updated Test Tag', "La etiqueta del título del post debería actualizarse correctamente")
+        self.assertEqual(updated_post.summary, 'Updated Test Summary', "El resumen del post debería actualizarse correctamente")
+        self.assertEqual(updated_post.keywords, 'test, post, updated', "Las palabras clave del post deberían actualizarse correctamente")
 
 class ToEditPostBodyFormTest(TestCase):
 
@@ -226,6 +487,126 @@ class ToEditPostBodyFormTest(TestCase):
     def test_form_labels(self):
         form = ToEditPostBodyForm()
         self.assertEqual(form.fields['body'].label, 'Text', "La etiqueta del cuerpo debería ser 'Text'")
+
+class MyPostAddGeneralFormTests(TestCase):
+
+    def setUp(self):
+        self.user = Member.objects.create_user(
+            username='testuser',
+            email='testuser@example.com',
+            password='12345'
+        )
+        self.category = Category.objects.create(name='Test Category')
+        self.form_data = {
+            'title': 'Test Post',
+            'title_tag': 'Test Tag',
+            'summary': 'Test Summary',
+            'category': self.category.id,
+            'keywords': 'test, post'
+        }
+
+    def test_form_initialization(self):
+        form = MyPostAddGeneralForm()
+        self.assertIn('title', form.fields)
+        self.assertIn('title_tag', form.fields)
+        self.assertIn('summary', form.fields)
+        self.assertIn('category', form.fields)
+        self.assertIn('keywords', form.fields)
+        self.assertEqual(form.fields['title'].widget.attrs['class'], 'form-control')
+        self.assertEqual(form.fields['title'].widget.attrs['placeholder'], 'Insertar título')
+
+    def test_form_valid(self):
+        form = MyPostAddGeneralForm(data=self.form_data)
+        self.assertTrue(form.is_valid(), "El formulario debería ser válido con datos correctos")
+
+    def test_form_invalid(self):
+        invalid_data = self.form_data.copy()
+        invalid_data['title'] = ''  # El título es un campo obligatorio
+        form = MyPostAddGeneralForm(data=invalid_data)
+        self.assertFalse(form.is_valid(), "El formulario debería ser inválido si el título está vacío")
+
+    def test_form_save(self):
+        form = MyPostAddGeneralForm(data=self.form_data)
+        self.assertTrue(form.is_valid(), "El formulario debería ser válido con datos correctos")
+        post = form.save(commit=False)
+        post.author = self.user
+        post.save()
+        self.assertEqual(post.title, 'Test Post', "El título del post debería guardarse correctamente")
+        self.assertEqual(post.title_tag, 'Test Tag', "La etiqueta del título del post debería guardarse correctamente")
+        self.assertEqual(post.summary, 'Test Summary', "El resumen del post debería guardarse correctamente")
+        self.assertEqual(post.category, self.category, "La categoría del post debería guardarse correctamente")
+        self.assertEqual(post.keywords, 'test, post', "Las palabras clave del post deberían guardarse correctamente")
+
+class MyPostAddThumbnailFormTests(TestCase):
+
+    def setUp(self):
+        self.user = Member.objects.create_user(
+            username='testuser',
+            email='testuser@example.com',
+            password='12345'
+        )
+        self.category = Category.objects.create(name='Test Category')
+        self.post = Post.objects.create(
+            title='Test Post',
+            title_tag='Test Tag',
+            summary='Test Summary',
+            body='Test Body',
+            author=self.user,
+            category=self.category,
+            status='draft'
+        )
+        self.form_data = {
+            'thumbnail': SimpleUploadedFile(name='test_image.jpg', content=b'', content_type='image/jpeg')
+        }
+
+    def test_form_initialization(self):
+        form = MyPostAddThumbnailForm()
+        self.assertIn('thumbnail', form.fields)
+        self.assertEqual(form.fields['thumbnail'].widget.attrs['class'], 'form-control')
+        self.assertEqual(form.fields['thumbnail'].widget.attrs['accept'], 'image/*')
+        self.assertEqual(form.fields['thumbnail'].widget.attrs['data-current-url'], '')
+
+    def test_form_invalid(self):
+        invalid_data = self.form_data.copy()
+        invalid_data['thumbnail'] = SimpleUploadedFile(name='test_image.txt', content=b'', content_type='text/plain')
+        form = MyPostAddThumbnailForm(data={}, files=invalid_data)
+        self.assertFalse(form.is_valid(), "El formulario debería ser inválido si el archivo no es una imagen")
+
+class MyPostAddProgramFormTests(TestCase):
+
+    def setUp(self):
+        self.user = Member.objects.create_user(
+            username='testuser',
+            email='testuser@example.com',
+            password='12345'
+        )
+        self.category = Category.objects.create(name='Test Category')
+        self.post = Post.objects.create(
+            title='Test Post',
+            title_tag='Test Tag',
+            summary='Test Summary',
+            body='Test Body',
+            author=self.user,
+            category=self.category,
+            status='draft'
+        )
+        self.form_data = {
+            'publish_start_date': timezone.now(),
+            'publish_end_date': timezone.now() + timezone.timedelta(days=1)
+        }
+
+    def test_form_valid(self):
+        form = MyPostAddProgramForm(data=self.form_data)
+        self.assertTrue(form.is_valid(), "El formulario debería ser válido con datos correctos")
+
+    def test_form_save(self):
+        form = MyPostAddProgramForm(data=self.form_data, instance=self.post)
+        self.assertTrue(form.is_valid(), "El formulario debería ser válido con datos correctos")
+        post = form.save(commit=False)
+        post.author = self.user
+        post.save()
+        self.assertEqual(post.publish_start_date, self.form_data['publish_start_date'], "La fecha de inicio de publicación debería guardarse correctamente")
+        self.assertEqual(post.publish_end_date, self.form_data['publish_end_date'], "La fecha de fin de publicación debería guardarse correctamente")
 
 class MyPostAddBodyFormTest(TestCase):
 
@@ -311,6 +692,84 @@ class KanbanBoardFormTest(TestCase):
         self.assertFalse(form.is_valid())
         self.assertIn('status', form.errors)
 
+class ToPublishPostFormTests(TestCase):
+
+    def setUp(self):
+        self.user = Member.objects.create_user(
+            username='testuser',
+            email='testuser@example.com',
+            password='12345'
+        )
+        self.category = Category.objects.create(name='Test Category')
+        self.post = Post.objects.create(
+            title='Test Post',
+            title_tag='Test Tag',
+            summary='Test Summary',
+            body='Test Body',
+            author=self.user,
+            category=self.category,
+            status='draft'
+        )
+        self.form_data = {
+            'status': 'published',
+            'change_reason': 'Publishing the post'
+        }
+
+    def test_form_initialization(self):
+        form = ToPublishPostForm()
+        self.assertIn('status', form.fields)
+        self.assertIn('change_reason', form.fields)
+        self.assertEqual(form.fields['status'].widget.__class__.__name__, 'HiddenInput')
+        self.assertEqual(form.fields['change_reason'].widget.__class__.__name__, 'HiddenInput')
+
+    def test_form_valid(self):
+        form = ToPublishPostForm(data=self.form_data, instance=self.post)
+        self.assertTrue(form.is_valid(), "El formulario debería ser válido con datos correctos")
+
+    def test_form_invalid(self):
+        invalid_data = self.form_data.copy()
+        invalid_data['status'] = ''  # El estado es un campo obligatorio
+        form = ToPublishPostForm(data=invalid_data, instance=self.post)
+        self.assertFalse(form.is_valid(), "El formulario debería ser inválido si el estado está vacío")
+
+class ReportFormTests(TestCase):
+
+    def setUp(self):
+        self.user = Member.objects.create_user(
+            username='testuser',
+            email='testuser@example.com',
+            password='12345'
+        )
+        self.category = Category.objects.create(name='Test Category')
+        self.post = Post.objects.create(
+            title='Test Post',
+            title_tag='Test Tag',
+            summary='Test Summary',
+            body='Test Body',
+            author=self.user,
+            category=self.category,
+            status='published'
+        )
+        self.report = Report.objects.create(
+            post=self.post,
+            email='test@example.com',
+            reason='Test Reason'
+        )
+        self.form_data = {
+            'post': self.post.id,
+            'email': 'new@example.com',
+            'reason': 'New Reason'
+        }
+
+    def test_form_initialization(self):
+        form = ReportForm()
+        self.assertIn('post', form.fields)
+        self.assertIn('email', form.fields)
+        self.assertIn('reason', form.fields)
+
+    def test_form_valid(self):
+        form = ReportForm(data=self.form_data)
+        self.assertTrue(form.is_valid(), "El formulario debería ser válido con datos correctos")
 
 #################################### Pruebas unitarias para vistas ########################################
 
@@ -551,7 +1010,6 @@ class MyPostDeleteViewTest(TestCase):
         response = self.client.post(self.delete_url)
         self.assertEqual(response.status_code, 405)
 
-
 class MyPostAddViewTest(TestCase):
     def setUp(self):
         self.user = Member.objects.create_user(username='testuser', password='12345', email='testuser@example.com', first_name='Test', last_name='User')
@@ -594,7 +1052,6 @@ class MyPostAddViewTest(TestCase):
         self.assertEqual(response.status_code, 200)  # Form re-rendered with errors
         self.assertFalse(Post.objects.filter(title='').exists())
 
-
 class ToEditViewTests(TestCase):
     def setUp(self):
         self.client = Client()
@@ -614,7 +1071,6 @@ class ToEditViewTests(TestCase):
         self.client.login(username='no_perm', password='password')
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, 200)
-
 
 class ToEditPostViewTest(TestCase):
     def setUp(self):
@@ -648,7 +1104,6 @@ class ToEditPostViewTest(TestCase):
         response = self.client.get(reverse('edit-my-post', kwargs={'pk': self.post.pk}))
         self.assertEqual(response.status_code, 403)
 
-
 class ToPublishViewTests(TestCase):
     def setUp(self):
         self.client = Client()
@@ -665,7 +1120,6 @@ class ToPublishViewTests(TestCase):
         self.user.user_permissions.remove(Permission.objects.get(codename='can_publish'))
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, 200)
-
 
 class ToPublishPostViewTests(TestCase):
     def setUp(self):
@@ -695,36 +1149,218 @@ class ToPublishPostViewTests(TestCase):
         self.post.refresh_from_db()
         self.assertEqual(self.post.status, 'published')
 
+class SuscriberExplorePostsViewTests(TestCase):
 
-class SuscriberPostsViewTests(TestCase):
     def setUp(self):
-        self.client = Client()
-        self.category = Category.objects.create(name="TestCategory")
-        self.user = Member.objects.create_user(username='testuser', email='testuser@example.com', password='12345')
+        self.factory = RequestFactory()
+        self.user = Member.objects.create_user(
+            username='testuser',
+            email='testuser@example.com',
+            password='12345'
+        )
+        self.category1 = Category.objects.create(name='Category 1')
+        self.category2 = Category.objects.create(name='Category 2')
         self.post1 = Post.objects.create(
-            title="Test Post 1",
+            title='Post 1',
+            title_tag='Tag 1',
+            summary='Summary 1',
+            body='Body 1',
             author=self.user,
-            category=self.category,
-            keywords="test",
-            status="published",
-            date_posted=timezone.now()
+            category=self.category1,
+            status='published',
+            publish_start_date=timezone.now() - timezone.timedelta(days=1),
+            publish_end_date=timezone.now() + timezone.timedelta(days=1)
         )
         self.post2 = Post.objects.create(
-            title="Test Post 2",
+            title='Post 2',
+            title_tag='Tag 2',
+            summary='Summary 2',
+            body='Body 2',
             author=self.user,
-            category=self.category,
-            keywords="test",
-            status="published",
-            date_posted=timezone.now() - timezone.timedelta(days=1)
+            category=self.category2,
+            status='published',
+            publish_start_date=None,
+            publish_end_date=None
         )
-        self.url = reverse('posts')
+
+    def test_view_response(self):
+        request = self.factory.get(reverse('posts'))
+        request.user = self.user
+        response = SuscriberExplorePostsView.as_view()(request)
+        self.assertEqual(response.status_code, 200)
+
+    def test_queryset_filtering(self):
+        request = self.factory.get(reverse('posts'))
+        request.user = self.user
+        view = SuscriberExplorePostsView()
+        view.request = request
+        queryset = view.get_queryset()
+        self.assertIn(self.post1, queryset)
+        self.assertIn(self.post2, queryset)
+
+class SuscriberFeedPostsViewTests(TestCase):
+
+    def setUp(self):
+        self.factory = RequestFactory()
+        self.user = Member.objects.create_user(
+            username='testuser',
+            email='testuser@example.com',
+            password='12345'
+        )
+        self.category1 = Category.objects.create(name='Category 1')
+        self.category2 = Category.objects.create(name='Category 2')
+        self.post1 = Post.objects.create(
+            title='Post 1',
+            title_tag='Tag 1',
+            summary='Summary 1',
+            body='Body 1',
+            author=self.user,
+            category=self.category1,
+            status='published',
+            publish_start_date=timezone.now() - timezone.timedelta(days=1),
+            publish_end_date=timezone.now() + timezone.timedelta(days=1)
+        )
+        self.post2 = Post.objects.create(
+            title='Post 2',
+            title_tag='Tag 2',
+            summary='Summary 2',
+            body='Body 2',
+            author=self.user,
+            category=self.category2,
+            status='published',
+            publish_start_date=None,
+            publish_end_date=None
+        )
+        self.user.purchased_categories.add(self.category1)
+        self.user.suscribed_categories.add(self.category2)
+
+    def test_view_response(self):
+        request = self.factory.get(reverse('feed'))
+        request.user = self.user
+        response = SuscriberFeedPostsView.as_view()(request)
+        self.assertEqual(response.status_code, 200)
+
+    def test_queryset_filtering(self):
+        request = self.factory.get(reverse('feed'))
+        request.user = self.user
+        view = SuscriberFeedPostsView()
+        view.request = request
+        queryset = view.get_queryset()
+        self.assertIn(self.post1, queryset)
+        self.assertIn(self.post2, queryset)
+
+class SearchExplorePostViewTests(TestCase):
+
+    def setUp(self):
+        self.factory = RequestFactory()
+        self.user = Member.objects.create_user(
+            username='testuser',
+            email='testuser@example.com',
+            password='12345'
+        )
+        self.category1 = Category.objects.create(name='Category 1')
+        self.category2 = Category.objects.create(name='Category 2')
+        self.post1 = Post.objects.create(
+            title='Post 1',
+            title_tag='Tag 1',
+            summary='Summary 1',
+            body='Body 1',
+            author=self.user,
+            category=self.category1,
+            status='published',
+            publish_start_date=timezone.now() - timezone.timedelta(days=1),
+            publish_end_date=timezone.now() + timezone.timedelta(days=1)
+        )
+        self.post2 = Post.objects.create(
+            title='Post 2',
+            title_tag='Tag 2',
+            summary='Summary 2',
+            body='Body 2',
+            author=self.user,
+            category=self.category2,
+            status='published',
+            publish_start_date=None,
+            publish_end_date=None
+        )
+
+    def test_view_response(self):
+        request = self.factory.get(reverse('post_search_explore'))
+        request.user = self.user
+        response = SearchExplorePostView.as_view()(request)
+        self.assertEqual(response.status_code, 200)
+
+    def test_queryset_filtering_with_query(self):
+        request = self.factory.get(reverse('post_search_explore'), {'q': 'Post 1'})
+        request.user = self.user
+        view = SearchExplorePostView()
+        view.request = request
+        queryset = view.get_queryset()
+        self.assertIn(self.post1, queryset)
+        self.assertNotIn(self.post2, queryset)
+
+    def test_queryset_filtering_without_query(self):
+        request = self.factory.get(reverse('post_search_explore'))
+        request.user = self.user
+        view = SearchExplorePostView()
+        view.request = request
+        queryset = view.get_queryset()
+        self.assertIn(self.post1, queryset)
+        self.assertIn(self.post2, queryset)
+
+class SearchFeedPostViewTests(TestCase):
+    def setUp(self):
+        self.factory = RequestFactory()
+        self.user = Member.objects.create_user(
+            username='testuser',
+            email='testuser@example.com',
+            password='12345'
+        )
+        self.category1 = Category.objects.create(name='Category 1')
+        self.category2 = Category.objects.create(name='Category 2')
+        self.user.purchased_categories.add(self.category1)
+
+        self.post1 = Post.objects.create(
+            title='Post 1',
+            author=self.user,
+            status='published',
+            category=self.category1,
+            publish_start_date=timezone.now() - timezone.timedelta(days=1),
+            publish_end_date=timezone.now() + timezone.timedelta(days=1),
+            priority=1
+        )
+        self.post2 = Post.objects.create(
+            title='Post 2',
+            author=self.user,
+            status='published',
+            category=self.category2,
+            publish_start_date=timezone.now() - timezone.timedelta(days=1),
+            publish_end_date=timezone.now() + timezone.timedelta(days=1),
+            priority=2
+        )
+
+    def test_get_queryset_without_search_query(self):
+        request = self.factory.get(reverse('post_search_feed'))
+        request.user = self.user
+        response = SearchFeedPostView.as_view()(request)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(self.post1, response.context_data['post_search'])
+        self.assertNotIn(self.post2, response.context_data['post_search'])
+
+    def test_get_queryset_with_search_query(self):
+        request = self.factory.get(reverse('post_search_feed'), {'q': 'Post 1'})
+        request.user = self.user
+        response = SearchFeedPostView.as_view()(request)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(self.post1, response.context_data['post_search'])
+        self.assertNotIn(self.post2, response.context_data['post_search'])
 
     def test_get_context_data(self):
-        response = self.client.get(self.url)
+        request = self.factory.get(reverse('post_search_feed'))
+        request.user = self.user
+        response = SearchFeedPostView.as_view()(request)
         self.assertEqual(response.status_code, 200)
-        context = response.context
-        self.assertIn('categories', context)
-        self.assertEqual(list(context['categories']), list(Category.objects.all()))
+        self.assertIn('categories', response.context_data)
+        self.assertEqual(list(response.context_data['categories']), list(Category.objects.all()))
 
 class SuscriberPostDetailViewTests(TestCase):
     def setUp(self):
@@ -752,7 +1388,6 @@ class SuscriberPostDetailViewTests(TestCase):
         view.kwargs = {'pk': self.post_public.pk, 'category': 'public-category', 'month': self.post_public.date_posted.strftime('%m'), 'year': self.post_public.date_posted.strftime('%Y'), 'title': 'public-post'}
         obj = view.get_object()
         self.assertEqual(obj, self.post_public)
-
 
 class KanbanBoardViewTests(TestCase):
 
@@ -827,7 +1462,6 @@ class KanbanBoardViewTests(TestCase):
         self.assertTemplateUsed(response, 'kanban/kanban_board.html')
         self.assertFalse(response.context['form'].is_valid())
 
-
 class UpdatePostsStatusViewTest(TestCase):
 
     def setUp(self):
@@ -848,7 +1482,6 @@ class UpdatePostsStatusViewTest(TestCase):
         response = self.client.post(reverse('update-posts-status'), data={'movedPosts': [{'id': 9999, 'status': 'published'}]}, content_type='application/json')
         self.assertEqual(response.status_code, 200)
 
-
 class HistoryViewTest(TestCase):
 
     def setUp(self):
@@ -865,3 +1498,269 @@ class HistoryViewTest(TestCase):
         context = view.get_context_data()
         self.assertEqual(context['post'], self.history_instance)
         self.assertEqual(context['post_pk'], self.post.pk)
+
+class RelevantPostsViewTests(TestCase):
+
+    def setUp(self):
+        self.factory = RequestFactory()
+        self.user = Member.objects.create_user(
+            username='testuser',
+            email='testuser@example.com',
+            password='12345'
+        )
+        self.category = Category.objects.create(name='Test Category')
+        self.post1 = Post.objects.create(
+            title='Post 1',
+            title_tag='Tag 1',
+            summary='Summary 1',
+            body='Body 1',
+            author=self.user,
+            category=self.category,
+            status='published',
+            publish_start_date=timezone.now() - timezone.timedelta(days=1),
+            publish_end_date=timezone.now() + timezone.timedelta(days=1),
+            priority=1
+        )
+        self.post2 = Post.objects.create(
+            title='Post 2',
+            title_tag='Tag 2',
+            summary='Summary 2',
+            body='Body 2',
+            author=self.user,
+            category=self.category,
+            status='published',
+            publish_start_date=None,
+            publish_end_date=None,
+            priority=2
+        )
+
+    def test_view_response(self):
+        request = self.factory.get(reverse('relevant-posts'))
+        request.user = self.user
+        response = RelevantPostsView.as_view()(request)
+        self.assertEqual(response.status_code, 200)
+
+    def test_queryset_filtering(self):
+        request = self.factory.get(reverse('relevant-posts'))
+        request.user = self.user
+        view = RelevantPostsView()
+        view.request = request
+        queryset = view.get_queryset()
+        self.assertIn(self.post1, queryset)
+        self.assertIn(self.post2, queryset)
+
+
+class ReportPostViewTests(TestCase):
+    def setUp(self):
+        self.factory = RequestFactory()
+        self.user = Member.objects.create_user(
+            username='testuser',
+            email='testuser@example.com',
+            password='12345'
+        )
+        self.client = Client()
+        self.client.login(username='testuser', password='12345')
+        self.category = Category.objects.create(name='Test Category')
+        self.post = Post.objects.create(
+            title='Test Post',
+            title_tag='Test Tag',
+            summary='Test Summary',
+            body='Test Body',
+            author=self.user,
+            status='draft',
+            category=self.category,
+            keywords='test, post',
+            date_posted=timezone.now()  # Ensure date_posted is set
+        )
+        self.url_kwargs = {
+            'pk': self.post.id,
+            'category': slugify(self.category.name),
+            'month': self.post.date_posted.strftime('%m'),
+            'year': self.post.date_posted.strftime('%Y'),
+            'title': slugify(self.post.title)
+        }
+
+    def test_get_request(self):
+        request = self.factory.get(reverse('report_post', kwargs=self.url_kwargs))
+        request.user = self.user
+        self._add_middleware(request)
+        response = ReportPostView.as_view()(request, **self.url_kwargs)
+        self.assertEqual(response.status_code, 200)
+
+    def _add_middleware(self, request):
+        middleware = [
+            'django.contrib.sessions.middleware.SessionMiddleware',
+            'django.contrib.messages.middleware.MessageMiddleware',
+        ]
+        for mw in middleware:
+            mw_instance = import_string(mw)(lambda req: None)
+            mw_instance.process_request(request)
+        request._messages = FallbackStorage(request)
+
+class TogglePostStatusViewTests(TestCase):
+    def setUp(self):
+        self.factory = RequestFactory()
+        self.user = Member.objects.create_user(username='testuser', email='testuser@example.com', password='12345')
+        self.user.user_permissions.add(Permission.objects.get(codename='change_post'))
+        self.category = Category.objects.create(name='Test Category')
+        self.post = Post.objects.create(
+            title='Test Post',
+            author=self.user,
+            category=self.category,
+            date_posted=timezone.now() - timedelta(days=1),
+            status='inactive'
+        )
+        self.url = reverse('toggle_post_status', args=[self.post.pk])
+
+    def test_toggle_post_status(self):
+        request = self.factory.post(self.url)
+        request.user = self.user
+
+        # Simulate necessary middlewares
+        middleware = [
+            'django.contrib.sessions.middleware.SessionMiddleware',
+            'django.contrib.messages.middleware.MessageMiddleware',
+        ]
+        for mw in middleware:
+            mw_instance = import_string(mw)(lambda req: None)
+            mw_instance.process_request(request)
+        request._messages = FallbackStorage(request)
+
+        response = TogglePostStatusView.as_view()(request, pk=self.post.pk)
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, reverse('incidents'))
+
+        # Refresh the post from the database
+        self.post.refresh_from_db()
+        self.assertEqual(self.post.status, 'published')
+
+        # Toggle back to inactive
+        response = TogglePostStatusView.as_view()(request, pk=self.post.pk)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, reverse('incidents'))
+
+        # Refresh the post from the database
+        self.post.refresh_from_db()
+        self.assertEqual(self.post.status, 'inactive')
+
+class SubscribeViewTests(TestCase):
+    def setUp(self):
+        self.factory = RequestFactory()
+        self.user = Member.objects.create_user(username='testuser', email='testuser@example.com', password='12345')
+        self.user.user_permissions.add(Permission.objects.get(codename='view_post'))
+        self.category = Category.objects.create(name='Test Category', kind='free')
+        self.premium_category = Category.objects.create(name='Premium Category', kind='premium', price=10.00)
+        self.url = reverse('subscribe', kwargs={'category_id': self.category.id})
+        self.premium_url = reverse('subscribe', kwargs={'category_id': self.premium_category.id})
+
+    def test_subscribe_to_non_premium_category(self):
+        request = self.factory.post(self.url)
+        request.user = self.user
+
+        # Simulate necessary middlewares
+        middleware = [
+            'django.contrib.sessions.middleware.SessionMiddleware',
+            'django.contrib.messages.middleware.MessageMiddleware',
+        ]
+        for mw in middleware:
+            mw_instance = import_string(mw)(lambda req: None)
+            mw_instance.process_request(request)
+        request._messages = FallbackStorage(request)
+
+        response = SubscribeView.as_view()(request, category_id=self.category.id)
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, reverse('category', kwargs={'pk': self.category.pk, 'name': self.category.name}))
+        self.assertIn(self.category, self.user.suscribed_categories.all())
+
+    def test_subscribe_to_premium_category(self):
+        request = self.factory.post(self.premium_url)
+        request.user = self.user
+
+        # Simulate necessary middlewares
+        middleware = [
+            'django.contrib.sessions.middleware.SessionMiddleware',
+            'django.contrib.messages.middleware.MessageMiddleware',
+        ]
+        for mw in middleware:
+            mw_instance = import_string(mw)(lambda req: None)
+            mw_instance.process_request(request)
+        request._messages = FallbackStorage(request)
+
+        response = SubscribeView.as_view()(request, category_id=self.premium_category.id)
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, reverse('category', kwargs={'pk': self.premium_category.pk, 'name': self.premium_category.name}))
+
+class UnsubscribeViewTests(TestCase):
+    def setUp(self):
+        self.factory = RequestFactory()
+        self.user = Member.objects.create_user(username='testuser', email='testuser@example.com', password='12345')
+        self.category = Category.objects.create(name='Test Category', kind='free')
+        self.user.suscribed_categories.add(self.category)
+        self.url = reverse('unsubscribe', kwargs={'category_id': self.category.id})
+
+    def test_unsubscribe_from_category(self):
+        request = self.factory.post(self.url)
+        request.user = self.user
+
+        # Simulate necessary middlewares
+        middleware = [
+            'django.contrib.sessions.middleware.SessionMiddleware',
+            'django.contrib.messages.middleware.MessageMiddleware',
+        ]
+        for mw in middleware:
+            mw_instance = import_string(mw)(lambda req: None)
+            mw_instance.process_request(request)
+        request._messages = FallbackStorage(request)
+
+        response = UnsubscribeView.as_view()(request, category_id=self.category.id)
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, reverse('category', kwargs={'pk': self.category.pk, 'name': self.category.name}))
+        self.assertNotIn(self.category, self.user.suscribed_categories.all())
+
+    def test_unsubscribe_from_non_subscribed_category(self):
+        new_category = Category.objects.create(name='New Category', kind='free')
+        url = reverse('unsubscribe', kwargs={'category_id': new_category.id})
+        request = self.factory.post(url)
+        request.user = self.user
+
+        # Simulate necessary middlewares
+        middleware = [
+            'django.contrib.sessions.middleware.SessionMiddleware',
+            'django.contrib.messages.middleware.MessageMiddleware',
+        ]
+        for mw in middleware:
+            mw_instance = import_string(mw)(lambda req: None)
+            mw_instance.process_request(request)
+        request._messages = FallbackStorage(request)
+
+        response = UnsubscribeView.as_view()(request, category_id=new_category.id)
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, reverse('category', kwargs={'pk': new_category.pk, 'name': new_category.name}))
+        self.assertNotIn(new_category, self.user.suscribed_categories.all())
+
+class MyCategoriesViewTests(TestCase):
+    def setUp(self):
+        self.factory = RequestFactory()
+        self.user = Member.objects.create_user(username='testuser', email='testuser@example.com', password='12345')
+        self.category1 = Category.objects.create(name='Category 1', kind='free')
+        self.category2 = Category.objects.create(name='Category 2', kind='premium')
+        self.category3 = Category.objects.create(name='Category 3', kind='free')
+        self.user.suscribed_categories.add(self.category1)
+        self.user.purchased_categories.add(self.category2)
+        self.url = reverse('my_categories')
+
+    def test_view_my_categories(self):
+        request = self.factory.get(self.url)
+        request.user = self.user
+
+        response = MyCategoriesView.as_view()(request)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(self.category1, response.context_data['suscribed_categories'])
+        self.assertIn(self.category2, response.context_data['suscribed_categories'])
+        self.assertNotIn(self.category3, response.context_data['suscribed_categories'])

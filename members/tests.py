@@ -56,6 +56,47 @@ class MemberModelTests(TestCase):
         member = Member.objects.create_user(**self.user_data)
         self.assertIsNotNone(Member.objects.get(username='testuser'), "El miembro debería existir en la base de datos")
 
+class NotificationModelTests(TestCase):
+
+    def setUp(self):
+        self.user = Member.objects.create_user(
+            username='testuser',
+            email='testuser@example.com',
+            password='12345'
+        )
+        self.notification = Notification.objects.create(user=self.user)
+
+    def test_get_additional_notifications_with_permissions(self):
+        # Add necessary permissions to the user
+        permissions = [
+            'add_post',
+            'change_post',
+            'can_publish',
+            'delete_post'
+        ]
+        for perm in permissions:
+            permission = Permission.objects.get(codename=perm)
+            self.user.user_permissions.add(permission)
+
+        expected_notifications = [
+            'Informar sobre inicio de sesión',
+            'Informar sobre actualización de permisos',
+            'Informar sobre activación/inactivación de cuenta',
+            'Informar sobre cambios de estado de articulos'
+        ]
+        self.assertEqual(self.notification.get_additional_notifications(), expected_notifications)
+
+    def test_get_additional_notifications_without_permissions(self):
+        expected_notifications = [
+            'Informar sobre inicio de sesión',
+            'Informar sobre actualización de permisos',
+            'Informar sobre activación/inactivación de cuenta'
+        ]
+        self.assertEqual(self.notification.get_additional_notifications(), expected_notifications)
+
+    def test_str_method(self):
+        self.assertEqual(str(self.notification), f'Notificaciones de {self.user.username}')
+
 #################################### Pruebas unitarias para formularios #####################################
 class MemberCreationFormTest(TestCase):
 
@@ -303,13 +344,6 @@ class GroupListFormTest(TestCase):
         # Assign permissions to groups
         self.group1.permissions.add(self.permission1)
         self.group2.permissions.add(self.permission2)
-
-    """def test_form_fields(self):
-        form = GroupListForm()
-        self.assertIn('group', form.fields)
-        self.assertIn('permissions', form.fields)
-        self.assertEqual(form.fields['group'].queryset.count(), 2)
-        self.assertEqual(form.fields['permissions'].queryset.count(), 39)"""
 
     def test_form_valid_data(self):
         form_data = {
@@ -836,7 +870,64 @@ class PasswordChangingFormTest(TestCase):
         self.assertEqual(form.fields['new_password1'].widget.attrs['class'], 'form-control')
         self.assertEqual(form.fields['new_password2'].widget.attrs['class'], 'form-control')
 
+class UserAddRoleFormTests(TestCase):
+
+    def setUp(self):
+        self.user = Member.objects.create_user(
+            username='testuser',
+            email='testuser@example.com',
+            password='12345'
+        )
+        self.group = Group.objects.create(name='Test Group')
+        self.form_data = {'group': self.group.id}
+
+    def test_form_initialization(self):
+        form = UserAddRoleForm(user=self.user)
+        self.assertIn('group', form.fields, "El formulario debería tener un campo 'group'")
+
+    def test_form_valid_data(self):
+        form = UserAddRoleForm(data=self.form_data, user=self.user)
+        self.assertTrue(form.is_valid(), "El formulario debería ser válido con datos correctos")
+
+    def test_form_invalid_data(self):
+        form = UserAddRoleForm(data={}, user=self.user)
+        self.assertFalse(form.is_valid(), "El formulario debería ser inválido cuando faltan campos obligatorios")
+
 #################################### Pruebas unitarias para vistas ########################################
+class EditProfileViewTests(TestCase):
+
+    def setUp(self):
+        self.client = Client()
+        self.user = Member.objects.create_user(
+            username='testuser',
+            email='testuser@example.com',
+            password='12345'
+        )
+        self.client.login(username='testuser', password='12345')
+        self.url = reverse('edit_profile')
+
+    def test_get_request(self):
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 200, "La solicitud GET debería retornar un código de estado 200")
+        self.assertTemplateUsed(response, 'members/edit_profile.html', "La vista debería usar la plantilla 'edit_profile.html'")
+        self.assertIsInstance(response.context['form'], EditProfileForm, "El contexto debería contener una instancia de EditProfileForm")
+
+class UpdateProfilePictureViewTests(TestCase):
+
+    def setUp(self):
+        self.client = Client()
+        self.user = Member.objects.create_user(
+            username='testuser',
+            email='testuser@example.com',
+            password='12345'
+        )
+        self.client.login(username='testuser', password='12345')
+        self.url = reverse('update_profile_picture')
+
+    def test_post_request_with_no_file(self):
+        response = self.client.post(self.url, {})
+        self.assertEqual(response.status_code, 200, "La solicitud POST debería retornar un código de estado 200")
+        self.assertFalse(response.json()['success'], "La respuesta JSON debería indicar que la operación no fue exitosa")
 
 class HomeViewTests(TestCase):
     def setUp(self):
@@ -863,14 +954,6 @@ class GroupListViewTests(TestCase):
         self.group1.permissions.add(self.permission1)
         self.group2.permissions.add(self.permission2)
 
-    """def test_get_context_data(self):
-        request = self.factory.get(reverse('group-list'))
-        request.user = self.user
-        response = GroupListView.as_view()(request)
-        self.assertEqual(response.status_code, 200)
-        self.assertIn('groups', response.context_data)
-        self.assertEqual(len(response.context_data['groups']), 2)"""
-
     def test_post_edit_group(self):
         request = self.factory.post(reverse('group-list'), data={'selected_group': self.group1.id, 'action': 'edit_group'})
         request.user = self.user
@@ -888,25 +971,54 @@ class GroupListViewTests(TestCase):
 class GroupEditViewTests(TestCase):
     def setUp(self):
         self.factory = RequestFactory()
-        self.user = Member.objects.create_user(username='testuser', password='password', email='testuser@example.com')
-        self.user.is_staff = True
-        self.user.save()
+        self.user = Member.objects.create_user(
+            username='testuser',
+            email='testuser@example.com',
+            password='12345'
+        )
+        self.client = Client()
+        self.client.login(username='testuser', password='12345')
         self.group = Group.objects.create(name='Test Group')
-        self.permission = Permission.objects.create(codename='test_permission', name='Test Permission', content_type_id=1)
-        self.group.permissions.add(self.permission)
-        self.group.save()
+        self.permission1 = Permission.objects.create(
+            codename='test_permission1',
+            name='Test Permission 1',
+            content_type_id=1
+        )
+        self.permission2 = Permission.objects.create(
+            codename='test_permission2',
+            name='Test Permission 2',
+            content_type_id=1
+        )
+        self.url = reverse('group-edit', kwargs={'pk': self.group.pk})
 
-    """def test_post_group_edit_view_valid_data(self):
-        data = {
+    def test_get_request(self):
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 200, "La solicitud GET debería retornar un código de estado 200")
+        self.assertTemplateUsed(response, 'groups/group_edit.html', "La vista debería usar la plantilla 'group_edit.html'")
+        self.assertIsInstance(response.context['form'], GroupEditForm, "El contexto debería contener una instancia de GroupEditForm")
+        self.assertEqual(response.context['group'], self.group, "El contexto debería contener el grupo correcto")
+        self.assertIn('grouped_permissions', response.context, "El contexto debería contener los permisos agrupados")
+        self.assertIn('selected_permissions_ids', response.context, "El contexto debería contener los IDs de los permisos seleccionados")
+
+    def test_post_request_valid_data(self):
+        valid_data = {
             'name': 'Updated Group',
-            'permissions': [self.permission.pk]
+            'permissions': [self.permission2.id]
         }
-        request = self.factory.post(reverse('group-edit', kwargs={'pk': self.group.pk}), data)
-        request.user = self.user
-        response = GroupEditView.as_view()(request, pk=self.group.pk)
-        self.assertEqual(response.status_code, 302)
+        response = self.client.post(self.url, data=valid_data, follow=True)
+        self.assertEqual(response.status_code, 200, "La solicitud POST debería retornar un código de estado 200")
         self.group.refresh_from_db()
-        self.assertEqual(self.group.name, 'Updated Group')"""
+        self.assertEqual(self.group.name, 'Updated Group', "El nombre del grupo debería actualizarse")
+        self.assertIn(self.permission2, self.group.permissions.all(), "El grupo debería tener el permiso actualizado")
+
+    def test_post_request_invalid_data(self):
+        invalid_data = {
+            'name': '',
+            'permissions': [self.permission2.id]
+        }
+        response = self.client.post(self.url, data=invalid_data, follow=True)
+        self.assertEqual(response.status_code, 200, "La solicitud POST debería retornar un código de estado 200")
+        self.assertFalse(response.context['form'].is_valid(), "El formulario debería ser inválido con datos incorrectos")
 
 class GroupDeleteViewTests(TestCase):
 
@@ -966,7 +1078,6 @@ class MemberListViewTests(TestCase):
     def test_post_toggle_status(self):
         self.client.login(username='testuser', password='12345')
         response = self.client.post(reverse('member-list'), {'selected_member': self.member.id, 'action': 'toggle_status'})
-
 
 class MemberEditGroupViewTests(TestCase):
 
@@ -1270,3 +1381,72 @@ class PasswordsChangeViewTests(TestCase):
         self.assertRedirects(response, reverse('profile'))
         self.user.refresh_from_db()
         self.assertTrue(self.user.check_password('new_password123'))
+
+class UserAddRoleViewTests(TestCase):
+
+    def setUp(self):
+        self.client = Client()
+        self.user = Member.objects.create_user(
+            username='testuser',
+            email='testuser@example.com',
+            password='12345'
+        )
+        self.client.login(username='testuser', password='12345')
+        self.group = Group.objects.create(name='Test Group')
+        self.url = reverse('additional_role')
+
+    def test_get_request(self):
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 200, "La solicitud GET debería retornar un código de estado 200")
+        self.assertTemplateUsed(response, 'members/add_role.html', "La vista debería usar la plantilla 'add_role.html'")
+        self.assertIn('form', response.context, "El contexto debería contener el formulario")
+        self.assertIn('roles', response.context, "El contexto debería contener los roles disponibles")
+
+    def test_post_request_invalid_data(self):
+        invalid_data = {
+            'group': ''
+        }
+        response = self.client.post(self.url, data=invalid_data)
+        self.assertEqual(response.status_code, 200, "La solicitud POST debería retornar un código de estado 200")
+        self.assertFalse(response.context['form'].is_valid(), "El formulario debería ser inválido con datos incorrectos")
+        self.assertIn('group', response.context['form'].errors, "El formulario debería contener errores para el campo 'group'")
+
+class UserNotificationsViewTests(TestCase):
+
+    def setUp(self):
+        self.client = Client()
+        self.user = Member.objects.create_user(
+            username='testuser',
+            email='testuser@example.com',
+            password='12345'
+        )
+        self.client.login(username='testuser', password='12345')
+        self.category1 = Category.objects.create(name='Category 1')
+        self.category2 = Category.objects.create(name='Category 2')
+        self.notification = Notification.objects.create(user=self.user)
+        self.url = reverse('notifications')
+
+    def test_get_request(self):
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 200, "La solicitud GET debería retornar un código de estado 200")
+        self.assertTemplateUsed(response, 'members/notifications.html', "La vista debería usar la plantilla 'notifications.html'")
+        self.assertIn('combined_categories', response.context, "El contexto debería contener 'combined_categories'")
+        self.assertIn('purchased_categories', response.context, "El contexto debería contener 'purchased_categories'")
+        self.assertIn('suscribed_categories', response.context, "El contexto debería contener 'suscribed_categories'")
+        self.assertIn('notification', response.context, "El contexto debería contener 'notification'")
+        self.assertIn('additional_notifications', response.context, "El contexto debería contener 'additional_notifications'")
+
+    def test_post_toggle_category_notification(self):
+        post_data = {
+            'action': 'toggle_notification',
+            'category_id': self.category1.id
+        }
+        response = self.client.post(self.url, data=post_data)
+        self.assertEqual(response.status_code, 302, "La solicitud POST debería retornar un código de estado 302")
+        self.notification.refresh_from_db()
+        self.assertIn(self.category1, self.notification.notifications.all(), "La categoría debería ser agregada a las notificaciones del usuario")
+
+        response = self.client.post(self.url, data=post_data)
+        self.assertEqual(response.status_code, 302, "La solicitud POST debería retornar un código de estado 302")
+        self.notification.refresh_from_db()
+        self.assertNotIn(self.category1, self.notification.notifications.all(), "La categoría debería ser removida de las notificaciones del usuario")
