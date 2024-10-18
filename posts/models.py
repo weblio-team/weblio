@@ -204,7 +204,7 @@ class Post(models.Model):
             return 3
         return None
     
-    def save(self, *args, **kwargs):
+    def save(self, *args, from_kanban=False, **kwargs):
         """
         Sobrescribe el método save para establecer date_posted cuando el estado cambia a 'published'.
         """
@@ -224,7 +224,6 @@ class Post(models.Model):
         super().save(*args, **kwargs)
 
         # Enviar correo si el estado ha cambiado
-        from_kanban = kwargs.get('from_kanban', False)
         if old_status != self.status or from_kanban:
             self.send_status_change_email(old_status)
 
@@ -276,16 +275,15 @@ class Post(models.Model):
         users_to_notify = set()
 
         # Autor del post
-        if self.author.has_perm('posts.create_post'):
-            author_notification = self.author.notification_set.first()
-            if author_notification and 'Informar sobre cambios de estado de articulos' in author_notification.additional_notifications:
-                users_to_notify.add((self.author, 'author'))
+        author_notification = self.author.notification_set.first()
+        if author_notification and 'Informar sobre cambios de estado de articulos' in author_notification.additional_notifications:
+            users_to_notify.add((self.author, 'author'))
 
         # Editores si el estado es to_edit
         if self.status == 'to_edit':
             editors = User.objects.all()
             for editor in editors:
-                if editor.has_perm('posts.change_post'):
+                if 'posts.change_post' in editor.get_all_permissions():
                     editor_notification = editor.notification_set.first()
                     if editor_notification and 'Informar sobre cambios de estado de articulos' in editor_notification.additional_notifications:
                         users_to_notify.add((editor, 'editor'))
@@ -294,7 +292,7 @@ class Post(models.Model):
         if self.status == 'to_publish':
             publishers = User.objects.all()
             for publisher in publishers:
-                if publisher.has_perm('posts.can_publish'):
+                if 'posts.can_publish' in publisher.get_all_permissions():
                     publisher_notification = publisher.notification_set.first()
                     if publisher_notification and 'Informar sobre cambios de estado de articulos' in publisher_notification.additional_notifications:
                         users_to_notify.add((publisher, 'publisher'))
@@ -303,7 +301,7 @@ class Post(models.Model):
         if self.status == 'published':
             suscribers = User.objects.all()
             for user in suscribers:
-                if user.has_perm('posts.view_post'):
+                if 'posts.view_post' in user.get_all_permissions():
                     if self.category in user.purchased_categories.all() or self.category in user.suscribed_categories.all():
                         users_to_notify.add((user, 'suscriber'))
 
@@ -325,8 +323,8 @@ class Post(models.Model):
                 subject = f"Nuevo post disponible en tus categorías de interés: {self.title}"
                 template = 'emails/post-status/status_change_suscriber.html'
                 post_url = f"{site_protocol}://{current_site.domain}/{self.get_absolute_url()}"
-                context['user'] = user
-
+            
+            context['user'] = user
             context['post_url'] = post_url
 
             from_email = settings.EMAIL_HOST_USER
