@@ -224,7 +224,8 @@ class Post(models.Model):
         super().save(*args, **kwargs)
 
         # Enviar correo si el estado ha cambiado
-        if old_status != self.status:
+        from_kanban = kwargs.get('from_kanban', False)
+        if old_status != self.status or from_kanban:
             self.send_status_change_email(old_status)
 
     def send_status_change_email(self, old_status):

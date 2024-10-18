@@ -1268,7 +1268,7 @@ class UpdatePostsStatusView(PermissionRequiredMixin, LoginRequiredMixin, View):
                     post = Post.objects.get(pk=post_id)
                     post.status = status_id
                     post.change_reason = reason
-                    post.save()
+                    post.save(from_kanban=True)
                 except Post.DoesNotExist:
                     pass
             messages.success(request, 'Los estados de las publicaciones se han actualizado correctamente.')
