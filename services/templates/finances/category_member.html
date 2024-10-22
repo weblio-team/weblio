@@ -3,29 +3,7 @@
     <main role="main" class="container py-4">
         <span id="view-count"></span>
 
-        <h2>Lista de categorías compradas</h2>
-
-        <!-- Widget for total categories and total sum -->
-        <div class="widget-container">
-            <div class="widget">
-                <div class="widget-icon">
-                    <i class="bi bi-tags-fill"></i>
-                </div>
-                <div class="widget-info">
-                    <h4>Categorías Compradas</h4>
-                    <p>{{ total_categories }}</p>
-                </div>
-            </div>
-            <div class="widget">
-                <div class="widget-icon">
-                    <i class="bi bi-currency-dollar"></i>
-                </div>
-                <div class="widget-info">
-                    <h4>Total Monto</h4>
-                    <p>$ {{ total_sum|floatformat:2 }}</p>
-                </div>
-            </div>
-        </div>
+        <h2 class="text-center display-4">Categorías compradas</h2>
 
         <!-- Responsive Bootstrap Table in Dark Mode -->
         <div class="table-responsive">
@@ -40,7 +18,7 @@
                 data-sortable="true"
                 data-click-to-select="true"
                 data-locale="es-ES"
-                data-sort-name="total"
+                data-sort-name="purchase_date"
                 data-sort-order="desc"
                 data-show-export="true"
                 data-export-types="['csv', 'excel', 'xlsx']"
@@ -48,16 +26,16 @@
                 <thead>
                     <tr>
                         <th data-field="category" data-sortable="true">Categoría</th>
-                        <th data-field="total" data-sortable="true">Precio</th>
                         <th data-field="purchase_date" data-sortable="true">Fecha de Compra</th>
+                        <th data-field="total" data-sortable="true">Precio</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for category in categories %}
                         <tr>
                             <td>{{ category.category__name }}</td>
-                            <td>$ {{ category.total|floatformat:2 }}</td>
                             <td>{{ category.purchase_date|date:"d/m/Y H:i" }}</td>
+                            <td>$ {{ category.total|floatformat:2 }}</td>
                         </tr>
                     {% empty %}
                         <tr>
@@ -67,9 +45,58 @@
                 </tbody>
             </table>
         </div>
+
+        <!-- Bar for total categories and total sum -->
+        <div class="totals-bar">
+            <div class="totals-item">
+                <i class="bi bi-tags-fill totals-icon"></i>
+                <span class="totals-text">Categorías compradas: {{ total_categories }}</span>
+            </div>
+            <div class="totals-item">
+                <i class="bi bi-currency-dollar totals-icon"></i>
+                <span class="totals-text">Monto total: $ {{ total_sum|floatformat:2 }}</span>
+            </div>
+        </div>
     </main>
 
     <style>
+        /* Styling for the totals bar */
+        .totals-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #303434; /* Updated background color */
+            color: #fff;
+            padding: 12px; /* Slightly smaller padding */
+            border-radius: 8px;
+            margin-bottom: 15px; /* Reduced space below */
+            box-shadow: 0 3px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .totals-item {
+            display: flex;
+            align-items: center;
+        }
+
+        .totals-icon {
+            font-size: 1.6em; /* Slightly smaller icon */
+            margin-right: 8px;
+            color: #fff;
+        }
+
+        .totals-text {
+            font-size: 1.1em; /* Reduced font size */
+            font-weight: bold;
+            color: #fff;
+        }
+
+        /* Title for the table */
+        .table-title {
+            font-size: 1.4em;
+            margin-bottom: 15px;
+            color: #fff;
+        }
+
         /* Dark Mode for Search Input */
         .bootstrap-table .search input {
             background-color: #333;
@@ -81,7 +108,7 @@
         .bootstrap-table .search input::placeholder {
             color: #fff;
         }
-    
+
         /* Dark Mode for Paginator */
         .pagination li.active a,
         .pagination li.active a:hover,
@@ -112,57 +139,9 @@
             background-color: #555;
         }
 
-        /* Minimalist Dark Mode for Total Sum */
-        .total-sum-container {
-            background-color: #333;
-            color: #fff;
-            padding: 10px;
-            margin-top: 10px;
-            border-radius: 5px;
-            text-align: center;
-        }
-
-        .total-sum-container small {
-            font-size: 0.875em;
-            color: #bbb;
-        }
-
-        /* Widget Styles */
-        .widget-container {
-            display: flex;
-            justify-content: space-around;
-            margin-bottom: 20px;
-        }
-
-        .widget {
-            background-color: #444;
-            color: #fff;
-            padding: 20px;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s ease;
-        }
-
-        .widget:hover {
-            transform: translateY(-5px);
-        }
-
-        .widget-icon {
-            font-size: 2em;
-            margin-right: 10px;
-        }
-
-        .widget-info h4 {
-            margin: 0;
-            font-size: 1.2em;
-        }
-
-        .widget-info p {
-            margin: 0;
-            font-size: 1.5em;
-            font-weight: bold;
+        /* Body background color */
+        body {
+            background-color: #303434; /* Updated body background */
         }
     </style>
 {% endblock %}
