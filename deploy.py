@@ -99,7 +99,6 @@ def main():
     # Paso 1: Clonar el repositorio
     if not os.path.isdir(clone_dir):
         print(f"Clonando el repositorio {repo_url} con la etiqueta '{tag}' en '{clone_dir}'...")
-        run_command(f"git config advice.detachedHead false")
         run_command(f"git clone --branch {tag} {repo_url} {clone_dir}")
     else:
         print(f"El repositorio ya existe en '{clone_dir}'. Omitiendo clonación.")
