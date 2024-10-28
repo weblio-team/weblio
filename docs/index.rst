@@ -17,3 +17,4 @@ documentation for details.
 
    source/modules/posts
    source/modules/members
+   source/modules/services
