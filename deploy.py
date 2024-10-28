@@ -69,7 +69,7 @@ def deploy_to_heroku():
     
     # Realizar el push a Heroku
     print("Desplegando la aplicación en Heroku...")
-    run_command("git push heroku kevin:main")
+    run_command("git push heroku prod:main")
     
     # Migrar y poblar la base de datos en Heroku
     print("Ejecutando migraciones en la base de datos de Heroku...")
@@ -106,7 +106,7 @@ def main():
     
     # Cambiar al directorio del repositorio clonado
     os.chdir(clone_dir)
-    run_command("git checkout kevin")
+    run_command("git checkout prod")
 
     # Paso 2: Crear y activar el entorno virtual
     create_and_activate_venv()
