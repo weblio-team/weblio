@@ -157,9 +157,9 @@ def import_data(populate_directory):
     else:
         # Comandos equivalentes a import_data.sh en Linux/Mac
         commands = [
-            "python3 manage.py loaddata {populate_directory}/groups.json",
-            "python3 manage.py loaddata {populate_directory}/members.json",
-            "python3 manage.py loaddata {populate_directory}/posts.json"
+            f"python3 manage.py loaddata {populate_directory}/groups.json",
+            f"python3 manage.py loaddata {populate_directory}/members.json",
+            f"python3 manage.py loaddata {populate_directory}/posts.json"
         ]
 
     # Ejecutar los comandos
