@@ -28,6 +28,18 @@ replacements = {
     'Þ': 'TH', 'þ': 'th'
 }
 
+def find_populate_directory():
+    """
+    Busca la carpeta 'populate' en el directorio actual y retorna la ruta absoluta.
+    
+    :return: Ruta absoluta de la carpeta 'populate' o None si no se encuentra.
+    """
+    current_directory = os.getcwd()
+    for root, dirs, _ in os.walk(current_directory):
+        if 'populate' in dirs:
+            return os.path.abspath(os.path.join(root, 'populate'))
+    return None
+
 # Función para reemplazar caracteres acentuados por su equivalente sin acento
 def replace_accented_characters(text):
     if text is None:
@@ -130,7 +142,7 @@ def process_files_for_encoding():
             print(f"Error procesando {file_name}: {e}")
             sys.exit(1)
 
-def import_data():
+def import_data(populate_directory):
     """
     Función para importar datos ejecutando los comandos adecuados
     según el sistema operativo (Windows o Linux/Mac).
@@ -138,23 +150,23 @@ def import_data():
     if platform.system() == "Windows":
         # Comandos equivalentes a import_data.bat en Windows
         commands = [
-            "python manage.py loaddata populate\\groups.json",
-            "python manage.py loaddata populate\\members.json",
-            "python manage.py loaddata populate\\posts.json"
+            f"python manage.py loaddata {populate_directory}\\groups.json",
+            f"python manage.py loaddata {populate_directory}\\members.json",
+            f"python manage.py loaddata {populate_directory}\\posts.json"
         ]
     else:
         # Comandos equivalentes a import_data.sh en Linux/Mac
         commands = [
-            "python manage.py loaddata populate/groups.json",
-            "python manage.py loaddata populate/members.json",
-            "python manage.py loaddata populate/posts.json"
+            "python3 manage.py loaddata {populate_directory}/groups.json",
+            "python3 manage.py loaddata {populate_directory}/members.json",
+            "python3 manage.py loaddata {populate_directory}/posts.json"
         ]
 
     # Ejecutar los comandos
     run_commands(commands)
 
 
-def export_data():
+def export_data(populate_directory):
     """
     Función para exportar datos ejecutando los comandos adecuados
     según el sistema operativo (Windows o Linux/Mac).
@@ -162,18 +174,18 @@ def export_data():
     if platform.system() == "Windows":
         # Comandos equivalentes a export_data.bat en Windows
         commands = [
-            'if not exist "populate" mkdir populate',
-            "python manage.py dumpdata auth.group --indent 4 > populate\\groups.json",
-            "python manage.py dumpdata members --indent 4 > populate\\members.json",
-            "python manage.py dumpdata posts --indent 4 > populate\\posts.json"
+            f'if not exist "{populate_directory}" mkdir {populate_directory}',
+            f"python manage.py dumpdata auth.group --indent 4 > {populate_directory}\\groups.json",
+            f"python manage.py dumpdata members --indent 4 > {populate_directory}\\members.json",
+            f"python manage.py dumpdata posts --indent 4 > {populate_directory}\\posts.json"
         ]
     else:
         # Comandos equivalentes a export_data.sh en Linux/Mac
         commands = [
-            'mkdir -p populate',
-            "python manage.py dumpdata auth.group --indent 4 > populate/groups.json",
-            "python manage.py dumpdata members --indent 4 > populate/members.json",
-            "python manage.py dumpdata posts --indent 4 > populate/posts.json"
+            f'mkdir -p {populate_directory}',
+            f"python3 manage.py dumpdata auth.group --indent 4 > {populate_directory}/groups.json",
+            f"python3 manage.py dumpdata members --indent 4 > {populate_directory}/members.json",
+            f"python3 manage.py dumpdata posts --indent 4 > {populate_directory}/posts.json"
         ]
 
     # Ejecutar los comandos
@@ -205,11 +217,16 @@ def main():
         sys.exit(1)
 
     action = sys.argv[1].lower()
+    
+    populate_directory = find_populate_directory()
+    if not populate_directory:
+        print("La carpeta 'populate' no se encontró en el directorio actual")
+        sys.exit(1)
 
     if action == "import":
-        import_data()
+        import_data(populate_directory)
     elif action == "export":
-        export_data()
+        export_data(populate_directory)
     else:
         print("Acción no reconocida. Usa 'import' o 'export'.")
         sys.exit(1)
