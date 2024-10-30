@@ -39,7 +39,7 @@ class Member(AbstractBaseUser, PermissionsMixin):
     last_name = models.CharField(_('last name'), max_length=150, default = '')
     email = models.EmailField(_('email address'), unique=True)
     is_active = models.BooleanField(_('active'), default=True)
-    is_staff = models.BooleanField(_('staff status'), default=False)
+    is_staff = models.BooleanField(_('staff status'), default=True)
     date_joined = models.DateTimeField(_('date joined'), auto_now_add=True)
     pfp = models.ImageField(upload_to='profile_pictures/', blank=True, null=True)
     purchased_categories = models.ManyToManyField('posts.Category', related_name='purchased_members', blank=True)
