@@ -1,147 +1,155 @@
 {% extends "base.html" %}
 {% block content %}
-    <main role="main" class="container py-4">
-        <span id="view-count"></span>
+<main role="main" class="container py-4">
+    <span id="view-count"></span>
 
-        <h2 class="text-center display-4">Categorías compradas</h2>
+    <h2 class="text-center display-4 mb-4">Categorías compradas</h2>
 
-        <!-- Responsive Bootstrap Table in Dark Mode -->
-        <div class="table-responsive">
-            <table 
-                id="incomeTable"
-                class="table table-dark table-striped table-bordered"
-                data-toggle="table"
-                data-search="true"
-                data-pagination="true"
-                data-page-size="5"
-                data-page-list="[5, 10, 20, 50]"
-                data-sortable="true"
-                data-click-to-select="true"
-                data-locale="es-ES"
-                data-sort-name="purchase_date"
-                data-sort-order="desc"
-                data-show-export="true"
-                data-export-types="['csv', 'excel', 'xlsx']"
-            >
-                <thead>
+    <!-- Responsive Bootstrap Table in Dark Mode -->
+    <div class="table-responsive">
+        <!-- Date Filters -->
+        <div class="date-filters d-flex align-items-center mb-3">
+            <label for="startDate" class="form-label mb-0 me-2">Desde:</label>
+            <input type="date" id="startDate" class="form-control form-control-sm me-2" style="width: auto;" />
+            <label for="endDate" class="form-label mb-0 me-2">Hasta:</label>
+            <input type="date" id="endDate" class="form-control form-control-sm me-2" style="width: auto;" />
+            <button id="filterButton" class="btn btn-primary btn-sm">Filtrar</button>
+        </div>
+
+        <table 
+            id="incomeTable"
+            class="table table-dark table-striped table-bordered"
+            data-toggle="table"
+            data-pagination="true"
+            data-page-size="5"
+            data-page-list="[5, 10, 20, 50]"
+            data-sortable="true"
+            data-click-to-select="true"
+            data-locale="es-ES"
+            data-sort-name="purchase_date"
+            data-sort-order="desc"
+            data-show-export="true"
+            data-export-types="['csv', 'excel', 'xlsx']"
+        >
+            <thead>
+                <tr>
+                    <th data-field="category" data-sortable="true">Categoría</th>
+                    <th data-field="purchase_date" data-sortable="true">Fecha de Compra</th>
+                    <th data-field="payment_method" data-sortable="true">Método de Pago</th>
+                    <th data-field="total" data-sortable="true">Precio</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for category in categories %}
                     <tr>
-                        <th data-field="category" data-sortable="true">Categoría</th>
-                        <th data-field="purchase_date" data-sortable="true">Fecha de Compra</th>
-                        <th data-field="total" data-sortable="true">Precio</th>
+                        <td>{{ category.category__name }}</td>
+                        <td>{{ category.purchase_date|date:"Y-m-d H:i" }}</td>
+                        <td>Tarjeta</td>
+                        <td>$ {{ category.total|floatformat:2 }}</td>
                     </tr>
-                </thead>
-                <tbody>
-                    {% for category in categories %}
-                        <tr>
-                            <td>{{ category.category__name }}</td>
-                            <td>{{ category.purchase_date|date:"d/m/Y H:i" }}</td>
-                            <td>$ {{ category.total|floatformat:2 }}</td>
-                        </tr>
-                    {% empty %}
-                        <tr>
-                            <td colspan="3">No hay categorías compradas</td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+                {% empty %}
+                    <tr>
+                        <td colspan="4">No hay categorías compradas</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Bar for total categories and total sum -->
+    <div class="totals-bar">
+        <div class="totals-item">
+            <i class="bi bi-tags-fill totals-icon"></i>
+            <span class="totals-text">Categorías compradas: <span id="totalCategories">{{ total_categories }}</span></span>
         </div>
-
-        <!-- Bar for total categories and total sum -->
-        <div class="totals-bar">
-            <div class="totals-item">
-                <i class="bi bi-tags-fill totals-icon"></i>
-                <span class="totals-text">Categorías compradas: {{ total_categories }}</span>
-            </div>
-            <div class="totals-item">
-                <i class="bi bi-currency-dollar totals-icon"></i>
-                <span class="totals-text">Monto total: $ {{ total_sum|floatformat:2 }}</span>
-            </div>
+        <div class="totals-item">
+            <i class="bi bi-currency-dollar totals-icon"></i>
+            <span class="totals-text">Monto total: $ <span id="totalSum">{{ total_sum|floatformat:2 }}</span></span>
         </div>
-    </main>
+    </div>
+</main>
 
-    <style>
-        /* Styling for the totals bar */
-        .totals-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background-color: #303434; /* Updated background color */
-            color: #fff;
-            padding: 12px; /* Slightly smaller padding */
-            border-radius: 8px;
-            margin-bottom: 15px; /* Reduced space below */
-            box-shadow: 0 3px 5px rgba(0, 0, 0, 0.1);
-        }
+<style>
+    /* Styling for the totals bar */
+    .totals-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background-color: #303434;
+        color: #fff;
+        padding: 12px;
+        border-radius: 8px;
+        margin-bottom: 15px;
+        box-shadow: 0 3px 5px rgba(0, 0, 0, 0.1);
+    }
 
-        .totals-item {
-            display: flex;
-            align-items: center;
-        }
+    .totals-item {
+        display: flex;
+        align-items: center;
+    }
 
-        .totals-icon {
-            font-size: 1.6em; /* Slightly smaller icon */
-            margin-right: 8px;
-            color: #fff;
-        }
+    .totals-icon {
+        font-size: 1.6em;
+        margin-right: 8px;
+        color: #fff;
+    }
 
-        .totals-text {
-            font-size: 1.1em; /* Reduced font size */
-            font-weight: bold;
-            color: #fff;
-        }
+    .totals-text {
+        font-size: 1.1em;
+        font-weight: bold;
+        color: #fff;
+    }
 
-        /* Title for the table */
-        .table-title {
-            font-size: 1.4em;
-            margin-bottom: 15px;
-            color: #fff;
-        }
+    /* Date filters styling */
+    .date-filters {
+        display: flex;
+        align-items: center;
+    }
 
-        /* Dark Mode for Search Input */
-        .bootstrap-table .search input {
-            background-color: #333;
-            color: #fff;
-            border-color: #444;
-        }
+    .date-filters .form-control-sm {
+        width: auto;
+    }
 
-        /* White placeholder text */
-        .bootstrap-table .search input::placeholder {
-            color: #fff;
-        }
+    /* Additional Dark Mode Tweaks */
+    .btn {
+        background-color: #333;
+        color: #fff;
+        border-color: #444;
+    }
 
-        /* Dark Mode for Paginator */
-        .pagination li.active a,
-        .pagination li.active a:hover,
-        .pagination li.active a:focus {
-            background-color: #555;
-            border-color: #666;
-            color: #fff;
-        }
+    .btn:hover {
+        background-color: #555;
+    }
 
-        .pagination li a {
-            background-color: #333;
-            color: #fff;
-            border-color: #444;
-        }
+    /* Body background color */
+    body {
+        background-color: #303434;
+    }
+</style>
 
-        .pagination li a:hover {
-            background-color: #555;
-        }
+<script>
+    document.getElementById('filterButton').addEventListener('click', function() {
+        var startDate = new Date(document.getElementById('startDate').value);
+        var endDate = new Date(document.getElementById('endDate').value);
+        var rows = document.querySelectorAll('#incomeTable tbody tr');
+        var totalCategories = 0;
+        var totalSum = 0;
 
-        /* Additional Dark Mode Tweaks */
-        .btn {
-            background-color: #333;
-            color: #fff;
-            border-color: #444;
-        }
+        rows.forEach(function(row) {
+            var purchaseDate = new Date(row.cells[1].innerText.split(' ')[0]);
+            var total = parseFloat(row.cells[3].innerText.replace('$', '').replace('.', '').replace(',', '.').trim());
 
-        .btn:hover {
-            background-color: #555;
-        }
+            if ((isNaN(startDate) || purchaseDate >= startDate) && (isNaN(endDate) || purchaseDate <= endDate)) {
+                row.style.display = '';
+                totalCategories++;
+                totalSum += total;
+            } else {
+                row.style.display = 'none';
+            }
+        });
 
-        /* Body background color */
-        body {
-            background-color: #303434; /* Updated body background */
-        }
-    </style>
+        document.getElementById('totalCategories').innerText = totalCategories;
+        document.getElementById('totalSum').innerText = totalSum.toFixed(2);
+    });
+</script>
 {% endblock %}

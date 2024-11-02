@@ -1140,6 +1140,10 @@ class FinancesDashboardView(TemplateView):
         # Serializar los datos como JSON
         context['categories_json'] = json.dumps(categories)
         context['sales_json'] = json.dumps(sales)
+        context['categories'] = Category.objects.filter(kind='premium')
+        context['purchases'] = Purchase.objects.select_related('category', 'user').all()
+        context['total_revenue'] = Purchase.objects.aggregate(total=Sum('price'))['total']
+        context['total_purchases'] = Purchase.objects.count()
 
         return context
 
@@ -1179,6 +1183,7 @@ class FinancesMembersView(TemplateView):
         """
         context = super().get_context_data(**kwargs)
         context['purchases'] = Purchase.objects.select_related('category', 'user').all()
+        context['categories'] = Category.objects.filter(kind='premium')
         return context
 
 class FinancesCategoriesView(TemplateView):

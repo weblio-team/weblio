@@ -3,7 +3,29 @@
     <main role="main" class="container py-4">
         <span id="view-count"></span>
 
-        <h2>Reporte de Compras por Miembro</h2>
+        <h2 class="text-center display-4 mb-4">Reporte de Ventas</h2>
+
+        <!-- Filters -->
+        <div class="filters d-flex align-items-center mb-3">
+            <label for="categoryFilter" class="form-label mb-0 me-2">Categoría:</label>
+            <select id="categoryFilter" class="form-select form-select-sm me-2" style="width: auto;">
+                <option value="all">Todas</option>
+                {% for category in categories %}
+                    <option value="{{ category.name }}">{{ category.name }}</option>
+                {% endfor %}
+            </select>
+
+            <label for="userFilter" class="form-label mb-0 me-2">Usuario:</label>
+            <input type="text" id="userFilter" class="form-control form-control-sm me-2" style="width: auto;" placeholder="Buscar usuario" />
+
+            <label for="startDate" class="form-label mb-0 me-2">Desde:</label>
+            <input type="date" id="startDate" class="form-control form-control-sm me-2" style="width: auto;" />
+
+            <label for="endDate" class="form-label mb-0 me-2">Hasta:</label>
+            <input type="date" id="endDate" class="form-control form-control-sm me-2" style="width: auto;" />
+
+            <button id="filterButton" class="btn btn-primary btn-sm">Filtrar</button>
+        </div>
 
         <!-- Responsive Bootstrap Table in Dark Mode -->
         <div class="table-responsive">
@@ -11,14 +33,13 @@
                 id="purchaseTable"
                 class="table table-dark table-striped table-bordered"
                 data-toggle="table"
-                data-search="true"
                 data-pagination="true"
                 data-page-size="5"
                 data-page-list="[5, 10, 20, 50]"
                 data-sortable="true"
                 data-click-to-select="true"
                 data-locale="es-ES"
-                data-sort-name="id"
+                data-sort-name="date"
                 data-sort-order="asc"
                 data-show-export="true"
                 data-export-types="['csv', 'excel', 'xlsx']"
@@ -28,6 +49,7 @@
                         <th data-field="id" data-sortable="true">ID</th>
                         <th data-field="user" data-sortable="true">Usuario</th>
                         <th data-field="category" data-sortable="true">Categoría</th>
+                        <th data-field="payment_method" data-sortable="true">Método de Pago</th>
                         <th data-field="price" data-sortable="true">Precio</th>
                         <th data-field="date" data-sortable="true">Fecha</th>
                     </tr>
@@ -38,20 +60,73 @@
                             <td>{{ purchase.id }}</td>
                             <td>{{ purchase.user }}</td>
                             <td>{{ purchase.category.name }}</td>
+                            <td>Tarjeta</td>
                             <td>$ {{ purchase.price }}</td>
-                            <td>{{ purchase.date }}</td>
+                            <td>{{ purchase.date|date:"Y-m-d H:i" }}</td>
                         </tr>
                     {% empty %}
                         <tr>
-                            <td colspan="5">No hay compras registradas</td>
+                            <td colspan="6">No hay compras registradas</td>
                         </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
+
+        <!-- Bar for total purchases and total sum -->
+        <div class="totals-bar mt-4">
+            <div class="totals-item">
+                <i class="bi bi-tags-fill totals-icon"></i>
+                <span class="totals-text">Total compras: <span id="totalPurchases">0</span></span>
+            </div>
+            <div class="totals-item">
+                <i class="bi bi-currency-dollar totals-icon"></i>
+                <span class="totals-text">Monto total: $ <span id="totalSum">0.00</span></span>
+            </div>
+        </div>
     </main>
 
     <style>
+        /* Styling for the totals bar */
+        .totals-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #303434;
+            color: #fff;
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 15px;
+            box-shadow: 0 3px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .totals-item {
+            display: flex;
+            align-items: center;
+        }
+
+        .totals-icon {
+            font-size: 1.6em;
+            margin-right: 8px;
+            color: #fff;
+        }
+
+        .totals-text {
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #fff;
+        }
+
+        /* Filters styling */
+        .filters {
+            display: flex;
+            align-items: center;
+        }
+
+        .filters .form-control-sm, .filters .form-select-sm {
+            width: auto;
+        }
+
         /* Dark Mode for Search Input */
         .bootstrap-table .search input {
             background-color: #333;
@@ -94,4 +169,57 @@
             background-color: #555;
         }
     </style>
+
+    <script>
+        function updateTotals() {
+            var rows = document.querySelectorAll('#purchaseTable tbody tr');
+            var totalPurchases = 0;
+            var totalSum = 0;
+
+            rows.forEach(function(row) {
+                if (row.style.display !== 'none') {
+                    totalPurchases++;
+                    var total = parseFloat(row.cells[4].innerText.replace('$', '').replace('.', '').replace(',', '.').trim());
+                    totalSum += total;
+                }
+            });
+
+            document.getElementById('totalPurchases').innerText = totalPurchases;
+            document.getElementById('totalSum').innerText = totalSum.toFixed(2);
+        }
+
+        document.getElementById('filterButton').addEventListener('click', function() {
+            var categoryFilter = document.getElementById('categoryFilter').value;
+            var userFilter = document.getElementById('userFilter').value.toLowerCase();
+            var startDate = new Date(document.getElementById('startDate').value);
+            var endDate = new Date(document.getElementById('endDate').value);
+            var rows = document.querySelectorAll('#purchaseTable tbody tr');
+
+            rows.forEach(function(row) {
+                var category = row.cells[2].innerText;
+                var user = row.cells[1].innerText.toLowerCase();
+                var purchaseDate = new Date(row.cells[5].innerText.split(' ')[0]);
+
+                var categoryMatch = (categoryFilter === 'all' || category === categoryFilter);
+                var userMatch = (userFilter === '' || user.includes(userFilter));
+                var dateMatch = (isNaN(startDate.getTime()) || purchaseDate >= startDate) && (isNaN(endDate.getTime()) || purchaseDate <= endDate);
+
+                if (categoryMatch && userMatch && dateMatch) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+
+            updateTotals();
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            updateTotals();
+        });
+
+        document.getElementById('purchaseTable').addEventListener('post-body.bs.table', function() {
+            updateTotals();
+        });
+    </script>
 {% endblock %}
