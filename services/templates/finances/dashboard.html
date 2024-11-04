@@ -37,28 +37,51 @@
                 </div>
             </div>
 
-            <!-- Chart Section -->
-            <div class="container py-4">
-                <div class="row">
-                    <div class="col-lg-12">
-                        <canvas id="salesChart" class="bg-dark"></canvas>
+            <!-- Carousel for Charts -->
+            <div id="chartCarousel" class="carousel slide mt-4" data-bs-ride="carousel">
+                <div class="carousel-inner">
+                    <!-- Slide 1: Sales Chart -->
+                    <div class="carousel-item active" style="height: 100%;">
+                        <h2 class="text-light text-center">Total Ventas por Categoría Premium</h2>
+                        <div class="d-flex justify-content-center align-items-center" style="height: 100%;">
+                            <canvas id="salesChart" class="bg-dark w-100 h-100"></canvas>
+                        </div>
                     </div>
-                </div>
             
-            
-                <div class="row">
-                    <div class="col-md-6">
-                        <h2 class="text-light">Compras / Tiempo</h2>
-                        <canvas id="purchaseChart" width="400" height="200"></canvas>
+                    <!-- Slide 2: Compras / Tiempo Chart -->
+                    <div class="carousel-item" style="height: 100%;">
+                        <h2 class="text-light text-center">Compras / Tiempo</h2>
+                        <div class="d-flex justify-content-center align-items-center" style="height: 100%;">
+                            <canvas id="purchaseChart" class="bg-dark w-100 h-100"></canvas>
+                        </div>
                     </div>
-                    <div class="col-md-6">
-                        <h2 class="text-light">Purchases Por Categoría</h2>
-                        <canvas id="categoryChart" width="400" height="200"></canvas>
+            
+                    <!-- Slide 3: Purchases por Categoría (Adjusted for Responsive Size) -->
+                    <div class="carousel-item" style="height: 100%;">
+                        <h2 class="text-light text-center">Compras Por Categoría</h2>
+                        <div class="d-flex justify-content-center align-items-center" style="height: 100%; max-height: 500px;">
+                            <canvas id="categoryChart" class="bg-dark" style="width: 90%; max-width: 500px; height: auto; object-fit: contain;"></canvas>
+                        </div>
+                    </div>
+            
+                    <!-- Slide 4: Compras / Tiempo por Categoría -->
+                    <div class="carousel-item" style="height: 100%;">
+                        <h2 class="text-light text-center">Compras / Tiempo Por Categoría</h2>
+                        <div class="d-flex justify-content-center align-items-center" style="height: 100%;">
+                            <canvas id="categoryPurchaseChart" class="bg-dark w-100 h-100"></canvas>
+                        </div>
                     </div>
                 </div>
                 
-                <h2 class="text-light mt-5">Compras / Tiempo Por Categoría</h2>
-                <canvas id="categoryPurchaseChart" width="400" height="200"></canvas>
+                <!-- Carousel Controls -->
+                <button class="carousel-control-prev" type="button" data-bs-target="#chartCarousel" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Previous</span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#chartCarousel" data-bs-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Next</span>
+                </button>                     
                 
                 <!-- Chart.js Library -->
                 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -508,6 +531,11 @@
 
     .btn:hover {
         background-color: #555;
+    }
+    .carousel-control-prev-icon,
+    .carousel-control-next-icon {
+        background-color: #000; /* Darken control colors for better visibility */
+        border-radius: 50%;
     }
 </style>
 
