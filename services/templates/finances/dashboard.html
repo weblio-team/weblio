@@ -1,139 +1,337 @@
 {% extends "base.html" %}
 {% block content %}
-    <div role="main" class="container container-fluid py-4">
+<div role="main" class="container container-fluid py-4">
 
-        <!-- Tab Navigation -->
-        <ul class="nav nav-tabs" id="myTab" role="tablist">
-            <li class="nav-item" role="presentation">
-                <a class="nav-link active" id="info-tab" data-bs-toggle="tab" href="#info" role="tab" aria-controls="info" aria-selected="true">Resumen</a>
-            </li>
-            <li class="nav-item" role="presentation">
-                <a class="nav-link" id="report-tab" data-bs-toggle="tab" href="#report" role="tab" aria-controls="report" aria-selected="false">Reportes</a>
-            </li>
-        </ul>
-    
-        <div class="tab-content mt-3" id="myTabContent">
-            <!-- Tab 1: Resumen -->
-            <div class="tab-pane fade show active" id="info" role="tabpanel" aria-labelledby="info-tab">
-                <!-- Statistics Widgets -->
-                <div class="row text-center">
-                    <!-- Total Revenue -->
-                    <div class="col-lg-6 col-md-6">
-                        <div class="card shadow-sm bg-dark text-light">
-                            <div class="card-body">
-                                <p>Total Ingresos</p>
-                                <h3>$ {{ total_revenue|floatformat:2 }}</h3>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- Total Purchases -->
-                    <div class="col-lg-6 col-md-6">
-                        <div class="card shadow-sm bg-dark text-light">
-                            <div class="card-body">
-                                <p>Total Compras</p>
-                                <h3>{{ total_purchases }}</h3>
-                            </div>
+    <!-- Tab Navigation -->
+    <ul class="nav nav-tabs" id="myTab" role="tablist">
+        <li class="nav-item" role="presentation">
+            <a class="nav-link active" id="info-tab" data-bs-toggle="tab" href="#info" role="tab" aria-controls="info" aria-selected="true">Resumen</a>
+        </li>
+        <li class="nav-item" role="presentation">
+            <a class="nav-link" id="report-tab" data-bs-toggle="tab" href="#report" role="tab" aria-controls="report" aria-selected="false">Reportes</a>
+        </li>
+    </ul>
+
+    <div class="tab-content mt-3" id="myTabContent">
+        <!-- Tab 1: Resumen -->
+        <div class="tab-pane fade show active" id="info" role="tabpanel" aria-labelledby="info-tab">
+            <!-- Statistics Widgets -->
+            <div class="row text-center">
+                <!-- Total Revenue -->
+                <div class="col-lg-6 col-md-6">
+                    <div class="card shadow-sm bg-dark text-light">
+                        <div class="card-body">
+                            <p>Total Ingresos</p>
+                            <h3>$ {{ total_revenue|floatformat:2 }}</h3>
                         </div>
                     </div>
                 </div>
+                <!-- Total Purchases -->
+                <div class="col-lg-6 col-md-6">
+                    <div class="card shadow-sm bg-dark text-light">
+                        <div class="card-body">
+                            <p>Total Compras</p>
+                            <h3>{{ total_purchases }}</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-                <!-- Chart Section -->
+            <!-- Chart Section -->
+            <div class="container py-4">
                 <div class="row">
                     <div class="col-lg-12">
                         <canvas id="salesChart" class="bg-dark"></canvas>
                     </div>
                 </div>
+            
+            
+                <div class="row">
+                    <div class="col-md-6">
+                        <h2 class="text-light">Compras / Tiempo</h2>
+                        <canvas id="purchaseChart" width="400" height="200"></canvas>
+                    </div>
+                    <div class="col-md-6">
+                        <h2 class="text-light">Purchases Por Categoría</h2>
+                        <canvas id="categoryChart" width="400" height="200"></canvas>
+                    </div>
+                </div>
+                
+                <h2 class="text-light mt-5">Compras / Tiempo Por Categoría</h2>
+                <canvas id="categoryPurchaseChart" width="400" height="200"></canvas>
+                
+                <!-- Chart.js Library -->
+                <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+                <!-- Moment.js Library -->
+                <script src="https://cdn.jsdelivr.net/npm/moment@2.29.1/moment.min.js"></script>
+                <!-- Chart.js Adapter for Moment.js -->
+                <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-moment@1.0.0"></script>
+                
+                <script type="application/javascript">
+                    document.addEventListener('DOMContentLoaded', function() {
+                        var ctxPurchase = document.getElementById('purchaseChart').getContext('2d');
+                        var datesData = {{ dates|safe }};
+                        var countsData = {{ counts|safe }};
+                        console.log('Dates Data:', datesData);
+                        console.log('Counts Data:', countsData);
+            
+                        var purchaseChart = new Chart(ctxPurchase, {
+                            type: 'bar', // Change chart type to 'bar'
+                            data: {
+                                labels: datesData, // Dates on the x-axis
+                                datasets: [{
+                                    label: 'Number of Purchases',
+                                    data: countsData, // Number of purchases
+                                    borderColor: 'rgba(75, 192, 192, 1)',
+                                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                                    borderWidth: 1
+                                }]
+                            },
+                            options: {
+                                scales: {
+                                    x: {
+                                        type: 'time', // Time-based x-axis
+                                        time: {
+                                            unit: 'month' // Adjust unit to 'month' for monthly ticks
+                                        }
+                                    },
+                                    y: {
+                                        beginAtZero: true,
+                                        ticks: {
+                                            stepSize: 1 // Ensure y-axis only contains natural numbers
+                                        }
+                                    }
+                                },
+                                plugins: {
+                                    tooltip: {
+                                        callbacks: {
+                                            label: function(context) {
+                                                var label = context.dataset.label || '';
+                                                if (label) {
+                                                    label += ': ';
+                                                }
+                                                label += context.raw;
+                                                return label;
+                                            },
+                                            title: function(context) {
+                                                var title = context[0].label;
+                                                return moment(title).format('MMMM YYYY'); // Format tooltip title to show month and year
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        });
+            
+                        var ctxCategory = document.getElementById('categoryChart').getContext('2d');
+                        var categoriesData = {{ categories|safe }};
+                        var categoryCountsData = {{ category_counts|safe }};
+                        console.log('Categories Data:', categoriesData);
+                        console.log('Category Counts Data:', categoryCountsData);
+            
+                        var categoryChart = new Chart(ctxCategory, {
+                            type: 'pie', // Pie chart for purchases by category
+                            data: {
+                                labels: categoriesData, // Categories on the x-axis
+                                datasets: [{
+                                    label: 'Number of Purchases',
+                                    data: categoryCountsData, // Number of purchases per category
+                                    backgroundColor: [
+                                        'rgba(255, 99, 132, 0.2)',
+                                        'rgba(54, 162, 235, 0.2)',
+                                        'rgba(255, 206, 86, 0.2)',
+                                        'rgba(75, 192, 192, 0.2)',
+                                        'rgba(153, 102, 255, 0.2)',
+                                        'rgba(255, 159, 64, 0.2)'
+                                    ],
+                                    borderColor: [
+                                        'rgba(255, 99, 132, 1)',
+                                        'rgba(54, 162, 235, 1)',
+                                        'rgba(255, 206, 86, 1)',
+                                        'rgba(75, 192, 192, 1)',
+                                        'rgba(153, 102, 255, 1)',
+                                        'rgba(255, 159, 64, 1)'
+                                    ],
+                                    borderWidth: 1
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                plugins: {
+                                    legend: {
+                                        position: 'top',
+                                    },
+                                    tooltip: {
+                                        callbacks: {
+                                            label: function(tooltipItem) {
+                                                return tooltipItem.label + ': ' + tooltipItem.raw;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        });
+            
+                        var ctxCategoryPurchase = document.getElementById('categoryPurchaseChart').getContext('2d');
+                        var data = {{ data|safe }};
+                        console.log('Data:', data);
+            
+                        var datasets = [];
+                        for (var category in data) {
+                            if (data.hasOwnProperty(category)) {
+                                datasets.push({
+                                    label: category,
+                                    data: data[category].dates.map((date, index) => ({
+                                        x: moment(date, 'YYYY-MM').toISOString(), // Ensure date is in ISO format
+                                        y: data[category].counts[index]
+                                    })),
+                                    borderColor: getRandomColor(),
+                                    backgroundColor: getRandomColor(0.2),
+                                    borderWidth: 1,
+                                    pointRadius: 5,
+                                    pointHoverRadius: 7,
+                                    showLine: true // Ensure lines are shown between points
+                                });
+                            }
+                        }
+            
+                        var categoryPurchaseChart = new Chart(ctxCategoryPurchase, {
+                            type: 'line', // Change chart type to 'line'
+                            data: {
+                                datasets: datasets
+                            },
+                            options: {
+                                scales: {
+                                    x: {
+                                        type: 'time', // Time-based x-axis
+                                        time: {
+                                            unit: 'month' // Adjust unit to 'month' for monthly ticks
+                                        }
+                                    },
+                                    y: {
+                                        beginAtZero: true,
+                                        ticks: {
+                                            stepSize: 1 // Ensure y-axis only contains natural numbers
+                                        }
+                                    }
+                                },
+                                plugins: {
+                                    tooltip: {
+                                        callbacks: {
+                                            label: function(context) {
+                                                var label = context.dataset.label || '';
+                                                if (label) {
+                                                    label += ': ';
+                                                }
+                                                label += context.raw.y;
+                                                return label;
+                                            },
+                                            title: function(context) {
+                                                var title = context[0].label;
+                                                return moment(title).format('MMMM YYYY'); // Format tooltip title to show month and year
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        });
+            
+                        function getRandomColor(alpha = 1) {
+                            var r = Math.floor(Math.random() * 255);
+                            var g = Math.floor(Math.random() * 255);
+                            var b = Math.floor(Math.random() * 255);
+                            return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+                        }
+                    });
+                </script>
+            </div>
+        </div>
+
+        <!-- Tab 2: Reportes -->
+        <div class="tab-pane fade" id="report" role="tabpanel" aria-labelledby="report-tab">
+            <!-- Filters -->
+            <div class="filters d-flex align-items-center mb-3">
+                <label for="categoryFilter" class="form-label mb-0 me-2">Categoría:</label>
+                <select id="categoryFilter" class="form-select form-select-sm me-2" style="width: auto;">
+                    <option value="all">Todas</option>
+                    {% for category in categorys %}
+                        <option value="{{ category.name }}">{{ category.name }}</option>
+                    {% endfor %}
+                </select>
+
+                <label for="userFilter" class="form-label mb-0 me-2">Usuario:</label>
+                <input type="text" id="userFilter" class="form-control form-control-sm me-2" style="width: auto;" placeholder="Buscar usuario" />
+
+                <label for="startDate" class="form-label mb-0 me-2">Desde:</label>
+                <input type="date" id="startDate" class="form-control form-control-sm me-2" style="width: auto;" />
+
+                <label for="endDate" class="form-label mb-0 me-2">Hasta:</label>
+                <input type="date" id="endDate" class="form-control form-control-sm me-2" style="width: auto;" />
+
+                <button id="filterButton" class="btn btn-primary btn-sm">Filtrar</button>
             </div>
 
-            <!-- Tab 2: Reportes -->
-            <div class="tab-pane fade" id="report" role="tabpanel" aria-labelledby="report-tab">
-                <!-- Filters -->
-                <div class="filters d-flex align-items-center mb-3">
-                    <label for="categoryFilter" class="form-label mb-0 me-2">Categoría:</label>
-                    <select id="categoryFilter" class="form-select form-select-sm me-2" style="width: auto;">
-                        <option value="all">Todas</option>
-                        {% for category in categories %}
-                            <option value="{{ category.name }}">{{ category.name }}</option>
-                        {% endfor %}
-                    </select>
-
-                    <label for="userFilter" class="form-label mb-0 me-2">Usuario:</label>
-                    <input type="text" id="userFilter" class="form-control form-control-sm me-2" style="width: auto;" placeholder="Buscar usuario" />
-
-                    <label for="startDate" class="form-label mb-0 me-2">Desde:</label>
-                    <input type="date" id="startDate" class="form-control form-control-sm me-2" style="width: auto;" />
-
-                    <label for="endDate" class="form-label mb-0 me-2">Hasta:</label>
-                    <input type="date" id="endDate" class="form-control form-control-sm me-2" style="width: auto;" />
-
-                    <button id="filterButton" class="btn btn-primary btn-sm">Filtrar</button>
-                </div>
-
-                <!-- Responsive Bootstrap Table in Dark Mode -->
-                <div class="table-responsive">
-                    <table 
-                        id="purchaseTable"
-                        class="table table-dark table-striped table-bordered"
-                        data-toggle="table"
-                        data-search="true"
-                        data-pagination="true"
-                        data-page-size="5"
-                        data-page-list="[5, 10, 20, 50]"
-                        data-sortable="true"
-                        data-click-to-select="true"
-                        data-locale="es-ES"
-                        data-sort-name="date"
-                        data-sort-order="asc"
-                        data-show-export="true"
-                        data-export-types="['csv', 'excel', 'xlsx']"
-                    >
-                        <thead>
+            <!-- Responsive Bootstrap Table in Dark Mode -->
+            <div class="table-responsive">
+                <table 
+                    id="purchaseTable"
+                    class="table table-dark table-striped table-bordered"
+                    data-toggle="table"
+                    data-search="true"
+                    data-pagination="true"
+                    data-page-size="5"
+                    data-page-list="[5, 10, 20, 50]"
+                    data-sortable="true"
+                    data-click-to-select="true"
+                    data-locale="es-ES"
+                    data-sort-name="date"
+                    data-sort-order="asc"
+                    data-show-export="true"
+                    data-export-types="['csv', 'excel', 'xlsx']"
+                >
+                    <thead>
+                        <tr>
+                            <th data-field="id" data-sortable="true">ID</th>
+                            <th data-field="user" data-sortable="true">Usuario</th>
+                            <th data-field="category" data-sortable="true">Categoría</th>
+                            <th data-field="payment_method" data-sortable="true">Método de Pago</th>
+                            <th data-field="price" data-sortable="true">Precio</th>
+                            <th data-field="date" data-sortable="true">Fecha</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for purchase in purchases %}
                             <tr>
-                                <th data-field="id" data-sortable="true">ID</th>
-                                <th data-field="user" data-sortable="true">Usuario</th>
-                                <th data-field="category" data-sortable="true">Categoría</th>
-                                <th data-field="payment_method" data-sortable="true">Método de Pago</th>
-                                <th data-field="price" data-sortable="true">Precio</th>
-                                <th data-field="date" data-sortable="true">Fecha</th>
+                                <td>{{ purchase.id }}</td>
+                                <td>{{ purchase.user }}</td>
+                                <td>{{ purchase.category.name }}</td>
+                                <td>Tarjeta</td>
+                                <td>$ {{ purchase.price }}</td>
+                                <td>{{ purchase.date|date:"Y-m-d H:i" }}</td>
                             </tr>
-                        </thead>
-                        <tbody>
-                            {% for purchase in purchases %}
-                                <tr>
-                                    <td>{{ purchase.id }}</td>
-                                    <td>{{ purchase.user }}</td>
-                                    <td>{{ purchase.category.name }}</td>
-                                    <td>Tarjeta</td>
-                                    <td>$ {{ purchase.price }}</td>
-                                    <td>{{ purchase.date|date:"Y-m-d H:i" }}</td>
-                                </tr>
-                            {% empty %}
-                                <tr>
-                                    <td colspan="6">No hay compras registradas</td>
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
+                        {% empty %}
+                            <tr>
+                                <td colspan="6">No hay compras registradas</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
 
-                <!-- Bar for total purchases and total sum -->
-                <div class="totals-bar mt-4">
-                    <div class="totals-item">
-                        <i class="bi bi-tags-fill totals-icon"></i>
-                        <span class="totals-text">Total compras: <span id="totalPurchases">0</span></span>
-                    </div>
-                    <div class="totals-item">
-                        <i class="bi bi-currency-dollar totals-icon"></i>
-                        <span class="totals-text">Monto total: $ <span id="totalSum">0.00</span></span>
-                    </div>
+            <!-- Bar for total purchases and total sum -->
+            <div class="totals-bar mt-4">
+                <div class="totals-item">
+                    <i class="bi bi-tags-fill totals-icon"></i>
+                    <span class="totals-text">Total compras: <span id="totalPurchases">0</span></span>
+                </div>
+                <div class="totals-item">
+                    <i class="bi bi-currency-dollar totals-icon"></i>
+                    <span class="totals-text">Monto total: $ <span id="totalSum">0.00</span></span>
                 </div>
             </div>
         </div>
     </div>
-
-<!-- Include Chart.js -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
+</div>
 <script>
     // Datos pasados directamente desde el contexto de Django
     var categories = {{ categories_json|safe }};
