@@ -1124,6 +1124,23 @@ class FinancesDashboardView(TemplateView):
         """
         context = super().get_context_data(**kwargs)
 
+        # Get filter parameters
+        category_filter = self.request.GET.get('category', 'all')
+        user_filter = self.request.GET.get('user', '').lower()
+        start_date = self.request.GET.get('start_date')
+        end_date = self.request.GET.get('end_date')
+
+        # Filter purchases based on the filter parameters
+        purchases = Purchase.objects.select_related('category', 'user').all()
+        if category_filter != 'all':
+            purchases = purchases.filter(category__name=category_filter)
+        if user_filter:
+            purchases = purchases.filter(user__username__icontains=user_filter)
+        if start_date:
+            purchases = purchases.filter(date__gte=parse_date(start_date))
+        if end_date:
+            purchases = purchases.filter(date__lte=parse_date(end_date))
+
         # Total revenue and purchases
         context['total_revenue'] = purchases.aggregate(total=Sum('price'))['total']
         context['total_purchases'] = purchases.count()
@@ -1190,11 +1207,14 @@ class FinancesDashboardView(TemplateView):
         context['counts'] = json.dumps(counts)
         context['categories'] = json.dumps(categories)
         context['categorys'] = Category.objects.filter(kind='premium')
-        context['purchases'] = purchases
+        
         context['category_counts'] = json.dumps(category_counts)
         context['data'] = json.dumps(data)
         context['sales_json'] = json.dumps(sales_data)
         context['categories_json'] = json.dumps(categories)
+        context['purchases'] = purchases
+        context['total_revenue'] = purchases.aggregate(total=Sum('price'))['total']
+        context['total_purchases'] = purchases.count()
 
         return context
 
