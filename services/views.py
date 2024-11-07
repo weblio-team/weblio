@@ -1088,9 +1088,40 @@ class UserPermissionsEmailView(View):
 
 # views for finances reports
 class FinancesDashboardView(TemplateView):
+    """
+    Vista para mostrar el panel de control de finanzas.
+
+    Esta vista muestra un panel de control con información financiera, incluyendo los ingresos
+    totales y el número total de compras. También filtra las categorías premium.
+
+    Atributos:
+    ----------
+    template_name : str
+        El nombre de la plantilla que se utilizará para renderizar la vista.
+
+    Métodos:
+    --------
+    get_context_data(**kwargs):
+        Obtiene el contexto para la plantilla, incluyendo los ingresos totales, el número total
+        de compras y las categorías premium.
+    """
     template_name = 'finances/dashboard.html'
 
     def get_context_data(self, **kwargs):
+        """
+        Obtiene el contexto para la plantilla, incluyendo los ingresos totales, el número total
+        de compras y las categorías premium.
+
+        Args:
+        -----
+        **kwargs : dict
+            Argumentos clave adicionales.
+
+        Returns:
+        --------
+        dict
+            El contexto para la plantilla.
+        """
         context = super().get_context_data(**kwargs)
 
         # Obtener todas las categorías para el selector
