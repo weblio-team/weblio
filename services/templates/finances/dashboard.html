@@ -1,7 +1,30 @@
 {% extends "base.html" %}
 {% block content %}
 <div role="main" class="container container-fluid py-4">
+    <!-- Filters -->
+    <div class="filters d-flex align-items-center mb-3">
+        <label for="categoryFilter" class="form-label mb-0 me-2">Categoría:</label>
+        <select id="categoryFilter" class="form-select form-select-sm me-2" style="width: auto;">
+            <option value="all" {% if request.GET.category == 'all' %}selected{% endif %}>Todas</option>
+            {% for category in all_categories %}
+                <option value="{{ category.name }}" {% if request.GET.category == category.name %}selected{% endif %}>
+                    {{ category.name }}
+                </option>
+            {% endfor %}
+        </select>        
 
+        <label for="userFilter" class="form-label mb-0 me-2">Usuario:</label>
+        <input type="text" id="userFilter" class="form-control form-control-sm me-2" style="width: auto;" placeholder="Buscar usuario" value="{{ request.GET.user }}" />
+
+        <label for="startDate" class="form-label mb-0 me-2">Desde:</label>
+        <input type="date" id="startDate" class="form-control form-control-sm me-2" style="width: auto;" value="{{ request.GET.start_date }}" />
+
+        <label for="endDate" class="form-label mb-0 me-2">Hasta:</label>
+        <input type="date" id="endDate" class="form-control form-control-sm me-2" style="width: auto;" value="{{ request.GET.end_date }}" />
+
+        <button id="filterButton" class="btn btn-primary btn-sm">Filtrar</button>
+    </div>
+    
     <!-- Tab Navigation -->
     <ul class="nav nav-tabs" id="myTab" role="tablist">
         <li class="nav-item" role="presentation">
@@ -17,21 +40,21 @@
         <div class="tab-pane fade show active" id="info" role="tabpanel" aria-labelledby="info-tab">
             <!-- Statistics Widgets -->
             <div class="row text-center">
-                <!-- Total Revenue -->
-                <div class="col-lg-6 col-md-6">
-                    <div class="card shadow-sm bg-dark text-light">
-                        <div class="card-body">
-                            <p>Total Ingresos</p>
-                            <h3>$ {{ total_revenue|floatformat:2 }}</h3>
-                        </div>
-                    </div>
-                </div>
                 <!-- Total Purchases -->
                 <div class="col-lg-6 col-md-6">
                     <div class="card shadow-sm bg-dark text-light">
-                        <div class="card-body">
-                            <p>Total Compras</p>
-                            <h3>{{ total_purchases }}</h3>
+                        <div class="card-body totals-item">
+                            <i class="bi bi-tags-fill totals-icon"></i>
+                            <span class="totals-text-resumen">Total categorías compradas: <span id="totalCategories">{{ total_purchases }}</span></span>
+                        </div>
+                    </div>
+                </div>
+                <!-- Total Revenue -->
+                <div class="col-lg-6 col-md-6">
+                    <div class="card shadow-sm bg-dark text-light">
+                        <div class="card-body totals-item">
+                            <i class="bi bi-currency-dollar totals-icon"></i>
+                            <span class="totals-text-resumen">Monto total: <span id="totalSum">${{ total_revenue|floatformat:2 }}</span></span>
                         </div>
                     </div>
                 </div>
@@ -42,284 +65,61 @@
                 <div class="carousel-inner">
                     <!-- Slide 1: Sales Chart -->
                     <div class="carousel-item active" style="height: 100%;">
-                        <h2 class="text-light text-center">Total Ventas por Categoría Premium</h2>
+                        <h2 class="text-light text-center">Total de ventas por categoría premium</h2>
                         <div class="d-flex justify-content-center align-items-center" style="height: 100%;">
                             <canvas id="salesChart" class="bg-dark w-100 h-100"></canvas>
                         </div>
                     </div>
-            
+
                     <!-- Slide 2: Compras / Tiempo Chart -->
                     <div class="carousel-item" style="height: 100%;">
-                        <h2 class="text-light text-center">Compras / Tiempo</h2>
+                        <h2 class="text-light text-center">Compras por intervalo de tiempo</h2>
                         <div class="d-flex justify-content-center align-items-center" style="height: 100%;">
                             <canvas id="purchaseChart" class="bg-dark w-100 h-100"></canvas>
                         </div>
                     </div>
-            
-                    <!-- Slide 3: Purchases por Categoría (Adjusted for Responsive Size) -->
+
+                    <!-- Slide 3: Purchases por Categoría -->
                     <div class="carousel-item" style="height: 100%;">
-                        <h2 class="text-light text-center">Compras Por Categoría</h2>
+                        <h2 class="text-light text-center">Compras por categoría</h2>
                         <div class="d-flex justify-content-center align-items-center" style="height: 100%; max-height: 500px;">
                             <canvas id="categoryChart" class="bg-dark" style="width: 90%; max-width: 500px; height: auto; object-fit: contain;"></canvas>
                         </div>
                     </div>
-            
+
                     <!-- Slide 4: Compras / Tiempo por Categoría -->
                     <div class="carousel-item" style="height: 100%;">
-                        <h2 class="text-light text-center">Compras / Tiempo Por Categoría</h2>
+                        <h2 class="text-light text-center">Compras en un intervalo de tiempo por categoría</h2>
                         <div class="d-flex justify-content-center align-items-center" style="height: 100%;">
                             <canvas id="categoryPurchaseChart" class="bg-dark w-100 h-100"></canvas>
                         </div>
                     </div>
                 </div>
-                
-                <!-- Carousel Controls -->
-                <button class="carousel-control-prev" type="button" data-bs-target="#chartCarousel" data-bs-slide="prev">
+
+                <!-- Carousel Controls with Spacing -->
+                <button class="carousel-control-prev" type="button" data-bs-target="#chartCarousel" data-bs-slide="prev" style="left: -40px;">
                     <span class="carousel-control-prev-icon" aria-hidden="true"></span>
                     <span class="visually-hidden">Previous</span>
                 </button>
-                <button class="carousel-control-next" type="button" data-bs-target="#chartCarousel" data-bs-slide="next">
+                <button class="carousel-control-next" type="button" data-bs-target="#chartCarousel" data-bs-slide="next" style="right: -40px;">
                     <span class="carousel-control-next-icon" aria-hidden="true"></span>
                     <span class="visually-hidden">Next</span>
                 </button>                     
-                
-                <!-- Chart.js Library -->
-                <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-                <!-- Moment.js Library -->
-                <script src="https://cdn.jsdelivr.net/npm/moment@2.29.1/moment.min.js"></script>
-                <!-- Chart.js Adapter for Moment.js -->
-                <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-moment@1.0.0"></script>
-                
-                <script type="application/javascript">
-                    document.addEventListener('DOMContentLoaded', function() {
-                        var ctxPurchase = document.getElementById('purchaseChart').getContext('2d');
-                        var datesData = {{ dates|safe }};
-                        var countsData = {{ counts|safe }};
-                        console.log('Dates Data:', datesData);
-                        console.log('Counts Data:', countsData);
-            
-                        var purchaseChart = new Chart(ctxPurchase, {
-                            type: 'bar', // Change chart type to 'bar'
-                            data: {
-                                labels: datesData, // Dates on the x-axis
-                                datasets: [{
-                                    label: 'Number of Purchases',
-                                    data: countsData, // Number of purchases
-                                    borderColor: 'rgba(75, 192, 192, 1)',
-                                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                                    borderWidth: 1
-                                }]
-                            },
-                            options: {
-                                scales: {
-                                    x: {
-                                        type: 'time', // Time-based x-axis
-                                        time: {
-                                            unit: 'month' // Adjust unit to 'month' for monthly ticks
-                                        }
-                                    },
-                                    y: {
-                                        beginAtZero: true,
-                                        ticks: {
-                                            stepSize: 1 // Ensure y-axis only contains natural numbers
-                                        }
-                                    }
-                                },
-                                plugins: {
-                                    tooltip: {
-                                        callbacks: {
-                                            label: function(context) {
-                                                var label = context.dataset.label || '';
-                                                if (label) {
-                                                    label += ': ';
-                                                }
-                                                label += context.raw;
-                                                return label;
-                                            },
-                                            title: function(context) {
-                                                var title = context[0].label;
-                                                return moment(title).format('MMMM YYYY'); // Format tooltip title to show month and year
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        });
-            
-                        var ctxCategory = document.getElementById('categoryChart').getContext('2d');
-                        var categoriesData = {{ categories|safe }};
-                        var categoryCountsData = {{ category_counts|safe }};
-                        console.log('Categories Data:', categoriesData);
-                        console.log('Category Counts Data:', categoryCountsData);
-            
-                        var categoryChart = new Chart(ctxCategory, {
-                            type: 'pie', // Pie chart for purchases by category
-                            data: {
-                                labels: categoriesData, // Categories on the x-axis
-                                datasets: [{
-                                    label: 'Number of Purchases',
-                                    data: categoryCountsData, // Number of purchases per category
-                                    backgroundColor: [
-                                        'rgba(255, 99, 132, 0.2)',
-                                        'rgba(54, 162, 235, 0.2)',
-                                        'rgba(255, 206, 86, 0.2)',
-                                        'rgba(75, 192, 192, 0.2)',
-                                        'rgba(153, 102, 255, 0.2)',
-                                        'rgba(255, 159, 64, 0.2)'
-                                    ],
-                                    borderColor: [
-                                        'rgba(255, 99, 132, 1)',
-                                        'rgba(54, 162, 235, 1)',
-                                        'rgba(255, 206, 86, 1)',
-                                        'rgba(75, 192, 192, 1)',
-                                        'rgba(153, 102, 255, 1)',
-                                        'rgba(255, 159, 64, 1)'
-                                    ],
-                                    borderWidth: 1
-                                }]
-                            },
-                            options: {
-                                responsive: true,
-                                plugins: {
-                                    legend: {
-                                        position: 'top',
-                                    },
-                                    tooltip: {
-                                        callbacks: {
-                                            label: function(tooltipItem) {
-                                                return tooltipItem.label + ': ' + tooltipItem.raw;
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        });
-            
-                        var ctxCategoryPurchase = document.getElementById('categoryPurchaseChart').getContext('2d');
-                        var data = {{ data|safe }};
-                        console.log('Data:', data);
-            
-                        var datasets = [];
-                        for (var category in data) {
-                            if (data.hasOwnProperty(category)) {
-                                datasets.push({
-                                    label: category,
-                                    data: data[category].dates.map((date, index) => ({
-                                        x: moment(date, 'YYYY-MM').toISOString(), // Ensure date is in ISO format
-                                        y: data[category].counts[index]
-                                    })),
-                                    borderColor: getRandomColor(),
-                                    backgroundColor: getRandomColor(0.2),
-                                    borderWidth: 1,
-                                    pointRadius: 5,
-                                    pointHoverRadius: 7,
-                                    showLine: true // Ensure lines are shown between points
-                                });
-                            }
-                        }
-            
-                        var categoryPurchaseChart = new Chart(ctxCategoryPurchase, {
-                            type: 'line', // Change chart type to 'line'
-                            data: {
-                                datasets: datasets
-                            },
-                            options: {
-                                scales: {
-                                    x: {
-                                        type: 'time', // Time-based x-axis
-                                        time: {
-                                            unit: 'month' // Adjust unit to 'month' for monthly ticks
-                                        }
-                                    },
-                                    y: {
-                                        beginAtZero: true,
-                                        ticks: {
-                                            stepSize: 1 // Ensure y-axis only contains natural numbers
-                                        }
-                                    }
-                                },
-                                plugins: {
-                                    tooltip: {
-                                        callbacks: {
-                                            label: function(context) {
-                                                var label = context.dataset.label || '';
-                                                if (label) {
-                                                    label += ': ';
-                                                }
-                                                label += context.raw.y;
-                                                return label;
-                                            },
-                                            title: function(context) {
-                                                var title = context[0].label;
-                                                return moment(title).format('MMMM YYYY'); // Format tooltip title to show month and year
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        });
-            
-                        function getRandomColor(alpha = 1) {
-                            var r = Math.floor(Math.random() * 255);
-                            var g = Math.floor(Math.random() * 255);
-                            var b = Math.floor(Math.random() * 255);
-                            return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-                        }
-                    });
-                </script>
             </div>
         </div>
 
         <!-- Tab 2: Reportes -->
         <div class="tab-pane fade" id="report" role="tabpanel" aria-labelledby="report-tab">
-            <!-- Filters -->
-            <div class="filters d-flex align-items-center mb-3">
-                <label for="categoryFilter" class="form-label mb-0 me-2">Categoría:</label>
-                <select id="categoryFilter" class="form-select form-select-sm me-2" style="width: auto;">
-                    <option value="all">Todas</option>
-                    {% for category in categorys %}
-                        <option value="{{ category.name }}">{{ category.name }}</option>
-                    {% endfor %}
-                </select>
-
-                <label for="userFilter" class="form-label mb-0 me-2">Usuario:</label>
-                <input type="text" id="userFilter" class="form-control form-control-sm me-2" style="width: auto;" placeholder="Buscar usuario" />
-
-                <label for="startDate" class="form-label mb-0 me-2">Desde:</label>
-                <input type="date" id="startDate" class="form-control form-control-sm me-2" style="width: auto;" />
-
-                <label for="endDate" class="form-label mb-0 me-2">Hasta:</label>
-                <input type="date" id="endDate" class="form-control form-control-sm me-2" style="width: auto;" />
-
-                <button id="filterButton" class="btn btn-primary btn-sm">Filtrar</button>
-            </div>
-
-            <!-- Responsive Bootstrap Table in Dark Mode -->
             <div class="table-responsive">
-                <table 
-                    id="purchaseTable"
-                    class="table table-dark table-striped table-bordered"
-                    data-toggle="table"
-                    data-search="true"
-                    data-pagination="true"
-                    data-page-size="5"
-                    data-page-list="[5, 10, 20, 50]"
-                    data-sortable="true"
-                    data-click-to-select="true"
-                    data-locale="es-ES"
-                    data-sort-name="date"
-                    data-sort-order="asc"
-                    data-show-export="true"
-                    data-export-types="['csv', 'excel', 'xlsx']"
-                >
+                <table id="purchaseTable" class="table table-dark table-striped table-bordered">
                     <thead>
                         <tr>
-                            <th data-field="id" data-sortable="true">ID</th>
-                            <th data-field="user" data-sortable="true">Usuario</th>
-                            <th data-field="category" data-sortable="true">Categoría</th>
-                            <th data-field="payment_method" data-sortable="true">Método de Pago</th>
-                            <th data-field="price" data-sortable="true">Precio</th>
-                            <th data-field="date" data-sortable="true">Fecha</th>
+                            <th>ID</th>
+                            <th>Usuario</th>
+                            <th>Categoría</th>
+                            <th>Método de Pago</th>
+                            <th>Precio</th>
+                            <th>Fecha</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -341,116 +141,163 @@
                 </table>
             </div>
 
-            <!-- Bar for total purchases and total sum -->
-            <div class="totals-bar mt-4">
+            <!-- Bar for total categories and total sum -->
+            <div class="totals-bar">
                 <div class="totals-item">
                     <i class="bi bi-tags-fill totals-icon"></i>
-                    <span class="totals-text">Total compras: <span id="totalPurchases">0</span></span>
+                    <span class="totals-text">Total categorías compradas: <span id="totalCategories">{{ total_purchases }}</span></span>
                 </div>
                 <div class="totals-item">
                     <i class="bi bi-currency-dollar totals-icon"></i>
-                    <span class="totals-text">Monto total: $ <span id="totalSum">0.00</span></span>
+                    <span class="totals-text">Monto total: $ <span id="totalSum">{{ total_revenue|floatformat:2 }}</span></span>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<!-- Chart.js Library -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<!-- Moment.js Library -->
+<script src="https://cdn.jsdelivr.net/npm/moment@2.29.1/moment.min.js"></script>
+<!-- Chart.js Adapter for Moment.js -->
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-moment@1.0.0"></script>
+
 <script>
-    // Datos pasados directamente desde el contexto de Django
-    var categories = {{ categories_json|safe }};
-    var salesData = {{ sales_json|safe }};
-
-    // Inicialización del gráfico de barras para "Total Ventas por Categoría Premium"
-    var salesCtx = document.getElementById('salesChart').getContext('2d');
-    var salesChart = new Chart(salesCtx, {
-        type: 'bar',
-        data: {
-            labels: categories,  // Nombres de las categorías
-            datasets: [{
-                label: 'Total Ventas',
-                data: salesData,  // Ventas totales por categoría
-                backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                borderColor: 'rgba(75, 192, 192, 1)',
-                borderWidth: 1
-            }]
-        },
-        options: {
-            scales: {
-                y: {
-                    beginAtZero: true,  // Asegurarse de que el eje y comienza en 0
-                    ticks: {
-                        color: '#fff'  // Dark mode ticks color
-                    }
-                },
-                x: {
-                    ticks: {
-                        color: '#fff'  // Dark mode ticks color
-                    }
-                }
+    // Verificar que Chart.js esté cargado
+    if (typeof Chart !== 'undefined') {
+        // Configurar el gráfico de Total Ventas por Categoría Premium
+        const salesChart = new Chart(document.getElementById('salesChart').getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: {{ categories_json|safe }},
+                datasets: [{
+                    label: 'Ventas totales',
+                    data: {{ sales_json|safe }},
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1
+                }]
             },
-            plugins: {
-                legend: {
-                    labels: {
-                        color: '#fff'  // Dark mode legend color
-                    }
+            options: {
+                scales: {
+                    y: { beginAtZero: true }
                 }
-            }
-        }
-    });
-
-    function updateTotals() {
-        var rows = document.querySelectorAll('#purchaseTable tbody tr');
-        var totalPurchases = 0;
-        var totalSum = 0;
-
-        rows.forEach(function(row) {
-            if (row.style.display !== 'none') {
-                totalPurchases++;
-                var total = parseFloat(row.cells[4].innerText.replace('$', '').replace('.', '').replace(',', '.').trim());
-                totalSum += total;
             }
         });
 
-        document.getElementById('totalPurchases').innerText = totalPurchases;
-        document.getElementById('totalSum').innerText = totalSum.toFixed(2);
+        // Configurar el gráfico de Compras / Tiempo
+        const purchaseChart = new Chart(document.getElementById('purchaseChart').getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: {{ dates|safe }},
+                datasets: [{
+                    label: 'Número de Compras',
+                    data: {{ counts|safe }},
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    x: { type: 'time', time: { unit: 'day' } },
+                    y: { beginAtZero: true, ticks: { stepSize: 1 } }
+                }
+            }
+        });
+
+        // Configurar el gráfico de Compras por Categoría
+        const categoryChart = new Chart(document.getElementById('categoryChart').getContext('2d'), {
+            type: 'pie',
+            data: {
+                labels: {{ categories|safe }},
+                datasets: [{
+                    label: 'Número de Compras',
+                    data: {{ category_counts|safe }},
+                    backgroundColor: ['rgba(255, 99, 132, 0.2)', 'rgba(54, 162, 235, 0.2)', 'rgba(255, 206, 86, 0.2)', 'rgba(75, 192, 192, 0.2)'],
+                    borderColor: ['rgba(255, 99, 132, 1)', 'rgba(54, 162, 235, 1)', 'rgba(255, 206, 86, 1)', 'rgba(75, 192, 192, 1)'],
+                    borderWidth: 1
+                }]
+            }
+        });
+
+        // Configurar el gráfico de Compras / Tiempo por Categoría
+        const categoryPurchaseChart = new Chart(document.getElementById('categoryPurchaseChart').getContext('2d'), {
+            type: 'line',
+            data: {
+                datasets: Object.keys({{ data|safe }}).map(category => ({
+                    label: category,
+                    data: {{ data|safe }}[category].dates.map((date, index) => ({
+                        x: moment(date, 'YYYY-MM-DD').toISOString(),
+                        y: {{ data|safe }}[category].counts[index]
+                    })),
+                    borderColor: getRandomColor(),
+                    backgroundColor: getRandomColor(0.2),
+                    borderWidth: 1,
+                    pointRadius: 5,
+                    pointHoverRadius: 7,
+                    showLine: true
+                }))
+            },
+            options: {
+                scales: {
+                    x: { type: 'time', time: { unit: 'day' } },
+                    y: { beginAtZero: true, ticks: { stepSize: 1 } }
+                },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            title: (context) => moment(context[0].label).format('YYYY-MM-DD'),
+                            label: (context) => `${context.dataset.label}: ${context.raw.y}`
+                        }
+                    }
+                }
+            }
+        });
+
+        // Función para generar colores aleatorios
+        function getRandomColor(alpha = 1) {
+            const r = Math.floor(Math.random() * 255);
+            const g = Math.floor(Math.random() * 255);
+            const b = Math.floor(Math.random() * 255);
+            return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+        }
+    } else {
+        console.error('Chart.js no se ha cargado correctamente.');
     }
 
+    // Redirige al backend con filtros aplicados al hacer clic en "Filtrar"
     document.getElementById('filterButton').addEventListener('click', function() {
-        var categoryFilter = document.getElementById('categoryFilter').value;
-        var userFilter = document.getElementById('userFilter').value.toLowerCase();
-        var startDate = new Date(document.getElementById('startDate').value);
-        var endDate = new Date(document.getElementById('endDate').value);
-        var rows = document.querySelectorAll('#purchaseTable tbody tr');
-
-        rows.forEach(function(row) {
-            var category = row.cells[2].innerText;
-            var user = row.cells[1].innerText.toLowerCase();
-            var purchaseDate = new Date(row.cells[5].innerText.split(' ')[0]);
-
-            var categoryMatch = (categoryFilter === 'all' || category === categoryFilter);
-            var userMatch = (userFilter === '' || user.includes(userFilter));
-            var dateMatch = (isNaN(startDate.getTime()) || purchaseDate >= startDate) && (isNaN(endDate.getTime()) || purchaseDate <= endDate);
-
-            if (categoryMatch && userMatch && dateMatch) {
-                row.style.display = '';
-            } else {
-                row.style.display = 'none';
-            }
+        const params = new URLSearchParams({
+            category: document.getElementById('categoryFilter').value,
+            user: document.getElementById('userFilter').value,
+            start_date: document.getElementById('startDate').value,
+            end_date: document.getElementById('endDate').value
         });
-
-        updateTotals();
-    });
-
-    document.addEventListener('DOMContentLoaded', function() {
-        updateTotals();
-    });
-
-    document.getElementById('purchaseTable').addEventListener('post-body.bs.table', function() {
-        updateTotals();
+        window.location.search = params.toString();
     });
 </script>
 
 <style>
+    .carousel-control-prev,
+    .carousel-control-next {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 40px;
+        height: 40px;
+    }
+
+    /* Margen para los controles de carrusel */
+    .carousel-control-prev {
+        left: -40px;
+    }
+
+    .carousel-control-next {
+        right: -40px;
+    }
+
     /* Styling for the totals bar */
     .totals-bar {
         display: flex;
@@ -460,7 +307,7 @@
         color: #fff;
         padding: 12px;
         border-radius: 8px;
-        margin-top: 15px;
+        margin-bottom: 15px;
         box-shadow: 0 3px 5px rgba(0, 0, 0, 0.1);
     }
 
@@ -481,62 +328,13 @@
         color: #fff;
     }
 
-    /* Filters styling */
-    .filters {
+    .totals-text-resumen {
         display: flex;
-        align-items: center;
-    }
-
-    .filters .form-control-sm, .filters .form-select-sm {
-        width: auto;
-    }
-
-    /* Dark Mode for Search Input */
-    .bootstrap-table .search input {
-        background-color: #333;
+        justify-content: space-between;
+        width: 100%;
+        font-size: 1.6em;
+        font-weight: bold;
         color: #fff;
-        border-color: #444;
-    }
-
-    /* White placeholder text */
-    .bootstrap-table .search input::placeholder {
-        color: #fff;
-    }
-
-    /* Dark Mode for Paginator */
-    .pagination li.active a,
-    .pagination li.active a:hover,
-    .pagination li.active a:focus {
-        background-color: #555;
-        border-color: #666;
-        color: #fff;
-    }
-
-    .pagination li a {
-        background-color: #333;
-        color: #fff;
-        border-color: #444;
-    }
-
-    .pagination li a:hover {
-        background-color: #555;
-    }
-
-    /* Additional Dark Mode Tweaks */
-    .btn {
-        background-color: #333;
-        color: #fff;
-        border-color: #444;
-    }
-
-    .btn:hover {
-        background-color: #555;
-    }
-    .carousel-control-prev-icon,
-    .carousel-control-next-icon {
-        background-color: #000; /* Darken control colors for better visibility */
-        border-radius: 50%;
     }
 </style>
-
 {% endblock %}

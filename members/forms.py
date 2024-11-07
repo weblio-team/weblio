@@ -284,7 +284,7 @@ class MemberRegisterForm(forms.ModelForm):
         user.is_active = True  # Activar al usuario
         if commit:
             user.save()
-            suscriptor_group = Group.objects.get(name='suscriptor')
+            suscriptor_group = Group.objects.get(name__icontains='suscriptor')
             user.groups.add(suscriptor_group)
             # Asignar todos los permisos del grupo "suscriptor" al usuario
             permissions = suscriptor_group.permissions.all()
@@ -353,7 +353,7 @@ class MemberJoinForm(UserCreationForm):
         """
         super(MemberJoinForm, self).__init__(*args, **kwargs)
         self.fields['role'] = forms.ModelChoiceField(
-            queryset=Group.objects.exclude(name='suscriptor'),
+            queryset=Group.objects.exclude(name__icontains='suscriptor'),
             label='Rol',
             required=True
         )

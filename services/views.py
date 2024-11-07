@@ -27,7 +27,7 @@ from django.db.models.functions import Coalesce
 from django.contrib.sites.models import Site
 from django.contrib.auth.mixins import LoginRequiredMixin
 from datetime import timedelta
-from django.db.models.functions import TruncMonth
+from django.db.models.functions import TruncDay
 from django.db.models import Count
 
 class CustomImageUploadView(View):
@@ -1086,113 +1086,102 @@ class UserPermissionsEmailView(View):
         # Enviar el correo
         email_message.send()
 
-# viers for finances reports
+# views for finances reports
 class FinancesDashboardView(TemplateView):
-    """
-    Vista para mostrar el panel de control de finanzas.
-
-    Esta vista muestra un panel de control con información financiera, incluyendo los ingresos
-    totales y el número total de compras. También filtra las categorías premium.
-
-    Atributos:
-    ----------
-    template_name : str
-        El nombre de la plantilla que se utilizará para renderizar la vista.
-
-    Métodos:
-    --------
-    get_context_data(**kwargs):
-        Obtiene el contexto para la plantilla, incluyendo los ingresos totales, el número total
-        de compras y las categorías premium.
-    """
     template_name = 'finances/dashboard.html'
 
     def get_context_data(self, **kwargs):
-        """
-        Obtiene el contexto para la plantilla, incluyendo los ingresos totales, el número total
-        de compras y las categorías premium.
-
-        Args:
-        -----
-        **kwargs : dict
-            Argumentos clave adicionales.
-
-        Returns:
-        --------
-        dict
-            El contexto para la plantilla.
-        """
         context = super().get_context_data(**kwargs)
 
-        # Total revenue and purchases
-        context['total_revenue'] = Purchase.objects.aggregate(total=Sum('price'))['total']
-        context['total_purchases'] = Purchase.objects.count()
+        # Obtener todas las categorías para el selector
+        all_categories = Category.objects.filter(kind='premium')
 
-        # Filtrar categorías premium
-        premium_categories = Category.objects.filter(kind='premium')
+        # Parámetros de filtrado desde GET
+        category_filter = self.request.GET.get('category', 'all')
+        user_filter = self.request.GET.get('user', '').lower()
+        start_date = self.request.GET.get('start_date')
+        end_date = self.request.GET.get('end_date')
 
-        # Obtener ventas por categoría premium, incluso si las ventas son 0
+        # Filtrar compras según los parámetros
+        purchases = Purchase.objects.all()
+
+        if category_filter != 'all':
+            purchases = purchases.filter(category__name=category_filter)
+
+        if user_filter:
+            purchases = purchases.filter(user__username__icontains=user_filter)
+
+        if start_date:
+            purchases = purchases.filter(date__gte=start_date)
+
+        if end_date:
+            purchases = purchases.filter(date__lte=end_date)
+
+        # Total revenue y compras filtradas
+        context['total_revenue'] = purchases.aggregate(total=Sum('price'))['total']
+        context['total_purchases'] = purchases.count()
+
+        # Categorías premium con al menos una compra en el rango seleccionado
+        premium_categories = all_categories.filter(purchase__in=purchases).distinct()
+
+        # Ventas por categoría premium con al menos una compra
         category_sales_data = premium_categories.annotate(
             total_sales=Coalesce(Sum('purchase__price'), Value(0, output_field=DecimalField()))
-        )
+        ).filter(total_sales__gt=0)
 
-        # Filter purchases by the last 12 months as an example
-        end_date = timezone.now()
-        start_date = end_date - timedelta(days=365)
-        
-        # Group by month and count purchases for each month
-        monthly_purchases = (
-            Purchase.objects.filter(date__range=[start_date, end_date])
-            .annotate(month=TruncMonth('date'))
-            .values('month')
+        # Agrupar por día para el gráfico de Compras / Tiempo
+        daily_purchases = (
+            purchases.annotate(day=TruncDay('date'))
+            .values('day')
             .annotate(purchase_count=Count('id'))
-            .order_by('month')
+            .order_by('day')
         )
 
-        # Prepare data for the bar chart
-        dates = [purchase['month'].strftime('%Y-%m') for purchase in monthly_purchases]
-        counts = [purchase['purchase_count'] for purchase in monthly_purchases]
+        # Preparar datos para el gráfico de Compras / Tiempo
+        dates = [purchase.date.strftime('%Y-%m-%d %H:%M:%S') for purchase in purchases]
+        counts = [1 for _ in purchases]  # Cada compra cuenta como 1
 
-        # Group by category and count purchases for each category
+        # Agrupar por categoría con al menos una compra para el gráfico de Compras por Categoría
         category_purchases = (
-            Purchase.objects.values('category__name')
+            purchases.values('category__name')
             .annotate(purchase_count=Count('id'))
+            .filter(purchase_count__gt=0)
             .order_by('category__name')
         )
 
-        # Prepare data for the pie chart
+        # Preparar datos para el gráfico de Compras por Categoría
         categories = [purchase['category__name'] for purchase in category_purchases]
         category_counts = [purchase['purchase_count'] for purchase in category_purchases]
 
-        # Group by month, year, and category, and count purchases for each group
+        # Agrupar por día y categoría para Compras / Tiempo por Categoría
         purchases_by_category = (
-            Purchase.objects.filter(date__range=[start_date, end_date])
-            .annotate(month=TruncMonth('date'))
-            .values('month', 'category__name')
+            purchases.annotate(day=TruncDay('date'))
+            .values('day', 'category__name')
             .annotate(purchase_count=Count('id'))
-            .order_by('month', 'category__name')
+            .filter(purchase_count__gt=0)
+            .order_by('day', 'category__name')
         )
 
-        # Prepare data for the dot graph
-        categories_list = Category.objects.values_list('name', flat=True)
-        data = {category: {'dates': [], 'counts': []} for category in categories_list}
-
+        # Preparar datos para el gráfico de Compras / Tiempo por Categoría
+        data = {}
         for purchase in purchases_by_category:
             category = purchase['category__name']
-            data[category]['dates'].append(purchase['month'].strftime('%Y-%m'))
+            day = purchase['day'].strftime('%Y-%m-%d')
+            if category not in data:
+                data[category] = {'dates': [], 'counts': []}
+            data[category]['dates'].append(day)
             data[category]['counts'].append(purchase['purchase_count'])
 
-        categories = [category.name for category in category_sales_data]
-        sales = [float(category.total_sales) for category in category_sales_data]  # Convertir Decimal a float para serializar
+        # Serializar datos para los gráficos
+        category_names = [category.name for category in all_categories]
+        sales = [float(category.total_sales) for category in category_sales_data]
 
-        # Serializar los datos como JSON
+        # Enviar todas las categorías al contexto, sin importar el filtro
+        context['all_categories'] = all_categories
         context['categories_json'] = json.dumps(categories)
         context['sales_json'] = json.dumps(sales)
-        context['categorys'] = Category.objects.filter(kind='premium')
-        context['purchases'] = Purchase.objects.select_related('category', 'user').all()
-        context['total_revenue'] = Purchase.objects.aggregate(total=Sum('price'))['total']
-        context['total_purchases'] = Purchase.objects.count()
-
+        context['categorys'] = premium_categories
+        context['purchases'] = purchases.select_related('category', 'user')
         context['dates'] = dates
         context['counts'] = counts
         context['categories'] = categories

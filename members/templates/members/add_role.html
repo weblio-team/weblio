@@ -14,13 +14,13 @@
                             <div class="card-body">
                                 <h2 class="card-title">{{ role.name }}</h2>
                                 <p class="card-text role-description" style="display: none;">
-                                    {% if role.name == 'suscriptor' %}
+                                    {% if role.name.lower() == 'suscriptor' %}
                                         Los suscriptores pueden leer, comentar, calificar y compartir los artículos. También pueden comprar sus categorías premium favoritas para leerlas cuando quieran.
-                                    {% elif role.name == 'autor' %}
+                                    {% elif role.name.lower() == 'autor' %}
                                         Los autores pueden crear, editar, y publicar sus propios artículos. También pueden recuperar versiones pasadas de sus artículos y ver estadísticas de los mismos.
-                                    {% elif role.name == 'editor' %}
+                                    {% elif role.name.lower() == 'editor' %}
                                         Los editores pueden revisar y editar los artículos de los autores. También pueden recuperar versiones pasadas de los artículos y ver estadísticas de los mismos.
-                                    {% elif role.name == 'publicador' %}
+                                    {% elif role.name.lower() == 'publicador' %}
                                         Los publicadores tienen el control final sobre la publicación de los artículos. Pueden publicar o rechazar artículos, y ver estadísticas de los mismos.
                                     {% endif %}
                                 </p>

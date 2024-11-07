@@ -25,15 +25,15 @@
                     {% if user.groups.exists %}
                         {% for group in user.groups.all %}
                             <span class="badge 
-                                {% if group.name == 'suscriptor' %}
+                                {% if group.name.lower() == 'suscriptor' %}
                                     text-bg-success
-                                {% elif group.name == 'autor' %}
+                                {% elif group.name.lower() == 'autor' %}
                                     text-bg-danger
-                                {% elif group.name == 'editor' %}
+                                {% elif group.name.lower() == 'editor' %}
                                     text-bg-warning
-                                {% elif group.name == 'publicador' %}
+                                {% elif group.name.lower() == 'publicador' %}
                                     text-bg-primary
-                                {% elif group.name == 'admin' %}
+                                {% elif group.name.lower() == 'admin' %}
                                     text-bg-light
                                 {% else %}
                                     text-bg-other

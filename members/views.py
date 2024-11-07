@@ -1176,7 +1176,7 @@ class MemberJoinView(CreateView):
             El contexto actualizado con los roles disponibles.
         """
         context = super().get_context_data(**kwargs)
-        roles = Group.objects.exclude(name='suscriptor').exclude(name__icontains='admin')
+        roles = Group.objects.exclude(name__icontains='suscriptor').exclude(name__icontains='admin')
         context['roles'] = roles
         return context
 
