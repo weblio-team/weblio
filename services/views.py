@@ -1125,79 +1125,76 @@ class FinancesDashboardView(TemplateView):
         context = super().get_context_data(**kwargs)
 
         # Total revenue and purchases
-        context['total_revenue'] = Purchase.objects.aggregate(total=Sum('price'))['total']
-        context['total_purchases'] = Purchase.objects.count()
+        context['total_revenue'] = purchases.aggregate(total=Sum('price'))['total']
+        context['total_purchases'] = purchases.count()
 
-        # Filtrar categorías premium
+        # Filter premium categories
         premium_categories = Category.objects.filter(kind='premium')
 
-        # Obtener ventas por categoría premium, incluso si las ventas son 0
+        # Get sales by premium category, even if sales are 0
         category_sales_data = premium_categories.annotate(
             total_sales=Coalesce(Sum('purchase__price'), Value(0, output_field=DecimalField()))
         )
 
-        # Filter purchases by the last 12 months as an example
-        end_date = timezone.now()
-        start_date = end_date - timedelta(days=365)
-        
-        # Group by month and count purchases for each month
-        monthly_purchases = (
-            Purchase.objects.filter(date__range=[start_date, end_date])
+        # Data for Sales Chart
+        sales_data = []
+        for category in category_sales_data:
+            sales_data.append({
+                'category': category.name,
+                'total_sales': float(category.total_sales)  # Convert Decimal to float for serialization
+            })
+
+        # Data for Purchase Chart
+        purchase_data = (
+            purchases
             .annotate(month=TruncMonth('date'))
             .values('month')
-            .annotate(purchase_count=Count('id'))
+            .annotate(count=Count('id'))
             .order_by('month')
         )
+        dates = [item['month'].strftime('%Y-%m') for item in purchase_data]
+        counts = [item['count'] for item in purchase_data]
 
-        # Prepare data for the bar chart
-        dates = [purchase['month'].strftime('%Y-%m') for purchase in monthly_purchases]
-        counts = [purchase['purchase_count'] for purchase in monthly_purchases]
-
-        # Group by category and count purchases for each category
-        category_purchases = (
-            Purchase.objects.values('category__name')
-            .annotate(purchase_count=Count('id'))
+        # Data for Category Chart
+        category_counts_data = (
+            purchases
+            .values('category__name')
+            .annotate(count=Count('id'))
             .order_by('category__name')
         )
+        categories = [item['category__name'] for item in category_counts_data]
+        category_counts = [item['count'] for item in category_counts_data]
 
-        # Prepare data for the pie chart
-        categories = [purchase['category__name'] for purchase in category_purchases]
-        category_counts = [purchase['purchase_count'] for purchase in category_purchases]
+        # Data for Category Purchase Chart
+        data = {}
+        for item in category_counts_data:
+            category_name = item['category__name']
+            data[category_name] = {
+                'dates': [],
+                'counts': []
+            }
+            category_purchases = (
+                purchases
+                .filter(category__name=category_name)
+                .annotate(month=TruncMonth('date'))
+                .values('month')
+                .annotate(count=Count('id'))
+                .order_by('month')
+            )
+            for purchase in category_purchases:
+                data[category_name]['dates'].append(purchase['month'].strftime('%Y-%m'))
+                data[category_name]['counts'].append(purchase['count'])
 
-        # Group by month, year, and category, and count purchases for each group
-        purchases_by_category = (
-            Purchase.objects.filter(date__range=[start_date, end_date])
-            .annotate(month=TruncMonth('date'))
-            .values('month', 'category__name')
-            .annotate(purchase_count=Count('id'))
-            .order_by('month', 'category__name')
-        )
-
-        # Prepare data for the dot graph
-        categories_list = Category.objects.values_list('name', flat=True)
-        data = {category: {'dates': [], 'counts': []} for category in categories_list}
-
-        for purchase in purchases_by_category:
-            category = purchase['category__name']
-            data[category]['dates'].append(purchase['month'].strftime('%Y-%m'))
-            data[category]['counts'].append(purchase['purchase_count'])
-
-        categories = [category.name for category in category_sales_data]
-        sales = [float(category.total_sales) for category in category_sales_data]  # Convertir Decimal a float para serializar
-
-        # Serializar los datos como JSON
-        context['categories_json'] = json.dumps(categories)
-        context['sales_json'] = json.dumps(sales)
+        # Pass data to template
+        context['dates'] = json.dumps(dates)
+        context['counts'] = json.dumps(counts)
+        context['categories'] = json.dumps(categories)
         context['categorys'] = Category.objects.filter(kind='premium')
-        context['purchases'] = Purchase.objects.select_related('category', 'user').all()
-        context['total_revenue'] = Purchase.objects.aggregate(total=Sum('price'))['total']
-        context['total_purchases'] = Purchase.objects.count()
-
-        context['dates'] = dates
-        context['counts'] = counts
-        context['categories'] = categories
-        context['category_counts'] = category_counts
-        context['data'] = data
+        context['purchases'] = purchases
+        context['category_counts'] = json.dumps(category_counts)
+        context['data'] = json.dumps(data)
+        context['sales_json'] = json.dumps(sales_data)
+        context['categories_json'] = json.dumps(categories)
 
         return context
 

@@ -1,7 +1,30 @@
 {% extends "base.html" %}
 {% block content %}
 <div role="main" class="container container-fluid py-4">
+    <!-- Filters Form -->
+    <form id="filtersForm" method="get">
+        <div class="filters d-flex align-items-center mb-3">
+            <label for="categoryFilter" class="form-label mb-0 me-2">Categoría:</label>
+            <select id="categoryFilter" name="category" class="form-select form-select-sm me-2" style="width: auto;">
+                <option value="all">Todas</option>
+                {% for category in categorys %}
+                    <option value="{{ category.name }}" {% if request.GET.category == category.name %}selected{% endif %}>{{ category.name }}</option>
+                {% endfor %}
+            </select>
 
+            <label for="userFilter" class="form-label mb-0 me-2">Usuario:</label>
+            <input type="text" id="userFilter" name="user" class="form-control form-control-sm me-2" style="width: auto;" placeholder="Buscar usuario" value="{{ request.GET.user }}" />
+
+            <label for="startDate" class="form-label mb-0 me-2">Desde:</label>
+            <input type="date" id="startDate" name="start_date" class="form-control form-control-sm me-2" style="width: auto;" value="{{ request.GET.start_date }}" />
+
+            <label for="endDate" class="form-label mb-0 me-2">Hasta:</label>
+            <input type="date" id="endDate" name="end_date" class="form-control form-control-sm me-2" style="width: auto;" value="{{ request.GET.end_date }}" />
+
+            <button type="submit" class="btn btn-primary btn-sm">Filtrar</button>
+            <button type="button" id="clearFiltersButton" class="btn btn-secondary btn-sm">Limpiar</button>
+        </div>
+    </form>
     <!-- Tab Navigation -->
     <ul class="nav nav-tabs" id="myTab" role="tablist">
         <li class="nav-item" role="presentation">
@@ -40,31 +63,23 @@
             <!-- Carousel for Charts -->
             <div id="chartCarousel" class="carousel slide mt-4" data-bs-ride="carousel">
                 <div class="carousel-inner">
-                    <!-- Slide 1: Sales Chart -->
+                    <!-- Slide 1: Compras / Tiempo Chart -->
                     <div class="carousel-item active" style="height: 100%;">
-                        <h2 class="text-light text-center">Total Ventas por Categoría Premium</h2>
-                        <div class="d-flex justify-content-center align-items-center" style="height: 100%;">
-                            <canvas id="salesChart" class="bg-dark w-100 h-100"></canvas>
-                        </div>
-                    </div>
-            
-                    <!-- Slide 2: Compras / Tiempo Chart -->
-                    <div class="carousel-item" style="height: 100%;">
                         <h2 class="text-light text-center">Compras / Tiempo</h2>
                         <div class="d-flex justify-content-center align-items-center" style="height: 100%;">
                             <canvas id="purchaseChart" class="bg-dark w-100 h-100"></canvas>
                         </div>
                     </div>
-            
-                    <!-- Slide 3: Purchases por Categoría (Adjusted for Responsive Size) -->
+
+                    <!-- Slide 2: Purchases por Categoría (Adjusted for Responsive Size) -->
                     <div class="carousel-item" style="height: 100%;">
                         <h2 class="text-light text-center">Compras Por Categoría</h2>
                         <div class="d-flex justify-content-center align-items-center" style="height: 100%; max-height: 500px;">
                             <canvas id="categoryChart" class="bg-dark" style="width: 90%; max-width: 500px; height: auto; object-fit: contain;"></canvas>
                         </div>
                     </div>
-            
-                    <!-- Slide 4: Compras / Tiempo por Categoría -->
+
+                    <!-- Slide 3: Compras / Tiempo por Categoría -->
                     <div class="carousel-item" style="height: 100%;">
                         <h2 class="text-light text-center">Compras / Tiempo Por Categoría</h2>
                         <div class="d-flex justify-content-center align-items-center" style="height: 100%;">
@@ -72,7 +87,7 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- Carousel Controls -->
                 <button class="carousel-control-prev" type="button" data-bs-target="#chartCarousel" data-bs-slide="prev">
                     <span class="carousel-control-prev-icon" aria-hidden="true"></span>
@@ -81,7 +96,8 @@
                 <button class="carousel-control-next" type="button" data-bs-target="#chartCarousel" data-bs-slide="next">
                     <span class="carousel-control-next-icon" aria-hidden="true"></span>
                     <span class="visually-hidden">Next</span>
-                </button>                     
+                </button>
+            </div>              
                 
                 <!-- Chart.js Library -->
                 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -258,6 +274,12 @@
                                 }
                             }
                         });
+
+                        // Datos pasados directamente desde el contexto de Django
+                        var categories = {{ categories_json|safe }};
+                        var salesData = {{ sales_json|safe }};
+                        console.log('Categories:', categories);
+                        console.log('Sales Data:', salesData);
             
                         function getRandomColor(alpha = 1) {
                             var r = Math.floor(Math.random() * 255);
@@ -272,27 +294,7 @@
 
         <!-- Tab 2: Reportes -->
         <div class="tab-pane fade" id="report" role="tabpanel" aria-labelledby="report-tab">
-            <!-- Filters -->
-            <div class="filters d-flex align-items-center mb-3">
-                <label for="categoryFilter" class="form-label mb-0 me-2">Categoría:</label>
-                <select id="categoryFilter" class="form-select form-select-sm me-2" style="width: auto;">
-                    <option value="all">Todas</option>
-                    {% for category in categorys %}
-                        <option value="{{ category.name }}">{{ category.name }}</option>
-                    {% endfor %}
-                </select>
-
-                <label for="userFilter" class="form-label mb-0 me-2">Usuario:</label>
-                <input type="text" id="userFilter" class="form-control form-control-sm me-2" style="width: auto;" placeholder="Buscar usuario" />
-
-                <label for="startDate" class="form-label mb-0 me-2">Desde:</label>
-                <input type="date" id="startDate" class="form-control form-control-sm me-2" style="width: auto;" />
-
-                <label for="endDate" class="form-label mb-0 me-2">Hasta:</label>
-                <input type="date" id="endDate" class="form-control form-control-sm me-2" style="width: auto;" />
-
-                <button id="filterButton" class="btn btn-primary btn-sm">Filtrar</button>
-            </div>
+            
 
             <!-- Responsive Bootstrap Table in Dark Mode -->
             <div class="table-responsive">
@@ -356,45 +358,32 @@
     </div>
 </div>
 <script>
-    // Datos pasados directamente desde el contexto de Django
-    var categories = {{ categories_json|safe }};
-    var salesData = {{ sales_json|safe }};
+    document.getElementById('clearFiltersButton').addEventListener('click', function() {
+        document.getElementById('categoryFilter').value = 'all';
+        document.getElementById('userFilter').value = '';
+        document.getElementById('startDate').value = '';
+        document.getElementById('endDate').value = '';
+        document.getElementById('filtersForm').submit();
+    });
 
-    // Inicialización del gráfico de barras para "Total Ventas por Categoría Premium"
-    var salesCtx = document.getElementById('salesChart').getContext('2d');
-    var salesChart = new Chart(salesCtx, {
-        type: 'bar',
-        data: {
-            labels: categories,  // Nombres de las categorías
-            datasets: [{
-                label: 'Total Ventas',
-                data: salesData,  // Ventas totales por categoría
-                backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                borderColor: 'rgba(75, 192, 192, 1)',
-                borderWidth: 1
-            }]
-        },
-        options: {
-            scales: {
-                y: {
-                    beginAtZero: true,  // Asegurarse de que el eje y comienza en 0
-                    ticks: {
-                        color: '#fff'  // Dark mode ticks color
-                    }
-                },
-                x: {
-                    ticks: {
-                        color: '#fff'  // Dark mode ticks color
-                    }
-                }
-            },
-            plugins: {
-                legend: {
-                    labels: {
-                        color: '#fff'  // Dark mode legend color
-                    }
-                }
-            }
+    // Save selected tab to localStorage
+    document.querySelectorAll('#myTab a').forEach(function(tab) {
+        tab.addEventListener('shown.bs.tab', function(event) {
+            localStorage.setItem('selectedTab', event.target.id);
+        });
+    });
+
+    // Restore selected tab from localStorage
+    document.addEventListener('DOMContentLoaded', function() {
+        var selectedTab = localStorage.getItem('selectedTab');
+        if (selectedTab) {
+            var tab = document.getElementById(selectedTab);
+            var tabInstance = new bootstrap.Tab(tab);
+            tabInstance.show();
+        } else {
+            var defaultTab = document.querySelector('#myTab a:first-child');
+            var defaultTabInstance = new bootstrap.Tab(defaultTab);
+            defaultTabInstance.show();
         }
     });
 
@@ -415,31 +404,7 @@
         document.getElementById('totalSum').innerText = totalSum.toFixed(2);
     }
 
-    document.getElementById('filterButton').addEventListener('click', function() {
-        var categoryFilter = document.getElementById('categoryFilter').value;
-        var userFilter = document.getElementById('userFilter').value.toLowerCase();
-        var startDate = new Date(document.getElementById('startDate').value);
-        var endDate = new Date(document.getElementById('endDate').value);
-        var rows = document.querySelectorAll('#purchaseTable tbody tr');
-
-        rows.forEach(function(row) {
-            var category = row.cells[2].innerText;
-            var user = row.cells[1].innerText.toLowerCase();
-            var purchaseDate = new Date(row.cells[5].innerText.split(' ')[0]);
-
-            var categoryMatch = (categoryFilter === 'all' || category === categoryFilter);
-            var userMatch = (userFilter === '' || user.includes(userFilter));
-            var dateMatch = (isNaN(startDate.getTime()) || purchaseDate >= startDate) && (isNaN(endDate.getTime()) || purchaseDate <= endDate);
-
-            if (categoryMatch && userMatch && dateMatch) {
-                row.style.display = '';
-            } else {
-                row.style.display = 'none';
-            }
-        });
-
-        updateTotals();
-    });
+    
 
     document.addEventListener('DOMContentLoaded', function() {
         updateTotals();
