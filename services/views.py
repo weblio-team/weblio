@@ -1164,32 +1164,31 @@ class FinancesDashboardView(TemplateView):
         daily_purchases = (
             purchases.annotate(day=TruncDay('date'))
             .values('day')
-            .annotate(purchase_count=Count('id'))
+            .annotate(total_sales=Coalesce(Sum('price'), Value(0, output_field=DecimalField())))  # Sumar los precios de las compras
             .order_by('day')
         )
 
         # Preparar datos para el gráfico de Compras / Tiempo
-        dates = [purchase.date.strftime('%Y-%m-%d %H:%M:%S') for purchase in purchases]
-        counts = [1 for _ in purchases]  # Cada compra cuenta como 1
+        dates_daily = [record['day'].strftime('%Y-%m-%d') for record in daily_purchases]
+        sales_daily = [float(record['total_sales']) for record in daily_purchases]
 
         # Agrupar por categoría con al menos una compra para el gráfico de Compras por Categoría
         category_purchases = (
             purchases.values('category__name')
-            .annotate(purchase_count=Count('id'))
-            .filter(purchase_count__gt=0)
+            .annotate(total_sales=Sum('price'))  # Calcular el monto total de ventas por categoría
+            .filter(total_sales__gt=0)  # Filtrar categorías con ventas mayores a 0
             .order_by('category__name')
         )
 
         # Preparar datos para el gráfico de Compras por Categoría
         categories = [purchase['category__name'] for purchase in category_purchases]
-        category_counts = [purchase['purchase_count'] for purchase in category_purchases]
+        category_sales = [float(purchase['total_sales']) for purchase in category_purchases]
 
         # Agrupar por día y categoría para Compras / Tiempo por Categoría
         purchases_by_category = (
             purchases.annotate(day=TruncDay('date'))
             .values('day', 'category__name')
-            .annotate(purchase_count=Count('id'))
-            .filter(purchase_count__gt=0)
+            .annotate(total_sales=Sum('price'))  # Montos totales por categoría y día
             .order_by('day', 'category__name')
         )
 
@@ -1199,9 +1198,9 @@ class FinancesDashboardView(TemplateView):
             category = purchase['category__name']
             day = purchase['day'].strftime('%Y-%m-%d')
             if category not in data:
-                data[category] = {'dates': [], 'counts': []}
+                data[category] = {'dates': [], 'sales': []}
             data[category]['dates'].append(day)
-            data[category]['counts'].append(purchase['purchase_count'])
+            data[category]['sales'].append(float(purchase['total_sales']))
 
         # Serializar datos para los gráficos
         category_names = [category.name for category in all_categories]
@@ -1209,14 +1208,13 @@ class FinancesDashboardView(TemplateView):
 
         # Enviar todas las categorías al contexto, sin importar el filtro
         context['all_categories'] = all_categories
-        context['categories_json'] = json.dumps(categories)
-        context['sales_json'] = json.dumps(sales)
+        context['categories_json'] = json.dumps(categories)  # Categorías
+        context['category_sales_json'] = json.dumps(category_sales)  # Montos totales
         context['categorys'] = premium_categories
         context['purchases'] = purchases.select_related('category', 'user')
-        context['dates'] = dates
-        context['counts'] = counts
+        context['dates'] = dates_daily 
+        context['sales'] = sales_daily 
         context['categories'] = categories
-        context['category_counts'] = category_counts
         context['data'] = data
 
         return context

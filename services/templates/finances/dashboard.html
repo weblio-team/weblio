@@ -45,7 +45,7 @@
                     <div class="card shadow-sm bg-dark text-light">
                         <div class="card-body totals-item">
                             <i class="bi bi-tags-fill totals-icon"></i>
-                            <span class="totals-text-resumen">Total categorías compradas: <span id="totalCategories">{{ total_purchases }}</span></span>
+                            <span class="totals-text-resumen">Total de compras: <span id="totalCategories">{{ total_purchases }}</span></span>
                         </div>
                     </div>
                 </div>
@@ -65,31 +65,23 @@
                 <div class="carousel-inner">
                     <!-- Slide 1: Sales Chart -->
                     <div class="carousel-item active" style="height: 100%;">
-                        <h2 class="text-light text-center">Total de ventas por categoría premium</h2>
+                        <h2 class="text-light text-center">Monto total por fecha</h2>
                         <div class="d-flex justify-content-center align-items-center" style="height: 100%;">
                             <canvas id="salesChart" class="bg-dark w-100 h-100"></canvas>
                         </div>
                     </div>
 
-                    <!-- Slide 2: Compras / Tiempo Chart -->
+                    <!-- Slide 2: Purchases por Categoría -->
                     <div class="carousel-item" style="height: 100%;">
-                        <h2 class="text-light text-center">Compras por intervalo de tiempo</h2>
-                        <div class="d-flex justify-content-center align-items-center" style="height: 100%;">
-                            <canvas id="purchaseChart" class="bg-dark w-100 h-100"></canvas>
-                        </div>
-                    </div>
-
-                    <!-- Slide 3: Purchases por Categoría -->
-                    <div class="carousel-item" style="height: 100%;">
-                        <h2 class="text-light text-center">Compras por categoría</h2>
+                        <h2 class="text-light text-center">Monto total por categoría</h2>
                         <div class="d-flex justify-content-center align-items-center" style="height: 100%; max-height: 500px;">
                             <canvas id="categoryChart" class="bg-dark" style="width: 90%; max-width: 500px; height: auto; object-fit: contain;"></canvas>
                         </div>
                     </div>
 
-                    <!-- Slide 4: Compras / Tiempo por Categoría -->
+                    <!-- Slide 3: Compras / Tiempo por Categoría -->
                     <div class="carousel-item" style="height: 100%;">
-                        <h2 class="text-light text-center">Compras en un intervalo de tiempo por categoría</h2>
+                        <h2 class="text-light text-center">Monto por categoria por intervalo de tiempo</h2>
                         <div class="d-flex justify-content-center align-items-center" style="height: 100%;">
                             <canvas id="categoryPurchaseChart" class="bg-dark w-100 h-100"></canvas>
                         </div>
@@ -145,7 +137,7 @@
             <div class="totals-bar">
                 <div class="totals-item">
                     <i class="bi bi-tags-fill totals-icon"></i>
-                    <span class="totals-text">Total categorías compradas: <span id="totalCategories">{{ total_purchases }}</span></span>
+                    <span class="totals-text">Total de compras: <span id="totalCategories">{{ total_purchases }}</span></span>
                 </div>
                 <div class="totals-item">
                     <i class="bi bi-currency-dollar totals-icon"></i>
@@ -170,10 +162,10 @@
         const salesChart = new Chart(document.getElementById('salesChart').getContext('2d'), {
             type: 'bar',
             data: {
-                labels: {{ categories_json|safe }},
+                labels: {{ dates|safe }}, // Fechas como etiquetas en el eje X
                 datasets: [{
-                    label: 'Ventas totales',
-                    data: {{ sales_json|safe }},
+                    label: 'Monto total de ventas ($)',
+                    data: {{ sales|safe }}, // Ventas totales en el eje Y
                     backgroundColor: 'rgba(75, 192, 192, 0.2)',
                     borderColor: 'rgba(75, 192, 192, 1)',
                     borderWidth: 1
@@ -181,28 +173,29 @@
             },
             options: {
                 scales: {
-                    y: { beginAtZero: true }
-                }
-            }
-        });
-
-        // Configurar el gráfico de Compras / Tiempo
-        const purchaseChart = new Chart(document.getElementById('purchaseChart').getContext('2d'), {
-            type: 'bar',
-            data: {
-                labels: {{ dates|safe }},
-                datasets: [{
-                    label: 'Número de Compras',
-                    data: {{ counts|safe }},
-                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                    borderColor: 'rgba(75, 192, 192, 1)',
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                scales: {
-                    x: { type: 'time', time: { unit: 'day' } },
-                    y: { beginAtZero: true, ticks: { stepSize: 1 } }
+                    x: {
+                        type: 'category', // Escala basada en categorías (fechas)
+                        title: {
+                            display: true,
+                            text: 'Fechas'
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Monto total ($)'
+                        }
+                    }
+                },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `$${context.raw.toFixed(2)}`; // Mostrar el monto en formato de dólares
+                            }
+                        }
+                    }
                 }
             }
         });
@@ -211,14 +204,39 @@
         const categoryChart = new Chart(document.getElementById('categoryChart').getContext('2d'), {
             type: 'pie',
             data: {
-                labels: {{ categories|safe }},
+                labels: {{ categories_json|safe }}, // Nombres de categorías
                 datasets: [{
-                    label: 'Número de Compras',
-                    data: {{ category_counts|safe }},
-                    backgroundColor: ['rgba(255, 99, 132, 0.2)', 'rgba(54, 162, 235, 0.2)', 'rgba(255, 206, 86, 0.2)', 'rgba(75, 192, 192, 0.2)'],
-                    borderColor: ['rgba(255, 99, 132, 1)', 'rgba(54, 162, 235, 1)', 'rgba(255, 206, 86, 1)', 'rgba(75, 192, 192, 1)'],
+                    label: 'Monto total de ventas ($)',
+                    data: {{ category_sales_json|safe }}, // Montos totales por categoría
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.2)',
+                        'rgba(54, 162, 235, 0.2)',
+                        'rgba(255, 206, 86, 0.2)',
+                        'rgba(75, 192, 192, 0.2)',
+                        'rgba(153, 102, 255, 0.2)',
+                        'rgba(255, 159, 64, 0.2)'
+                    ],
+                    borderColor: [
+                        'rgba(255, 99, 132, 1)',
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(255, 206, 86, 1)',
+                        'rgba(75, 192, 192, 1)',
+                        'rgba(153, 102, 255, 1)',
+                        'rgba(255, 159, 64, 1)'
+                    ],
                     borderWidth: 1
                 }]
+            },
+            options: {
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `${context.label}: $${context.raw.toFixed(2)}`; // Formato de monto en dólares
+                            }
+                        }
+                    }
+                }
             }
         });
 
@@ -230,7 +248,7 @@
                     label: category,
                     data: {{ data|safe }}[category].dates.map((date, index) => ({
                         x: moment(date, 'YYYY-MM-DD').toISOString(),
-                        y: {{ data|safe }}[category].counts[index]
+                        y: {{ data|safe }}[category].sales[index]  // Usar montos en lugar de cantidades
                     })),
                     borderColor: getRandomColor(),
                     backgroundColor: getRandomColor(0.2),
@@ -242,14 +260,23 @@
             },
             options: {
                 scales: {
-                    x: { type: 'time', time: { unit: 'day' } },
-                    y: { beginAtZero: true, ticks: { stepSize: 1 } }
+                    x: {
+                        type: 'time',  // Eje X basado en tiempo
+                        time: { unit: 'day' }  // Mostrar agrupación por día
+                    },
+                    y: {
+                        beginAtZero: true,  // Comenzar el eje Y en 0
+                        title: {
+                            display: true,
+                            text: 'Monto total ($)'  // Etiqueta del eje Y
+                        }
+                    }
                 },
                 plugins: {
                     tooltip: {
                         callbacks: {
                             title: (context) => moment(context[0].label).format('YYYY-MM-DD'),
-                            label: (context) => `${context.dataset.label}: ${context.raw.y}`
+                            label: (context) => `${context.dataset.label}: $${context.raw.y.toFixed(2)}`  // Formato de tooltip
                         }
                     }
                 }
